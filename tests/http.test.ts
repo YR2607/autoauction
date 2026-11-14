@@ -50,12 +50,28 @@ function insertVehicle(saleType = "AUCTION", status = "PUBLISHED", buyNowPrice: 
   return id;
 }
 
-function insertAuction(vehicleId: string, endsAt: number) {
+function insertAuction(
+  vehicleId: string,
+  endsAt: number,
+  opts: { status?: string; winnerUserId?: string | null; currentBid?: number | null; closeReason?: string | null } = {},
+) {
   const id = uid();
   db.prepare(
-    `INSERT INTO auctions (id,vehicle_id,status,currency,starting_price,bid_increment,bid_count,starts_at,ends_at,version,created_at,updated_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-  ).run(id, vehicleId, "LIVE", "EUR", 10000_00, 250_00, 0, now() - 3600_000, endsAt, 0, now(), now());
+    `INSERT INTO auctions (id,vehicle_id,status,currency,starting_price,bid_increment,bid_count,current_bid,winner_user_id,close_reason,finalized_at,starts_at,ends_at,version,created_at,updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+  ).run(id, vehicleId, opts.status ?? "LIVE", "EUR", 10000_00, 250_00, 0,
+    opts.currentBid ?? null, opts.winnerUserId ?? null, opts.closeReason ?? null,
+    opts.status === "AWAITING_ADMIN_APPROVAL" || opts.status === "ENDED" ? now() : null,
+    now() - 3600_000, endsAt, 0, now(), now());
+  return id;
+}
+
+function insertOrder(vehicleId: string, buyerId: string, type: "AUCTION_WIN" | "BUY_NOW", auctionId: string | null, status = "PENDING_APPROVAL") {
+  const id = uid();
+  db.prepare(
+    `INSERT INTO orders (id,vehicle_id,auction_id,buyer_id,type,amount,currency,status,created_at,updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?)`,
+  ).run(id, vehicleId, auctionId, buyerId, type, 10500_00, "EUR", status, now(), now());
   return id;
 }
 
@@ -367,6 +383,127 @@ describe("HTTP / image management", () => {
     const rows = db.prepare("SELECT id,sort_order,is_cover FROM vehicle_images WHERE vehicle_id=? ORDER BY sort_order").all(vid) as any[];
     expect(rows.map((r) => r.id)).toEqual([ids[2], ids[0], ids[1]]);
     expect(rows[0].is_cover).toBe(1);
+  });
+});
+
+describe("HTTP / admin approval workflow", () => {
+  function buyerId() {
+    return db.prepare("SELECT id FROM users WHERE email='buyer@test.dev'").pluck().get() as string;
+  }
+
+  it("approves an auction win via the auctions endpoint — all states consistent", async () => {
+    const vid = insertVehicle("AUCTION", "RESERVED");
+    const aid = insertAuction(vid, now() - 1000, {
+      status: "AWAITING_ADMIN_APPROVAL",
+      winnerUserId: buyerId(),
+      currentBid: 10500_00,
+      closeReason: "expired",
+    });
+    const oid = insertOrder(vid, buyerId(), "AUCTION_WIN", aid);
+
+    const r = await req("POST", `/api/admin/auctions/${aid}`, {
+      cookie: adminCookie,
+      body: { action: "approve" },
+    });
+    expect(r.status).toBe(200);
+    expect(db.prepare("SELECT status FROM auctions WHERE id=?").pluck().get(aid)).toBe("SOLD");
+    expect(db.prepare("SELECT status FROM orders WHERE id=?").pluck().get(oid)).toBe("APPROVED");
+    expect(db.prepare("SELECT status FROM vehicles WHERE id=?").pluck().get(vid)).toBe("SOLD");
+  });
+
+  it("generic approve on an AUCTION_WIN order delegates to the result workflow", async () => {
+    const vid = insertVehicle("AUCTION", "RESERVED");
+    const aid = insertAuction(vid, now() - 1000, {
+      status: "AWAITING_ADMIN_APPROVAL",
+      winnerUserId: buyerId(),
+      currentBid: 10500_00,
+      closeReason: "expired",
+    });
+    const oid = insertOrder(vid, buyerId(), "AUCTION_WIN", aid);
+
+    const r = await req("POST", `/api/admin/orders/${oid}`, {
+      cookie: adminCookie,
+      body: { action: "approve" },
+    });
+    expect(r.status).toBe(200);
+    // NOT the old inconsistency: auction must be SOLD, not still AWAITING
+    expect(db.prepare("SELECT status FROM auctions WHERE id=?").pluck().get(aid)).toBe("SOLD");
+    expect(db.prepare("SELECT status FROM orders WHERE id=?").pluck().get(oid)).toBe("APPROVED");
+  });
+
+  it("generic reject on an AUCTION_WIN order without `next` is refused", async () => {
+    const vid = insertVehicle("AUCTION", "RESERVED");
+    const aid = insertAuction(vid, now() - 1000, {
+      status: "AWAITING_ADMIN_APPROVAL",
+      winnerUserId: buyerId(),
+      currentBid: 10500_00,
+    });
+    const oid = insertOrder(vid, buyerId(), "AUCTION_WIN", aid);
+
+    const r = await req("POST", `/api/admin/orders/${oid}`, {
+      cookie: adminCookie,
+      body: { action: "reject", reason: "bad result" },
+    });
+    expect(r.status).toBe(400);
+    expect(db.prepare("SELECT status FROM auctions WHERE id=?").pluck().get(aid)).toBe("AWAITING_ADMIN_APPROVAL");
+    expect(db.prepare("SELECT status FROM orders WHERE id=?").pluck().get(oid)).toBe("PENDING_APPROVAL");
+  });
+
+  it("generic reject on an AUCTION_WIN order with next=UNSOLD delegates correctly", async () => {
+    const vid = insertVehicle("AUCTION", "RESERVED");
+    const aid = insertAuction(vid, now() - 1000, {
+      status: "AWAITING_ADMIN_APPROVAL",
+      winnerUserId: buyerId(),
+      currentBid: 10500_00,
+    });
+    const oid = insertOrder(vid, buyerId(), "AUCTION_WIN", aid);
+
+    const r = await req("POST", `/api/admin/orders/${oid}`, {
+      cookie: adminCookie,
+      body: { action: "reject", reason: "bad result", next: "UNSOLD" },
+    });
+    expect(r.status).toBe(200);
+    expect(db.prepare("SELECT status FROM auctions WHERE id=?").pluck().get(aid)).toBe("UNSOLD");
+    expect(db.prepare("SELECT status FROM orders WHERE id=?").pluck().get(oid)).toBe("REJECTED");
+    expect(db.prepare("SELECT status FROM vehicles WHERE id=?").pluck().get(vid)).toBe("PUBLISHED");
+    // no pending order left for the auction
+    const pend = db
+      .prepare("SELECT count(*) c FROM orders WHERE auction_id=? AND status='PENDING_APPROVAL'")
+      .get(aid) as { c: number };
+    expect(pend.c).toBe(0);
+  });
+
+  it("orders page renders pending auction wins as read-only with an Approvals link", async () => {
+    const vid = insertVehicle("AUCTION", "RESERVED");
+    const aid = insertAuction(vid, now() - 1000, {
+      status: "AWAITING_ADMIN_APPROVAL",
+      winnerUserId: buyerId(),
+      currentBid: 10500_00,
+    });
+    insertOrder(vid, buyerId(), "AUCTION_WIN", aid);
+
+    const r = await fetch(`${BASE}/admin/orders`, { headers: { cookie: adminCookie } });
+    const html = await r.text();
+    expect(r.status).toBe(200);
+    expect(html).toContain("Go to Approvals");
+    expect(html).toContain("review and decide");
+  });
+
+  it("buy-now rejection via orders endpoint honors REOPEN with a chosen end time", async () => {
+    const vid = insertVehicle("AUCTION_BUY_NOW", "RESERVED", 40000_00);
+    const aid = insertAuction(vid, now() - 1000, { status: "ENDED", closeReason: "buy_now" });
+    const oid = insertOrder(vid, buyerId(), "BUY_NOW", aid);
+
+    const newEnd = now() + 48 * 3600_000;
+    const r = await req("POST", `/api/admin/orders/${oid}`, {
+      cookie: adminCookie,
+      body: { action: "reject", reason: "buyer backed out", auctionAction: "REOPEN", newEndsAt: newEnd },
+    });
+    expect(r.status).toBe(200);
+    const row = db.prepare("SELECT status, ends_at, close_reason FROM auctions WHERE id=?").get(aid) as any;
+    expect(row.status).toBe("LIVE");
+    expect(row.ends_at).toBe(newEnd);
+    expect(row.close_reason).toBeNull();
   });
 });
 
