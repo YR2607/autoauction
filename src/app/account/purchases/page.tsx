@@ -50,8 +50,16 @@ export default async function PurchasesPage() {
               {rows.map((r) => (
                 <tr key={r.order.id} className="border-b border-line/60 last:border-0">
                   <td className="px-5 py-3.5">
-                    <Link href={`/vehicles/${r.vehicle.slug}`} className="font-bold hover:text-primary">
-                      {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
+                    <Link href={`/vehicles/${r.vehicle.slug}`} className="flex items-center gap-3">
+                      {r.coverUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.coverUrl} alt="" className="h-11 w-16 shrink-0 rounded-md object-cover" />
+                      ) : (
+                        <span className="h-11 w-16 shrink-0 rounded-md bg-graphite/5" />
+                      )}
+                      <span className="font-bold hover:text-primary">
+                        {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
+                      </span>
                     </Link>
                   </td>
                   <td className="px-5 py-3.5">{r.order.type === "BUY_NOW" ? "Buy Now" : "Auction win"}</td>
