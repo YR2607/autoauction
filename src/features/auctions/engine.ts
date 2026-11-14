@@ -305,6 +305,20 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
       .where(eq(schema.auctions.vehicleId, vehicle.id))
       .get();
     if (auction && (auction.status === "LIVE" || auction.status === "SCHEDULED")) {
+      // Business rule: a combined listing must never sell below the bid
+      // already accepted. A mismatched auction currency means the listing is
+      // misconfigured — comparison is impossible, so Buy Now is refused
+      // rather than guessing (createAuction prevents new mismatches).
+      if (auction.currency !== vehicle.buyNowCurrency)
+        throw new EngineError(
+          "BUY_NOW_UNAVAILABLE",
+          "Buy Now unavailable: auction currency differs from the Buy Now currency",
+        );
+      if (auction.currentBid != null && auction.currentBid >= vehicle.buyNowPrice)
+        throw new EngineError(
+          "BUY_NOW_UNAVAILABLE",
+          "Buy Now unavailable: the current bid already meets the Buy Now price",
+        );
       transition(tx, auction, "ENDED", input.userId, "buy-now purchase");
       tx.update(schema.auctions)
         .set({ finalizedAt: t, closeReason: "buy_now" })
