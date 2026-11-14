@@ -130,7 +130,7 @@ export default function AdminDashboard() {
 
 function Stat({ label, value, href, tone }: { label: string; value: number; href: string; tone?: string }) {
   return (
-    <Link href={href} className="rounded-[14px] border border-line bg-white p-4 transition-shadow hover:shadow-md">
+    <Link href={href} className="rounded-[14px] border border-line bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-card">
       <p className={`font-display text-2xl font-extrabold ${tone ?? "text-graphite"}`}>{value}</p>
       <p className="mt-0.5 text-xs font-semibold text-muted">{label}</p>
     </Link>

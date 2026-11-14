@@ -16,6 +16,7 @@ export default function AdminVehiclesPage() {
       vehicle: schema.vehicles,
       auction: schema.auctions,
       imgCount: sql<number>`(SELECT count(*) FROM vehicle_images vi WHERE vi.vehicle_id = ${schema.vehicles.id})`,
+      coverUrl: sql<string>`(SELECT url FROM vehicle_images vi WHERE vi.vehicle_id = ${schema.vehicles.id} ORDER BY vi.is_cover DESC, vi.sort_order ASC LIMIT 1)`,
     })
     .from(schema.vehicles)
     .leftJoin(schema.auctions, eq(schema.auctions.vehicleId, schema.vehicles.id))
@@ -48,8 +49,18 @@ export default function AdminVehiclesPage() {
             {rows.map((r) => (
               <tr key={r.vehicle.id} className="border-b border-line/60 last:border-0">
                 <td className="px-5 py-3 font-semibold text-muted">{r.vehicle.lotNumber}</td>
-                <td className="px-5 py-3 font-bold">
-                  {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
+                <td className="px-5 py-3">
+                  <span className="flex items-center gap-3">
+                    {r.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.coverUrl} alt="" className="h-11 w-16 shrink-0 rounded-md object-cover" />
+                    ) : (
+                      <span className="h-11 w-16 shrink-0 rounded-md bg-graphite/5" />
+                    )}
+                    <span className="font-bold">
+                      {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
+                    </span>
+                  </span>
                 </td>
                 <td className="px-5 py-3 text-muted">{r.vehicle.saleType.replace(/_/g, " + ")}</td>
                 <td className="px-5 py-3 font-semibold">
