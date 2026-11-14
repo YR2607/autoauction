@@ -76,7 +76,14 @@ export default function ApprovalsPage() {
                 </div>
                 <Badge tone="warning">Pending</Badge>
               </div>
-              <OrderActions orderId={r.order.id} />
+              <OrderActions
+                orderId={r.order.id}
+                endedByBuyNow={
+                  r.order.type === "BUY_NOW" &&
+                  r.auction?.status === "ENDED" &&
+                  r.auction?.closeReason === "buy_now"
+                }
+              />
             </Card>
           ))}
         </div>

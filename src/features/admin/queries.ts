@@ -54,10 +54,11 @@ export function adminDashboard() {
 
 export function pendingOrderRows() {
   return db
-    .select({ order: schema.orders, vehicle: schema.vehicles, buyer: schema.users })
+    .select({ order: schema.orders, vehicle: schema.vehicles, buyer: schema.users, auction: schema.auctions })
     .from(schema.orders)
     .innerJoin(schema.vehicles, eq(schema.vehicles.id, schema.orders.vehicleId))
     .innerJoin(schema.users, eq(schema.users.id, schema.orders.buyerId))
+    .leftJoin(schema.auctions, eq(schema.auctions.id, schema.orders.auctionId))
     .where(eq(schema.orders.status, "PENDING_APPROVAL"))
     .orderBy(desc(schema.orders.createdAt))
     .all();

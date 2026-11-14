@@ -23,6 +23,7 @@ export function OrderActions({
   const [completeOpen, setCompleteOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [auctionAction, setAuctionAction] = useState<"REOPEN" | "UNSOLD">("REOPEN");
+  const [reopenH, setReopenH] = useState(24);
 
   async function call(body: Record<string, unknown>) {
     setBusy(true);
@@ -73,7 +74,13 @@ export function OrderActions({
                 call({
                   action: "reject",
                   reason,
-                  ...(endedByBuyNow ? { auctionAction } : {}),
+                  ...(endedByBuyNow
+                    ? {
+                        auctionAction,
+                        newEndsAt:
+                          auctionAction === "REOPEN" ? Date.now() + reopenH * 3600_000 : undefined,
+                      }
+                    : {}),
                 })
               }
             >
@@ -112,6 +119,18 @@ export function OrderActions({
                 </span>
               </label>
             </div>
+            {auctionAction === "REOPEN" && (
+              <div className="mt-3">
+                <Label>New duration (hours)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={720}
+                  value={reopenH}
+                  onChange={(e) => setReopenH(Math.max(1, Number(e.target.value) || 24))}
+                />
+              </div>
+            )}
           </div>
         )}
       </Modal>
