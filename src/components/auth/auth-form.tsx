@@ -67,7 +67,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           minLength={isReg ? 8 : 1}
           autoComplete={isReg ? "new-password" : "current-password"}
         />
-        {isReg && <p className="mt-1 text-xs text-muted">At least 8 characters.</p>}
+        {isReg ? (
+          <p className="mt-1 text-xs text-muted">At least 8 characters.</p>
+        ) : (
+          <p className="mt-1 text-right text-xs">
+            <Link href="/forgot-password" className="font-semibold text-primary hover:underline">
+              Forgot password?
+            </Link>
+          </p>
+        )}
       </div>
       {err && (
         <p className="rounded-lg bg-error/10 px-3 py-2 text-sm font-semibold text-error" role="alert">

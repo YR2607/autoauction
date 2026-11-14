@@ -185,7 +185,7 @@ export function getVehicleBySlug(slug: string) {
     .orderBy(desc(schema.vehicleImages.isCover), asc(schema.vehicleImages.sortOrder))
     .all();
   const docs = db
-    .select()
+    .select({ id: schema.vehicleDocuments.id, title: schema.vehicleDocuments.title, kind: schema.vehicleDocuments.kind })
     .from(schema.vehicleDocuments)
     .where(
       and(
@@ -193,7 +193,8 @@ export function getVehicleBySlug(slug: string) {
         eq(schema.vehicleDocuments.isPublic, true),
       ),
     )
-    .all();
+    .all()
+    .map((d) => ({ ...d, url: `/api/documents/${d.id}` }));
   return { ...row, images, docs };
 }
 

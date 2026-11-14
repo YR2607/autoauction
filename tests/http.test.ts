@@ -107,7 +107,13 @@ beforeAll(async () => {
   // avoids the single-dev-server lock. Run `pnpm build` before this suite.
   server = spawn(path.join(CWD, "node_modules", ".bin", "next"), ["start", "-p", String(PORT)], {
     cwd: CWD,
-    env: { ...process.env, DATABASE_PATH: DB_PATH },
+    env: {
+      ...process.env,
+      DATABASE_PATH: DB_PATH,
+      DOCUMENTS_DIR: path.join(CWD, "tests", "tmp", "documents"),
+      EMAIL_TRANSPORT: "outbox",
+      EMAIL_ALLOW_OUTBOX: "1", // next start runs NODE_ENV=production
+    },
     stdio: ["ignore", "pipe", "pipe"],
   });
   server.stderr?.on("data", (d) => process.stderr.write(`[next] ${d}`));
@@ -263,6 +269,104 @@ describe("HTTP / bids & buy-now", () => {
   it("401 buy-now without a session", async () => {
     const r = await req("POST", `/api/vehicles/${uid()}/buy-now`);
     expect(r.status).toBe(401);
+  });
+});
+
+describe("HTTP / documents", () => {
+  it("enforces access policy on private documents", async () => {
+    const vid = insertVehicle();
+    const docDir = path.join(CWD, "tests", "tmp", "documents", vid);
+    fs.mkdirSync(docDir, { recursive: true });
+    fs.writeFileSync(path.join(docDir, "doc1.pdf"), "%PDF-1.4 test");
+    const docId = uid();
+    db.prepare(
+      "INSERT INTO vehicle_documents (id,vehicle_id,title,url,kind,is_public,created_at) VALUES (?,?,?,?,?,?,?)",
+    ).run(docId, vid, "Private doc", `${vid}/doc1.pdf`, "ownership", 0, now());
+
+    expect((await req("GET", `/api/documents/${docId}`)).status).toBe(401);
+    expect((await req("GET", `/api/documents/${docId}`, { cookie: buyerCookie })).status).toBe(403);
+    expect((await req("GET", `/api/documents/${docId}`, { cookie: adminCookie })).status).toBe(200);
+  });
+
+  it("serves public documents to guests", async () => {
+    const vid = insertVehicle();
+    const docDir = path.join(CWD, "tests", "tmp", "documents", vid);
+    fs.mkdirSync(docDir, { recursive: true });
+    fs.writeFileSync(path.join(docDir, "pub.pdf"), "%PDF-1.4 public");
+    const docId = uid();
+    db.prepare(
+      "INSERT INTO vehicle_documents (id,vehicle_id,title,url,kind,is_public,created_at) VALUES (?,?,?,?,?,?,?)",
+    ).run(docId, vid, "Public report", `${vid}/pub.pdf`, "inspection", 1, now());
+    const r = await req("GET", `/api/documents/${docId}`);
+    expect(r.status).toBe(200);
+  });
+
+  it("rejects document uploads from buyers", async () => {
+    const vid = insertVehicle();
+    const form = new FormData();
+    form.append("file", new File([Buffer.from("%PDF-1.4 x")], "d.pdf", { type: "application/pdf" }));
+    const r = await req("POST", `/api/admin/vehicles/${vid}/documents`, { cookie: buyerCookie, form });
+    expect(r.status).toBe(403);
+  });
+});
+
+describe("HTTP / password reset", () => {
+  it("full flow: forgot → token in outbox → reset → old password dead, new works", async () => {
+    const outbox = path.join(CWD, "data", "outbox.log");
+    fs.rmSync(outbox, { force: true });
+
+    const f = await req("POST", "/api/auth/password/forgot", { body: { email: "buyer@test.dev" } });
+    expect(f.status).toBe(200);
+    // non-existent account → still 200 (no enumeration)
+    const f2 = await req("POST", "/api/auth/password/forgot", { body: { email: "nobody@test.dev" } });
+    expect(f2.status).toBe(200);
+
+    const log = fs.readFileSync(outbox, "utf8");
+    const token = log.match(/token=([a-f0-9]{64})/)?.[1];
+    expect(token).toBeTruthy();
+
+    const r = await req("POST", "/api/auth/password/reset", {
+      body: { token, password: "brand-new-pass1" },
+    });
+    expect(r.status).toBe(200);
+
+    expect((await login("buyer@test.dev", "buyer12345")).status).toBe(401);
+    expect((await login("buyer@test.dev", "brand-new-pass1")).status).toBe(200);
+
+    // token replay → rejected
+    const replay = await req("POST", "/api/auth/password/reset", {
+      body: { token, password: "yet-another-1" },
+    });
+    expect(replay.status).toBe(400);
+
+    // restore for other tests
+    db.prepare("UPDATE users SET password_hash=? WHERE email='buyer@test.dev'")
+      .run(hashPassword("buyer12345"));
+  });
+});
+
+describe("HTTP / image management", () => {
+  it("reorders images and sets a cover", async () => {
+    const vid = insertVehicle("BUY_NOW", "PUBLISHED", 10000_00);
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64",
+    );
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      const form = new FormData();
+      form.append("file", new File([png], `p${i}.png`, { type: "image/png" }));
+      const r = await req("POST", `/api/admin/vehicles/${vid}/images`, { cookie: adminCookie, form });
+      ids.push(r.body.id);
+    }
+    const reorder = await req("PATCH", `/api/admin/vehicles/${vid}/images`, {
+      cookie: adminCookie,
+      body: { order: [ids[2], ids[0], ids[1]], coverId: ids[2] },
+    });
+    expect(reorder.status).toBe(200);
+    const rows = db.prepare("SELECT id,sort_order,is_cover FROM vehicle_images WHERE vehicle_id=? ORDER BY sort_order").all(vid) as any[];
+    expect(rows.map((r) => r.id)).toEqual([ids[2], ids[0], ids[1]]);
+    expect(rows[0].is_cover).toBe(1);
   });
 });
 

@@ -1,0 +1,8 @@
+node_modules
+.next
+data
+public/uploads
+tests/tmp
+.git
+*.log
+.env

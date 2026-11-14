@@ -66,6 +66,67 @@ export async function POST(
   return NextResponse.json({ ok: true, id: imgId, url });
 }
 
+// Reorder photos and/or set the cover image.
+// Body: { order?: string[] /* image ids in desired order */, coverId?: string }
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const g = await adminGuard();
+  if (g instanceof NextResponse) return g;
+  const { id } = await params;
+  const body = (await req.json().catch(() => null)) as {
+    order?: string[];
+    coverId?: string;
+  } | null;
+  if (!body?.order && !body?.coverId)
+    return NextResponse.json({ error: "order or coverId required" }, { status: 400 });
+
+  const images = db
+    .select({ id: schema.vehicleImages.id })
+    .from(schema.vehicleImages)
+    .where(eq(schema.vehicleImages.vehicleId, id))
+    .all();
+  const owned = new Set(images.map((i) => i.id));
+
+  db.transaction((tx) => {
+    if (body.order) {
+      const seen = new Set<string>();
+      let pos = 0;
+      for (const imgId of body.order) {
+        if (!owned.has(imgId) || seen.has(imgId)) continue;
+        seen.add(imgId);
+        tx.update(schema.vehicleImages)
+          .set({ sortOrder: pos++ })
+          .where(eq(schema.vehicleImages.id, imgId))
+          .run();
+      }
+      // Unlisted ids keep relative order after the listed ones.
+      for (const img of images) {
+        if (seen.has(img.id)) continue;
+        tx.update(schema.vehicleImages)
+          .set({ sortOrder: pos++ })
+          .where(eq(schema.vehicleImages.id, img.id))
+          .run();
+      }
+    }
+    if (body.coverId) {
+      if (!owned.has(body.coverId))
+        throw new Error("coverId does not belong to this vehicle");
+      tx.update(schema.vehicleImages)
+        .set({ isCover: false })
+        .where(eq(schema.vehicleImages.vehicleId, id))
+        .run();
+      tx.update(schema.vehicleImages)
+        .set({ isCover: true })
+        .where(eq(schema.vehicleImages.id, body.coverId))
+        .run();
+    }
+    audit(g.user.id, "vehicle.image.reorder", "vehicle", id, null, body);
+  });
+  return NextResponse.json({ ok: true });
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
