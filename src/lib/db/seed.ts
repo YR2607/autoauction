@@ -122,7 +122,7 @@ function seed() {
         .values({
           id: uuid(),
           vehicleId: id,
-          url: `/seed-images/car-${String(imgIdx).padStart(2, "0")}.svg`,
+          url: `/seed-images/car-${String(imgIdx).padStart(2, "0")}.jpg`,
           sortOrder: k,
           isCover: k === 0,
           createdAt: now(),
