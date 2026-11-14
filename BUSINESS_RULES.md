@@ -9,7 +9,11 @@
    start price, increment, bids, buy-now.
 5. Default EUR increment €250; per-auction and per-currency defaults configurable.
 6. Buy Now reserves the vehicle **atomically**; on `AUCTION_BUY_NOW` it also
-   **closes the auction** and preserves bid history.
+   **closes the auction** and preserves bid history. **Buy Now is refused when
+   the auction's accepted current bid already meets or exceeds the fixed
+   price** (server-side `BUY_NOW_UNAVAILABLE`; UI also hides the button) and
+   when the auction and Buy Now currencies differ — combined listings are
+   validated to share one currency at auction creation.
 7. No payment gateway. Orders + manual payment status only.
 8. English UI, copy centralized (`src/lib/messages.ts` → future i18n).
 
@@ -35,9 +39,22 @@
 
 ## Rejection / approval
 
+- **One authoritative workflow for auction results:** `AUCTION_WIN` orders are
+  decided only through `approveResult`/`rejectResult` (`/admin/approvals`,
+  `POST /api/admin/auctions/:id`). Pending `AUCTION_WIN` orders are read-only
+  on `/admin/orders`. Generic `/api/admin/orders/:id` calls on `AUCTION_WIN`
+  orders **delegate** to the result workflow (approve) or are refused unless
+  an explicit `next` action is supplied (reject) — no path can leave an
+  auction `AWAITING_ADMIN_APPROVAL` while its order is decided.
 - Admin approve → order `APPROVED`, vehicle `SOLD`, auction `SOLD`, winner notified.
 - Admin reject → reason required + explicit next action:
-  `REOPEN` (new end time required) | `NEXT_BIDDER` | `UNSOLD`.
+  `REOPEN` (new end time required, admin-chosen duration — 24 h default)
+  | `NEXT_BIDDER` | `UNSOLD`.
+- `NEXT_BIDDER` excludes **every** previously rejected winner of that auction
+  and creates exactly one new pending order; no eligible bidder → `UNSOLD`.
+- Rejected Buy Now that had closed an auction requires the same explicit
+  choice in every admin UI: `REOPEN` (new end time) or `UNSOLD`; reopen is
+  refused if the vehicle was already sold via another order.
 - All decisions in `admin_audit_logs` + `auction_events`. Bid history immutable.
 
 ## Vehicle status ↔ auction consistency
