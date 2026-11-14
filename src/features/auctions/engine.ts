@@ -195,6 +195,14 @@ export function placeBid(input: PlaceBidInput): PlaceBidResult {
 
     if (input.userRole === "admin") return reject("forbidden_role");
     if (auction.status !== "LIVE") return reject("auction_not_live");
+    // Defense: a vehicle reserved by a pending Buy Now order (or otherwise
+    // not for sale) must not accept bids even if its auction reads LIVE.
+    const vehicle = tx
+      .select({ status: schema.vehicles.status })
+      .from(schema.vehicles)
+      .where(eq(schema.vehicles.id, auction.vehicleId))
+      .get();
+    if (!vehicle || vehicle.status !== "PUBLISHED") return reject("vehicle_unavailable");
     if (t >= auction.endsAt) return reject("auction_ended");
 
     const min = minNextBid(auction);
@@ -375,7 +383,13 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
 
 // ---------- scheduler / lifecycle ----------
 
-/** Promote due SCHEDULED auctions to LIVE. Returns count. */
+/**
+ * Promote due SCHEDULED auctions to LIVE. Returns count of activated auctions.
+ * Fail-closed: a scheduled auction whose vehicle is no longer PUBLISHED
+ * (e.g. reserved by a Buy Now order) or has a pending order is CANCELLED
+ * instead of going LIVE — deterministic, recorded in auction_events, and
+ * admins are notified for reconciliation. The vehicle is never released.
+ */
 export function activateDueAuctions(t = now()): number {
   return db.transaction((tx) => {
     const due = tx
@@ -383,8 +397,45 @@ export function activateDueAuctions(t = now()): number {
       .from(schema.auctions)
       .where(and(eq(schema.auctions.status, "SCHEDULED"), lte(schema.auctions.startsAt, t)))
       .all();
-    for (const a of due) transition(tx, a, "LIVE", null, "scheduled start");
-    return due.length;
+    let activated = 0;
+    for (const a of due) {
+      const vehicle = tx
+        .select({ status: schema.vehicles.status })
+        .from(schema.vehicles)
+        .where(eq(schema.vehicles.id, a.vehicleId))
+        .get();
+      const pendingOrder = tx
+        .select({ id: schema.orders.id })
+        .from(schema.orders)
+        .where(
+          and(
+            eq(schema.orders.vehicleId, a.vehicleId),
+            eq(schema.orders.status, "PENDING_APPROVAL"),
+          ),
+        )
+        .get();
+      if (!vehicle || vehicle.status !== "PUBLISHED" || pendingOrder) {
+        const why = pendingOrder
+          ? "pending order exists"
+          : `vehicle is ${vehicle?.status ?? "missing"}`;
+        transition(tx, a, "CANCELLED", null, `auto-cancelled at activation: ${why}`);
+        tx.update(schema.auctions)
+          .set({ cancelReason: `Auto-cancelled: ${why} at scheduled start`, updatedAt: t })
+          .where(eq(schema.auctions.id, a.id))
+          .run();
+        notifyAdmins(
+          tx,
+          "auction_auto_cancelled",
+          "Scheduled auction auto-cancelled",
+          `Auction for vehicle ${a.vehicleId} could not start: ${why}. Please reconcile manually.`,
+          { auctionId: a.id, vehicleId: a.vehicleId },
+        );
+        continue;
+      }
+      transition(tx, a, "LIVE", null, "scheduled start");
+      activated++;
+    }
+    return activated;
   });
 }
 

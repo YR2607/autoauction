@@ -61,6 +61,24 @@ export function createAuction(input: CreateAuctionInput): string {
       .where(eq(schema.vehicles.id, input.vehicleId))
       .get();
     if (!vehicle) throw new EngineError("NOT_FOUND", "Vehicle not found");
+    if (vehicle.status !== "PUBLISHED")
+      throw new EngineError(
+        "BAD_TRANSITION",
+        `Vehicle is ${vehicle.status} — only published vehicles can get an auction`,
+      );
+    const pendingBuyNow = tx
+      .select({ id: schema.orders.id })
+      .from(schema.orders)
+      .where(
+        and(
+          eq(schema.orders.vehicleId, vehicle.id),
+          eq(schema.orders.type, "BUY_NOW"),
+          eq(schema.orders.status, "PENDING_APPROVAL"),
+        ),
+      )
+      .get();
+    if (pendingBuyNow)
+      throw new EngineError("BAD_TRANSITION", "Vehicle has a pending Buy Now order");
     const existing = tx
       .select({ id: schema.auctions.id })
       .from(schema.auctions)
@@ -113,6 +131,32 @@ export function scheduleAuction(auctionId: string, adminId: string) {
   db.transaction((tx) => {
     const a = tx.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).get();
     if (!a) throw new EngineError("NOT_FOUND", "Auction not found");
+    // A vehicle reserved by a pending Buy Now order must never go on schedule:
+    // scheduling would let it become LIVE and accept bids while reserved.
+    const vehicle = tx
+      .select()
+      .from(schema.vehicles)
+      .where(eq(schema.vehicles.id, a.vehicleId))
+      .get();
+    if (!vehicle) throw new EngineError("NOT_FOUND", "Vehicle not found");
+    if (vehicle.status !== "PUBLISHED")
+      throw new EngineError(
+        "BAD_TRANSITION",
+        `Vehicle is ${vehicle.status} — cannot schedule its auction`,
+      );
+    const pendingBuyNow = tx
+      .select({ id: schema.orders.id })
+      .from(schema.orders)
+      .where(
+        and(
+          eq(schema.orders.vehicleId, vehicle.id),
+          eq(schema.orders.type, "BUY_NOW"),
+          eq(schema.orders.status, "PENDING_APPROVAL"),
+        ),
+      )
+      .get();
+    if (pendingBuyNow)
+      throw new EngineError("BAD_TRANSITION", "Vehicle has a pending Buy Now order — cannot schedule");
     const before = { status: a.status };
     transition(tx, a, "SCHEDULED", adminId);
     audit(tx, adminId, "auction.schedule", "auction", auctionId, before, { status: "SCHEDULED" });
@@ -125,6 +169,20 @@ export function cancelAuction(auctionId: string, adminId: string, reason: string
   db.transaction((tx) => {
     const a = tx.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).get();
     if (!a) throw new EngineError("NOT_FOUND", "Auction not found");
+    // Never cancel while a purchase decision is pending — the release below
+    // would otherwise make a reserved vehicle publicly available.
+    const pendingOrder = tx
+      .select({ id: schema.orders.id })
+      .from(schema.orders)
+      .where(
+        and(eq(schema.orders.vehicleId, a.vehicleId), eq(schema.orders.status, "PENDING_APPROVAL")),
+      )
+      .get();
+    if (pendingOrder)
+      throw new EngineError(
+        "BAD_TRANSITION",
+        "Cannot cancel while a pending order exists — decide the order first",
+      );
     const before = { status: a.status };
     transition(tx, a, "CANCELLED", adminId, reason);
     tx.update(schema.auctions)
