@@ -44,16 +44,28 @@ export default function OrdersPage() {
                 <Badge tone={tone[r.order.status]}>{r.order.status.replace(/_/g, " ")}</Badge>
               </div>
             </div>
-            {(r.order.status === "PENDING_APPROVAL" || r.order.status === "APPROVED") && (
-              <OrderActions
-                orderId={r.order.id}
-                approved={r.order.status === "APPROVED"}
-                endedByBuyNow={
-                  r.order.type === "BUY_NOW" &&
-                  r.auction?.status === "ENDED" &&
-                  r.auction?.closeReason === "buy_now"
-                }
-              />
+            {r.order.status === "PENDING_APPROVAL" && r.order.type === "AUCTION_WIN" ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-[14px] border border-warning/30 bg-warning/10 px-4 py-3 text-sm">
+                <span className="font-semibold text-[#92600a]">
+                  Auction result — review and decide in Auction Approvals. Order actions are
+                  disabled to keep auction/order states consistent.
+                </span>
+                <a href="/admin/approvals" className="font-bold text-primary hover:underline">
+                  Go to Approvals →
+                </a>
+              </div>
+            ) : (
+              (r.order.status === "PENDING_APPROVAL" || r.order.status === "APPROVED") && (
+                <OrderActions
+                  orderId={r.order.id}
+                  approved={r.order.status === "APPROVED"}
+                  endedByBuyNow={
+                    r.order.type === "BUY_NOW" &&
+                    r.auction?.status === "ENDED" &&
+                    r.auction?.closeReason === "buy_now"
+                  }
+                />
+              )
             )}
           </Card>
         ))}

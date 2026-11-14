@@ -12,6 +12,9 @@ const actionBody = z.discriminatedUnion("action", [
     // When the order's Buy Now ended an auction: reopen it (with a new
     // end time) or mark it unsold. Defaults to UNSOLD.
     auctionAction: z.enum(["REOPEN", "UNSOLD"]).optional(),
+    // AUCTION_WIN orders reject through the result workflow — same
+    // next-step choice as /api/admin/auctions/:id.
+    next: z.enum(["REOPEN", "NEXT_BIDDER", "UNSOLD"]).optional(),
     newEndsAt: z.number().int().positive().optional(),
   }),
   z.object({
@@ -36,6 +39,7 @@ export async function POST(
     else if (d.action === "reject")
       rejectOrder(id, g.user.id, d.reason, {
         auctionAction: d.auctionAction,
+        next: d.next,
         newEndsAt: d.newEndsAt,
       });
     else completeOrder(id, g.user.id, d.paymentStatus);

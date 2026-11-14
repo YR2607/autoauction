@@ -67,6 +67,18 @@ export function createAuction(input: CreateAuctionInput): string {
       .where(eq(schema.auctions.vehicleId, input.vehicleId))
       .get();
     if (existing) throw new EngineError("BAD_TRANSITION", "Vehicle already has an auction");
+    // Combined listings: bids and the fixed price must be in one currency,
+    // otherwise the "never sell below the current bid" rule is unenforceable.
+    if (
+      vehicle.saleType === "AUCTION_BUY_NOW" &&
+      vehicle.buyNowPrice != null &&
+      vehicle.buyNowCurrency != null &&
+      vehicle.buyNowCurrency !== input.currency
+    )
+      throw new EngineError(
+        "BAD_TRANSITION",
+        `Auction currency (${input.currency}) must match the Buy Now currency (${vehicle.buyNowCurrency})`,
+      );
 
     const t = now();
     tx.insert(schema.auctions)
@@ -297,9 +309,18 @@ export function rejectResult(
   bus().publish(auctionId, "status", { status: "updated" });
 }
 
-// ---------- order decisions (covers Buy Now requests too) ----------
+// ---------- order decisions (Buy Now purchase requests) ----------
+// AUCTION_WIN orders are NEVER decided here — they belong to the auction
+// result workflow (approveResult / rejectResult) so auction, order and
+// vehicle states can never diverge. Generic calls delegate there.
 
 export function approveOrder(orderId: string, adminId: string) {
+  const head = db.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
+  if (!head) throw new EngineError("NOT_FOUND", "Order not found");
+  if (head.type === "AUCTION_WIN") {
+    if (!head.auctionId) throw new EngineError("BAD_TRANSITION", "Auction order missing auction link");
+    return approveResult(head.auctionId, adminId);
+  }
   db.transaction((tx) => {
     const o = tx.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
     if (!o) throw new EngineError("NOT_FOUND", "Order not found");
@@ -342,9 +363,19 @@ export function rejectOrder(
   orderId: string,
   adminId: string,
   reason: string,
-  opts: { auctionAction?: OrderRejectAction; newEndsAt?: number } = {},
+  opts: { auctionAction?: OrderRejectAction; newEndsAt?: number; next?: RejectAction } = {},
 ) {
   if (!reason?.trim()) throw new EngineError("BAD_TRANSITION", "Reason required");
+  const head = db.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
+  if (!head) throw new EngineError("NOT_FOUND", "Order not found");
+  if (head.type === "AUCTION_WIN") {
+    // Delegate to the authoritative result workflow; requires the same
+    // explicit next-step choice as /admin/approvals.
+    if (!head.auctionId) throw new EngineError("BAD_TRANSITION", "Auction order missing auction link");
+    const next = opts.next;
+    if (!next) throw new EngineError("BAD_TRANSITION", "Auction result rejection requires next action");
+    return rejectResult(head.auctionId, adminId, reason, next, opts.newEndsAt);
+  }
   db.transaction((tx) => {
     const o = tx.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
     if (!o) throw new EngineError("NOT_FOUND", "Order not found");
