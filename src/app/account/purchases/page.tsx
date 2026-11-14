@@ -1,0 +1,71 @@
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/session";
+import { myOrders } from "@/features/account/queries";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty";
+import { formatMoney, type Currency } from "@/lib/currency";
+import Link from "next/link";
+import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "My Purchases" };
+
+const tone: Record<string, "success" | "live" | "warning" | "neutral"> = {
+  PENDING_APPROVAL: "warning",
+  APPROVED: "success",
+  COMPLETED: "success",
+  REJECTED: "live",
+  CANCELLED: "neutral",
+};
+
+export default async function PurchasesPage() {
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  const rows = myOrders(user.id);
+
+  return (
+    <div>
+      <h1 className="font-display text-2xl font-extrabold">My Purchases</h1>
+      {rows.length === 0 ? (
+        <EmptyState
+          className="mt-6"
+          title="No purchases yet"
+          body="Won auctions and Buy Now requests will appear here."
+          action={<Link href="/buy-now" className="rounded-full bg-graphite px-5 py-2.5 text-sm font-semibold text-white">Browse Buy Now</Link>}
+        />
+      ) : (
+        <Card className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-line bg-bg/60 text-left text-xs uppercase tracking-wide text-muted">
+                <th className="px-5 py-3 font-semibold">Vehicle</th>
+                <th className="px-5 py-3 font-semibold">Type</th>
+                <th className="px-5 py-3 font-semibold">Amount</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.order.id} className="border-b border-line/60 last:border-0">
+                  <td className="px-5 py-3.5">
+                    <Link href={`/vehicles/${r.vehicle.slug}`} className="font-bold hover:text-primary">
+                      {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
+                    </Link>
+                  </td>
+                  <td className="px-5 py-3.5">{r.order.type === "BUY_NOW" ? "Buy Now" : "Auction win"}</td>
+                  <td className="px-5 py-3.5 font-bold">{formatMoney(r.order.amount, r.order.currency as Currency)}</td>
+                  <td className="px-5 py-3.5">
+                    <Badge tone={tone[r.order.status] ?? "neutral"}>{r.order.status.replace(/_/g, " ")}</Badge>
+                  </td>
+                  <td className="px-5 py-3.5 text-muted">{new Date(r.order.createdAt).toLocaleDateString("en-GB")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </div>
+  );
+}
