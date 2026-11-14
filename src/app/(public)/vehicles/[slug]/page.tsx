@@ -130,7 +130,7 @@ export default async function VehiclePage({
         />
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-          {/* LEFT — ~65% */}
+          {/* MEDIA — ~65% on desktop, first on mobile */}
           <div className="min-w-0">
             <Gallery images={images.map((i) => i.url)} alt={`${title} ${v.year}`} />
 
@@ -147,7 +147,70 @@ export default async function VehiclePage({
                 ))}
               </div>
             )}
+          </div>
 
+          {/* ACTIONS — second on mobile, right column (sticky) on desktop */}
+          <div className="lg:col-start-2 lg:row-start-1 lg:row-end-3">
+            <div className="space-y-4 lg:sticky lg:top-20">
+              <Card className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h1 className="font-display text-2xl font-extrabold leading-tight">
+                      {title}
+                    </h1>
+                    <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+                      <span className="flex items-center gap-1">
+                        <Hash className="h-3.5 w-3.5" /> Lot {v.lotNumber}
+                      </span>
+                      {v.locationCity && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5" /> {v.locationCity},{" "}
+                          {v.locationCountry}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <FavoriteButton vehicleId={v.id} initial={isFav} isAuthed={!!user} />
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  <Badge tone={v.status === "PUBLISHED" ? "success" : "warning"}>
+                    {v.status}
+                  </Badge>
+                  {auctionVisible && <Badge tone="primary">Auction</Badge>}
+                  {showBuyNow && <Badge tone="dark">Buy Now</Badge>}
+                </div>
+              </Card>
+
+              {auctionVisible && (
+                <BidPanel
+                  auctionId={auction.id}
+                  initial={{
+                    ...publicAuctionState(auction),
+                    isLeading: !!user && auction.highestBidderId === user.id,
+                  }}
+                  isAuthed={!!user}
+                />
+              )}
+
+              {showBuyNow && (
+                <BuyNowButton
+                  vehicleId={v.id}
+                  price={v.buyNowPrice!}
+                  currency={(v.buyNowCurrency ?? "EUR") as Currency}
+                  isAuthed={!!user}
+                />
+              )}
+
+              {v.status === "RESERVED" && (
+                <p className="rounded-[14px] border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-semibold text-[#92600a]">
+                  This vehicle is currently reserved pending a purchase review.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* DETAILS — specs, condition, description, documents, bid history */}
+          <div className="min-w-0">
             <SpecSections v={v} vinShown={vinShown} />
             <ConditionCard v={v} />
 
@@ -183,7 +246,6 @@ export default async function VehiclePage({
               </Card>
             )}
 
-            {/* BID HISTORY */}
             {auction && bidHistory.length > 0 && (
               <Card className="mt-6 overflow-hidden">
                 <div className="border-b border-line px-6 py-4">
@@ -221,64 +283,6 @@ export default async function VehiclePage({
                   ))}
                 </ul>
               </Card>
-            )}
-          </div>
-
-          {/* RIGHT — ~35%, sticky on desktop */}
-          <div className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
-            <Card className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h1 className="font-display text-2xl font-extrabold leading-tight">
-                    {title}
-                  </h1>
-                  <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-                    <span className="flex items-center gap-1">
-                      <Hash className="h-3.5 w-3.5" /> Lot {v.lotNumber}
-                    </span>
-                    {v.locationCity && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" /> {v.locationCity},{" "}
-                        {v.locationCountry}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <FavoriteButton vehicleId={v.id} initial={isFav} isAuthed={!!user} />
-              </div>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                <Badge tone={v.status === "PUBLISHED" ? "success" : "warning"}>
-                  {v.status}
-                </Badge>
-                {auctionVisible && <Badge tone="primary">Auction</Badge>}
-                {showBuyNow && <Badge tone="dark">Buy Now</Badge>}
-              </div>
-            </Card>
-
-            {auctionVisible && (
-              <BidPanel
-                auctionId={auction.id}
-                initial={{
-                  ...publicAuctionState(auction),
-                  isLeading: !!user && auction.highestBidderId === user.id,
-                }}
-                isAuthed={!!user}
-              />
-            )}
-
-            {showBuyNow && (
-              <BuyNowButton
-                vehicleId={v.id}
-                price={v.buyNowPrice!}
-                currency={(v.buyNowCurrency ?? "EUR") as Currency}
-                isAuthed={!!user}
-              />
-            )}
-
-            {v.status === "RESERVED" && (
-              <p className="rounded-[14px] border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-semibold text-[#92600a]">
-                This vehicle is currently reserved pending a purchase review.
-              </p>
             )}
           </div>
         </div>
