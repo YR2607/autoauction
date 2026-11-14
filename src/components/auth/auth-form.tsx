@@ -82,8 +82,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           {err}
         </p>
       )}
-      <Button type="submit" className="w-full" size="lg" disabled={busy}>
-        {busy ? "Please wait…" : isReg ? "Create account" : "Sign in"}
+      <Button type="submit" className="w-full" size="lg" loading={busy}>
+        {isReg ? "Create account" : "Sign in"}
       </Button>
       <p className="text-center text-sm text-muted">
         {isReg ? (

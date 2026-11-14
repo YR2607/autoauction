@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/dialog";
 import { formatMoney, type Currency } from "@/lib/currency";
 import { Zap } from "lucide-react";
@@ -45,20 +46,27 @@ export function BuyNowButton({
     );
 
   return (
-    <div className="rounded-[14px] border border-line bg-ink p-5 text-white">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
-        Buy Now price
-      </p>
-      <p className="font-display text-[26px] font-extrabold leading-tight">
+    <div className="rounded-[14px] border border-line bg-white p-5">
+      <div className="flex items-baseline justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Buy Now price
+        </p>
+        <Badge tone="dark">Fixed price</Badge>
+      </div>
+      <p className="tnum font-display text-[26px] font-extrabold leading-tight">
         {formatMoney(price, currency)}
       </p>
       <Button
         className="mt-4 w-full"
         size="lg"
+        loading={busy}
         onClick={() => (isAuthed ? setConfirm(true) : (location.href = "/login"))}
       >
-        <Zap className="h-4 w-4" /> Buy Now
+        <Zap className="h-4 w-4" /> Buy Now — request purchase
       </Button>
+      <p className="mt-2.5 text-center text-xs text-muted">
+        Submits a purchase request — an administrator confirms the sale.
+      </p>
       {done && done !== "ok" && (
         <p className="mt-3 rounded-lg bg-error/20 px-3 py-2 text-sm font-semibold text-red-200">
           {done}

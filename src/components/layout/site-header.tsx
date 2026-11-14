@@ -2,11 +2,13 @@ import Link from "next/link";
 import { getSessionUser } from "@/lib/auth/session";
 import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
+import { NavLinks } from "./nav-links";
 
 const links = [
-  { href: "/vehicles", label: "Vehicles" },
+  { href: "/vehicles", label: "Cars" },
   { href: "/auctions", label: "Auctions" },
   { href: "/buy-now", label: "Buy Now" },
+  { href: "/#how-it-works", label: "How It Works" },
 ];
 
 export async function SiteHeader() {
@@ -14,7 +16,7 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line/60 bg-white/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2" aria-label="AutoAuction home">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-graphite text-sm font-black text-white">
             A
           </span>
@@ -23,17 +25,7 @@ export async function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-graphite/80 transition-colors hover:bg-graphite/5 hover:text-graphite"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        <NavLinks links={links} />
 
         <div className="hidden items-center gap-2 md:flex">
           {user ? (

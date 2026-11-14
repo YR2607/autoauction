@@ -3,9 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Countdown } from "./countdown";
 import { formatMoney, type Currency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Gavel, TrendingUp, AlertTriangle } from "lucide-react";
 
 type State = {
   id: string;
@@ -18,6 +17,20 @@ type State = {
   endsAt: number;
   minNextBid: number;
   serverTime: number;
+  isLeading?: boolean;
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  SCHEDULED: "Upcoming",
+  LIVE: "Live",
+  ENDED: "Ended",
+  AWAITING_ADMIN_APPROVAL: "Awaiting approval",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  SOLD: "Sold",
+  UNSOLD: "Unsold",
+  CANCELLED: "Cancelled",
+  DRAFT: "Draft",
 };
 
 export function BidPanel({
@@ -82,87 +95,158 @@ export function BidPanel({
   }
 
   const live = st.status === "LIVE";
-  const ended = !live;
+  const scheduled = st.status === "SCHEDULED";
+  const quick = [1, 2, 5].map(
+    (n) => st.minNextBid + st.bidIncrement * (n - 1),
+  );
 
   return (
-    <div className="rounded-[14px] border border-line bg-white p-5">
-      <div className="flex items-center justify-between">
-        {live ? <Badge tone="live" pulse>Live auction</Badge> : <Badge tone="neutral">{st.status}</Badge>}
-        <span className="text-xs font-semibold text-muted">{st.bidCount} bids</span>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            {st.currentBid != null ? "Current bid" : "Starting price"}
-          </p>
-          <p className="font-display text-[26px] font-extrabold leading-tight">
-            {formatMoney(st.currentBid ?? st.startingPrice, st.currency)}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            {live ? "Ends in" : "Ended"}
-          </p>
-          <Countdown
-            endsAt={st.endsAt}
-            serverDriftMs={drift.current}
-            className={`font-display text-xl font-extrabold ${live ? "text-error" : "text-muted"}`}
-          />
-        </div>
-      </div>
-
-      {live && (
-        <>
-          <p className="mt-3 text-sm text-muted">
-            Minimum next bid:{" "}
-            <b className="text-graphite">{formatMoney(st.minNextBid, st.currency)}</b>
-            {" · "}increment {formatMoney(st.bidIncrement, st.currency)}
-          </p>
-          <div className="mt-4 flex gap-2">
-            <div className="relative flex-1">
-              <Input
-                type="number"
-                min={st.minNextBid}
-                step={st.bidIncrement}
-                value={Math.floor(amount / 100)}
-                onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))}
-                aria-label="Bid amount"
-                className="pr-14"
-              />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted">
-                {st.currency}
+    <div className="overflow-hidden rounded-[14px] bg-graphite text-white shadow-card">
+      {/* header strip */}
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+        <span className="flex items-center gap-2">
+          {live ? (
+            <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-red-400">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-400" />
               </span>
-            </div>
-            <Button onClick={() => isAuthed ? setConfirm(true) : (location.href = "/login")}>
-              Place bid
-            </Button>
+              Live auction
+            </span>
+          ) : (
+            <span className="text-[11px] font-bold uppercase tracking-wide text-white/50">
+              {STATUS_LABELS[st.status] ?? st.status}
+            </span>
+          )}
+        </span>
+        <span className="text-xs font-semibold text-white/50">
+          {st.bidCount} bid{st.bidCount === 1 ? "" : "s"}
+        </span>
+      </div>
+
+      <div className="p-5">
+        <div className="grid grid-cols-2 items-end gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/45">
+              {st.currentBid != null ? "Current bid" : "Starting price"}
+            </p>
+            <p className="tnum mt-0.5 font-display text-[28px] font-extrabold leading-none">
+              {formatMoney(st.currentBid ?? st.startingPrice, st.currency)}
+            </p>
           </div>
-          <button
-            className="mt-2 text-xs font-semibold text-primary hover:underline"
-            onClick={() => setAmount(st.minNextBid)}
+          <div className="text-right">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/45">
+              {live ? "Ends in" : scheduled ? "Ended in" : "Ended"}
+            </p>
+            <Countdown
+              endsAt={st.endsAt}
+              serverDriftMs={drift.current}
+              className={`tnum font-display text-xl font-extrabold ${live ? "text-amber-300" : "text-white/40"}`}
+            />
+          </div>
+        </div>
+
+        {/* leading / outbid */}
+        {isAuthed && st.isLeading != null && (live || st.bidCount > 0) && (
+          <p
+            className={`mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-bold ${
+              st.isLeading
+                ? "bg-success/15 text-emerald-300"
+                : "bg-amber-400/15 text-amber-300"
+            }`}
+            role="status"
           >
-            Set to minimum
-          </button>
-        </>
-      )}
+            {st.isLeading ? (
+              <><TrendingUp className="h-4 w-4" /> You're leading this auction</>
+            ) : (
+              <><AlertTriangle className="h-4 w-4" /> You've been outbid</>
+            )}
+          </p>
+        )}
 
-      {msg && (
-        <p
-          className={`mt-3 rounded-lg px-3 py-2 text-sm font-semibold ${
-            msg.ok ? "bg-success/10 text-success" : "bg-error/10 text-error"
-          }`}
-          role="status"
-        >
-          {msg.text}
-        </p>
-      )}
+        {live && (
+          <div className="mt-5">
+            <p className="text-sm text-white/60">
+              Minimum next bid{" "}
+              <b className="tnum text-white">
+                {formatMoney(st.minNextBid, st.currency)}
+              </b>
+            </p>
 
-      {ended && (
-        <p className="mt-4 rounded-lg bg-graphite/5 px-3 py-2 text-sm font-semibold text-muted">
-          This auction is no longer accepting bids.
-        </p>
-      )}
+            {/* quick amounts */}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {quick.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setAmount(v)}
+                  className={`tnum rounded-lg border px-2 py-2 text-[13px] font-bold transition-colors ${
+                    amount === v
+                      ? "border-primary bg-primary text-white"
+                      : "border-white/15 bg-white/5 text-white/80 hover:border-white/40 hover:text-white"
+                  }`}
+                >
+                  {formatMoney(v, st.currency)}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-2 flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  min={Math.floor(st.minNextBid / 100)}
+                  step={Math.max(1, Math.floor(st.bidIncrement / 100))}
+                  value={Math.floor(amount / 100)}
+                  onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))}
+                  aria-label={`Bid amount in ${st.currency}`}
+                  className="tnum h-11 w-full rounded-lg border border-white/15 bg-white/5 px-4 pr-14 text-sm font-bold text-white outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-white/40">
+                  {st.currency}
+                </span>
+              </div>
+              <Button
+                size="lg"
+                loading={busy}
+                onClick={() =>
+                  isAuthed ? setConfirm(true) : (location.href = "/login")
+                }
+              >
+                <Gavel className="h-4 w-4" />
+                {isAuthed ? "Place bid" : "Sign in to bid"}
+              </Button>
+            </div>
+            <button
+              className="mt-2 text-xs font-semibold text-white/50 transition-colors hover:text-white"
+              onClick={() => setAmount(st.minNextBid)}
+            >
+              Reset to minimum
+            </button>
+          </div>
+        )}
+
+        {scheduled && (
+          <p className="mt-4 rounded-lg bg-white/5 px-3 py-2.5 text-sm font-semibold text-white/60">
+            Bidding opens when the auction goes live.
+          </p>
+        )}
+        {!live && !scheduled && (
+          <p className="mt-4 rounded-lg bg-white/5 px-3 py-2.5 text-sm font-semibold text-white/60">
+            This auction is no longer accepting bids.
+          </p>
+        )}
+
+        {msg && (
+          <p
+            className={`mt-3 rounded-lg px-3 py-2 text-sm font-semibold ${
+              msg.ok ? "bg-success/15 text-emerald-300" : "bg-error/20 text-red-300"
+            }`}
+            role="alert"
+          >
+            {msg.text}
+          </p>
+        )}
+      </div>
 
       <ConfirmModal
         open={confirm}

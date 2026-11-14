@@ -18,7 +18,7 @@ export function MobileNav({
         className="rounded-lg p-2 hover:bg-graphite/5"
         onClick={() => setOpen(!open)}
       >
-        {open ? <Menu className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
       {open && (
         <div className="absolute inset-x-0 top-16 border-b border-line bg-white p-4 shadow-lg">
