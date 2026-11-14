@@ -67,12 +67,15 @@ export async function makeVehicle(opts: Partial<{
 }
 
 export async function makeAuction(vehicleId: string, opts: Partial<{
-  status: "DRAFT" | "SCHEDULED" | "LIVE" | "ENDED";
+  status: "DRAFT" | "SCHEDULED" | "LIVE" | "ENDED" | "AWAITING_ADMIN_APPROVAL"
+    | "APPROVED" | "REJECTED" | "SOLD" | "UNSOLD" | "CANCELLED";
   startsAt: number;
   endsAt: number;
   startingPrice: number;
   bidIncrement: number;
   currency: "USD" | "EUR" | "GBP";
+  currentBid: number | null;
+  closeReason: "expired" | "buy_now" | null;
   extensionWindowSec: number | null;
   extensionDurationSec: number | null;
 }> = {}) {
@@ -87,6 +90,8 @@ export async function makeAuction(vehicleId: string, opts: Partial<{
       currency: opts.currency ?? "EUR",
       startingPrice: opts.startingPrice ?? 10000_00,
       bidIncrement: opts.bidIncrement ?? 250_00,
+      currentBid: opts.currentBid ?? null,
+      closeReason: opts.closeReason ?? null,
       startsAt: opts.startsAt ?? now - 3600_000,
       endsAt: opts.endsAt ?? now + 3600_000,
       extensionWindowSec: opts.extensionWindowSec ?? 0,

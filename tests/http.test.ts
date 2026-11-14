@@ -505,6 +505,22 @@ describe("HTTP / admin approval workflow", () => {
     expect(row.ends_at).toBe(newEnd);
     expect(row.close_reason).toBeNull();
   });
+
+  it("buy-now rejection without an explicit auctionAction is a 400", async () => {
+    const vid = insertVehicle("AUCTION_BUY_NOW", "RESERVED", 40000_00);
+    const aid = insertAuction(vid, now() - 1000, { status: "ENDED", closeReason: "buy_now" });
+    const oid = insertOrder(vid, buyerId(), "BUY_NOW", aid);
+
+    const r = await req("POST", `/api/admin/orders/${oid}`, {
+      cookie: adminCookie,
+      body: { action: "reject", reason: "no recovery choice given" },
+    });
+    expect(r.status).toBe(400);
+    expect(r.body.error).toMatch(/auctionAction/i);
+    // nothing changed — no silent UNSOLD default
+    expect(db.prepare("SELECT status FROM auctions WHERE id=?").pluck().get(aid)).toBe("ENDED");
+    expect(db.prepare("SELECT status FROM orders WHERE id=?").pluck().get(oid)).toBe("PENDING_APPROVAL");
+  });
 });
 
 describe("HTTP / rate limiting", () => {
