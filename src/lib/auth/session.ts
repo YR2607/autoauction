@@ -29,6 +29,20 @@ export function destroySession(token: string) {
   db.delete(schema.sessions).where(eq(schema.sessions.id, hashToken(token))).run();
 }
 
+/** Revoke every session of a user — optionally keeping the current one. */
+export function destroyUserSessions(userId: string, keepToken?: string) {
+  const keep = keepToken ? hashToken(keepToken) : null;
+  const rows = db
+    .select({ id: schema.sessions.id })
+    .from(schema.sessions)
+    .where(eq(schema.sessions.userId, userId))
+    .all();
+  for (const r of rows) {
+    if (r.id === keep) continue;
+    db.delete(schema.sessions).where(eq(schema.sessions.id, r.id)).run();
+  }
+}
+
 export type SessionUser = {
   id: string;
   email: string;

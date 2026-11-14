@@ -19,6 +19,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid input." }, { status: 400 });
 
   const email = parsed.data.email.toLowerCase();
+  // Per-account limit on top of the per-IP one — slows distributed attacks
+  // targeting a single account from many addresses.
+  if (!rateLimit(`auth:email:${email}`, 10)) {
+    return NextResponse.json({ error: "Too many attempts. Try later." }, { status: 429 });
+  }
   const user = db.select().from(schema.users).where(eq(schema.users.email, email)).get();
   if (!user || !verifyPassword(parsed.data.password, user.passwordHash)) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSessionUser } from "@/lib/auth/session";
+import { getSessionUser, destroyUserSessions, SESSION_COOKIE } from "@/lib/auth/session";
 import { db, schema } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { eq } from "drizzle-orm";
@@ -25,5 +25,8 @@ export async function POST(req: NextRequest) {
     .set({ passwordHash: hashPassword(parsed.data.newPassword), updatedAt: Date.now() })
     .where(eq(schema.users.id, user.id))
     .run();
+  // Password changed → revoke all other sessions (keep the current one).
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  destroyUserSessions(user.id, token);
   return NextResponse.json({ ok: true });
 }

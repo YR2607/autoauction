@@ -5,14 +5,8 @@ import path from "node:path";
 import { adminGuard, audit } from "@/lib/api";
 import { db, schema } from "@/lib/db";
 import { getSetting } from "@/lib/settings";
+import { sniffImage } from "@/lib/media";
 import { eq, sql } from "drizzle-orm";
-
-const ALLOWED = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-  ["image/avif", "avif"],
-]);
 
 export async function POST(
   req: NextRequest,
@@ -21,6 +15,8 @@ export async function POST(
   const g = await adminGuard();
   if (g instanceof NextResponse) return g;
   const { id } = await params;
+  if (!/^[a-z0-9-]+$/i.test(id))
+    return NextResponse.json({ error: "Invalid vehicle id" }, { status: 400 });
 
   const vehicle = db.select().from(schema.vehicles).where(eq(schema.vehicles.id, id)).get();
   if (!vehicle) return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
@@ -30,11 +26,16 @@ export async function POST(
   if (!(file instanceof File))
     return NextResponse.json({ error: "file required" }, { status: 400 });
 
-  const ext = ALLOWED.get(file.type);
-  if (!ext) return NextResponse.json({ error: "Only JPEG/PNG/WebP/AVIF allowed" }, { status: 400 });
   const maxBytes = getSetting<number>("media.maxUploadBytes") ?? 10_485_760;
   if (file.size > maxBytes)
     return NextResponse.json({ error: "File too large" }, { status: 400 });
+
+  // Validate content, not the declared Content-Type — a spoofed MIME would
+  // otherwise let HTML/SVG be stored and served under a .png name.
+  const buf = Buffer.from(await file.arrayBuffer());
+  const ext = sniffImage(buf);
+  if (!ext)
+    return NextResponse.json({ error: "Only JPEG/PNG/WebP/AVIF images allowed" }, { status: 400 });
 
   const count = db
     .select({ c: sql<number>`count(*)` })
@@ -47,7 +48,7 @@ export async function POST(
   const dir = path.join(process.cwd(), "public", "uploads", "vehicles", id);
   fs.mkdirSync(dir, { recursive: true });
   const name = `${randomUUID()}.${ext}`;
-  fs.writeFileSync(path.join(dir, name), Buffer.from(await file.arrayBuffer()));
+  fs.writeFileSync(path.join(dir, name), buf);
 
   const url = `/uploads/vehicles/${id}/${name}`;
   const imgId = randomUUID();

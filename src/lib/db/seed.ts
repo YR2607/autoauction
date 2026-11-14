@@ -188,4 +188,10 @@ function seed() {
   sqlite.close();
 }
 
+// Development seed data must never land in a production database.
+if (process.env.NODE_ENV === "production" && !process.env.ALLOW_DEV_SEED) {
+  console.error("Refusing to run development seed in production. Set ALLOW_DEV_SEED=1 to override.");
+  process.exit(1);
+}
+
 seed();

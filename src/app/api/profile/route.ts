@@ -13,6 +13,22 @@ const body = z.object({
   country: z.string().max(100).optional(),
 });
 
+export async function GET() {
+  const user = await getSessionUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const profile = db
+    .select()
+    .from(schema.userProfiles)
+    .where(eq(schema.userProfiles.userId, user.id))
+    .get();
+  return NextResponse.json({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    profile: profile ?? null,
+  });
+}
+
 export async function PUT(req: NextRequest) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
