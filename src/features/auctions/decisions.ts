@@ -143,7 +143,7 @@ export function cancelAuction(auctionId: string, adminId: string, reason: string
 
 // ---------- result approval ----------
 
-export function approveResult(auctionId: string, adminId: string) {
+export function approveResult(auctionId: string, adminId: string, expectedOrderId?: string) {
   const orderId = db.transaction((tx) => {
     const a = tx.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).get();
     if (!a) throw new EngineError("NOT_FOUND", "Auction not found");
@@ -158,6 +158,10 @@ export function approveResult(auctionId: string, adminId: string) {
       )
       .get();
     if (!order) throw new EngineError("NO_ACTIVE_ORDER", "Pending order not found");
+    // Stale-request guard: the caller addressed a specific order; refuse to
+    // decide a different one that appeared since (e.g. a NEXT_BIDDER order).
+    if (expectedOrderId && order.id !== expectedOrderId)
+      throw new EngineError("BAD_TRANSITION", "Pending order changed — refresh and retry");
 
     const t = now();
     transition(tx, a, "APPROVED", adminId);
@@ -189,6 +193,7 @@ export function rejectResult(
   reason: string,
   action: RejectAction,
   newEndsAt?: number,
+  expectedOrderId?: string,
 ) {
   if (!reason?.trim()) throw new EngineError("BAD_TRANSITION", "Reject reason required");
   db.transaction((tx) => {
@@ -205,6 +210,9 @@ export function rejectResult(
       )
       .get();
     if (!order) throw new EngineError("NO_ACTIVE_ORDER", "Pending order not found");
+    // Stale-request guard — see approveResult.
+    if (expectedOrderId && order.id !== expectedOrderId)
+      throw new EngineError("BAD_TRANSITION", "Pending order changed — refresh and retry");
 
     const t = now();
     transition(tx, a, "REJECTED", adminId, reason);
@@ -317,9 +325,11 @@ export function rejectResult(
 export function approveOrder(orderId: string, adminId: string) {
   const head = db.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
   if (!head) throw new EngineError("NOT_FOUND", "Order not found");
+  if (head.status !== "PENDING_APPROVAL")
+    throw new EngineError("BAD_TRANSITION", "Order not pending");
   if (head.type === "AUCTION_WIN") {
     if (!head.auctionId) throw new EngineError("BAD_TRANSITION", "Auction order missing auction link");
-    return approveResult(head.auctionId, adminId);
+    return approveResult(head.auctionId, adminId, head.id);
   }
   db.transaction((tx) => {
     const o = tx.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
@@ -368,13 +378,15 @@ export function rejectOrder(
   if (!reason?.trim()) throw new EngineError("BAD_TRANSITION", "Reason required");
   const head = db.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
   if (!head) throw new EngineError("NOT_FOUND", "Order not found");
+  if (head.status !== "PENDING_APPROVAL")
+    throw new EngineError("BAD_TRANSITION", "Order not pending");
   if (head.type === "AUCTION_WIN") {
     // Delegate to the authoritative result workflow; requires the same
     // explicit next-step choice as /admin/approvals.
     if (!head.auctionId) throw new EngineError("BAD_TRANSITION", "Auction order missing auction link");
     const next = opts.next;
     if (!next) throw new EngineError("BAD_TRANSITION", "Auction result rejection requires next action");
-    return rejectResult(head.auctionId, adminId, reason, next, opts.newEndsAt);
+    return rejectResult(head.auctionId, adminId, reason, next, opts.newEndsAt, head.id);
   }
   db.transaction((tx) => {
     const o = tx.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
@@ -399,7 +411,15 @@ export function rejectOrder(
       : null;
     let auctionAction: OrderRejectAction | null = null;
     if (a && a.status === "ENDED" && a.closeReason === "buy_now") {
-      auctionAction = opts.auctionAction ?? "UNSOLD";
+      // The admin must explicitly decide the auction's fate — no silent
+      // default. The frontend always sends one; a raw API call without it
+      // is a validation error.
+      if (!opts.auctionAction)
+        throw new EngineError(
+          "BAD_TRANSITION",
+          "Rejecting this Buy Now request requires auctionAction: REOPEN or UNSOLD",
+        );
+      auctionAction = opts.auctionAction;
       if (auctionAction === "REOPEN") {
         // Never reopen a vehicle that is already sold through another order.
         const soldOrder = tx
