@@ -1,0 +1,1 @@
+ALTER TABLE `auctions` ADD `close_reason` text;

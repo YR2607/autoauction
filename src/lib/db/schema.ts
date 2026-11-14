@@ -221,6 +221,9 @@ export const auctions = sqliteTable(
     winnerUserId: text("winner_user_id").references(() => users.id),
     winningBidId: text("winning_bid_id"),
     finalizedAt: integer("finalized_at"),
+    // Why the auction left LIVE/SCHEDULED: "expired" (scheduler) or
+    // "buy_now" (purchase). Needed for the rejection-recovery model.
+    closeReason: text("close_reason", { enum: ["expired", "buy_now"] }),
     cancelReason: text("cancel_reason"),
     version: integer("version").notNull().default(0),
     createdAt: integer("created_at").notNull(),

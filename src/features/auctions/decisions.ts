@@ -1,7 +1,7 @@
 // Admin decisions on auction results + auction CRUD transitions.
 // Every decision writes admin_audit_logs + auction_events — append-only.
 import { randomUUID } from "node:crypto";
-import { eq, and, ne, desc, asc } from "drizzle-orm";
+import { eq, and, notInArray, inArray, desc, asc } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import type { Db } from "@/lib/db";
 import { bus } from "@/lib/realtime/bus";
@@ -205,6 +205,7 @@ export function rejectResult(
 
     if (action === "REOPEN") {
       const ends = newEndsAt ?? t + 24 * 3600 * 1000;
+      if (ends <= t) throw new EngineError("BAD_TRANSITION", "newEndsAt must be in the future");
       transition(tx, a, "LIVE", adminId, `reopened after rejection`);
       tx.update(schema.auctions)
         .set({ endsAt: ends, winnerUserId: null, winningBidId: null, updatedAt: t })
@@ -215,6 +216,21 @@ export function rejectResult(
         .where(eq(schema.vehicles.id, a.vehicleId))
         .run();
     } else if (action === "NEXT_BIDDER") {
+      // Exclude EVERY buyer whose order on this auction was already rejected —
+      // not just the one being rejected now — so a rejected winner is never
+      // offered the lot again.
+      const excluded = tx
+        .select({ buyerId: schema.orders.buyerId })
+        .from(schema.orders)
+        .where(
+          and(
+            eq(schema.orders.auctionId, a.id),
+            eq(schema.orders.status, "REJECTED"),
+          ),
+        )
+        .all()
+        .map((r) => r.buyerId);
+      excluded.push(order.buyerId);
       const next = tx
         .select()
         .from(schema.bids)
@@ -222,7 +238,7 @@ export function rejectResult(
           and(
             eq(schema.bids.auctionId, a.id),
             eq(schema.bids.status, "ACCEPTED"),
-            ne(schema.bids.userId, order.buyerId),
+            notInArray(schema.bids.userId, excluded),
           ),
         )
         .orderBy(desc(schema.bids.amount), asc(schema.bids.createdAt))
@@ -312,7 +328,22 @@ export function approveOrder(orderId: string, adminId: string) {
   });
 }
 
-export function rejectOrder(orderId: string, adminId: string, reason: string) {
+export type OrderRejectAction = "REOPEN" | "UNSOLD";
+
+/**
+ * Reject a pending order. If the order's Buy Now purchase ended an auction
+ * (closeReason = "buy_now"), the administrator must pick a recovery action:
+ *  - REOPEN: auction goes back to LIVE with a new future endsAt (bid history
+ *    fully preserved; default +24h when newEndsAt is omitted)
+ *  - UNSOLD: auction marked UNSOLD (default)
+ * Reopening is refused if the vehicle is already sold via another order.
+ */
+export function rejectOrder(
+  orderId: string,
+  adminId: string,
+  reason: string,
+  opts: { auctionAction?: OrderRejectAction; newEndsAt?: number } = {},
+) {
   if (!reason?.trim()) throw new EngineError("BAD_TRANSITION", "Reason required");
   db.transaction((tx) => {
     const o = tx.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
@@ -330,7 +361,46 @@ export function rejectOrder(orderId: string, adminId: string, reason: string) {
       .run();
     notify(tx, o.buyerId, "purchase_rejected", "Purchase request rejected",
       reason, { orderId });
-    audit(tx, adminId, "order.reject", "order", orderId, { status: "PENDING_APPROVAL" }, { status: "REJECTED" }, reason);
+
+    // Auction recovery when a rejected Buy Now had ended it.
+    const a = o.auctionId
+      ? tx.select().from(schema.auctions).where(eq(schema.auctions.id, o.auctionId)).get()
+      : null;
+    let auctionAction: OrderRejectAction | null = null;
+    if (a && a.status === "ENDED" && a.closeReason === "buy_now") {
+      auctionAction = opts.auctionAction ?? "UNSOLD";
+      if (auctionAction === "REOPEN") {
+        // Never reopen a vehicle that is already sold through another order.
+        const soldOrder = tx
+          .select({ id: schema.orders.id })
+          .from(schema.orders)
+          .where(
+            and(
+              eq(schema.orders.vehicleId, o.vehicleId),
+              notInArray(schema.orders.id, [o.id]),
+              inArray(schema.orders.status, ["APPROVED", "COMPLETED"]),
+            ),
+          )
+          .get();
+        if (soldOrder)
+          throw new EngineError("BAD_TRANSITION", "Vehicle already sold — cannot reopen auction");
+        const ends = opts.newEndsAt ?? t + 24 * 3600 * 1000;
+        if (ends <= t)
+          throw new EngineError("BAD_TRANSITION", "newEndsAt must be in the future");
+        transition(tx, a, "LIVE", adminId, "reopened after buy-now rejection");
+        tx.update(schema.auctions)
+          .set({ endsAt: ends, finalizedAt: null, closeReason: null, updatedAt: t })
+          .where(eq(schema.auctions.id, a.id))
+          .run();
+      } else {
+        transition(tx, a, "UNSOLD", adminId, "buy-now order rejected");
+      }
+    }
+
+    audit(tx, adminId, "order.reject", "order", orderId,
+      { status: "PENDING_APPROVAL" },
+      { status: "REJECTED", auctionAction },
+      reason);
   });
 }
 

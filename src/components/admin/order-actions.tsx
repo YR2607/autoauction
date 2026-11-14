@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { ConfirmModal, Modal } from "@/components/ui/dialog";
 
-export function OrderActions({ orderId, approved }: { orderId: string; approved?: boolean }) {
+export function OrderActions({
+  orderId,
+  approved,
+  endedByBuyNow,
+}: {
+  orderId: string;
+  approved?: boolean;
+  /** true when this Buy Now order ended an auction — rejection must choose a recovery path */
+  endedByBuyNow?: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -13,6 +22,7 @@ export function OrderActions({ orderId, approved }: { orderId: string; approved?
   const [rejectOpen, setRejectOpen] = useState(false);
   const [completeOpen, setCompleteOpen] = useState(false);
   const [reason, setReason] = useState("");
+  const [auctionAction, setAuctionAction] = useState<"REOPEN" | "UNSOLD">("REOPEN");
 
   async function call(body: Record<string, unknown>) {
     setBusy(true);
@@ -56,7 +66,17 @@ export function OrderActions({ orderId, approved }: { orderId: string; approved?
         footer={
           <>
             <Button variant="outline" onClick={() => setRejectOpen(false)}>Back</Button>
-            <Button variant="danger" disabled={busy || reason.trim().length < 3} onClick={() => call({ action: "reject", reason })}>
+            <Button
+              variant="danger"
+              disabled={busy || reason.trim().length < 3}
+              onClick={() =>
+                call({
+                  action: "reject",
+                  reason,
+                  ...(endedByBuyNow ? { auctionAction } : {}),
+                })
+              }
+            >
               Reject
             </Button>
           </>
@@ -65,6 +85,35 @@ export function OrderActions({ orderId, approved }: { orderId: string; approved?
         <Label>Reason (required)</Label>
         <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason…" />
         <p className="mt-2 text-xs">The vehicle will return to published status.</p>
+        {endedByBuyNow && (
+          <div className="mt-3 rounded-lg border border-line bg-surface p-3">
+            <Label>This Buy Now request ended an auction — choose recovery</Label>
+            <div className="mt-2 space-y-1.5 text-sm">
+              <label className="flex items-start gap-2">
+                <input
+                  type="radio"
+                  name={`auctionAction-${orderId}`}
+                  checked={auctionAction === "REOPEN"}
+                  onChange={() => setAuctionAction("REOPEN")}
+                />
+                <span>
+                  <b>Reopen auction</b> — resumes LIVE for 24h with all previous bids kept.
+                </span>
+              </label>
+              <label className="flex items-start gap-2">
+                <input
+                  type="radio"
+                  name={`auctionAction-${orderId}`}
+                  checked={auctionAction === "UNSOLD"}
+                  onChange={() => setAuctionAction("UNSOLD")}
+                />
+                <span>
+                  <b>Mark unsold</b> — closes the auction permanently; vehicle goes back on sale.
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <ConfirmModal open={completeOpen} onClose={() => setCompleteOpen(false)} onConfirm={() => call({ action: "complete", paymentStatus: "paid" })} title="Complete order" confirmLabel="Complete" busy={busy}>

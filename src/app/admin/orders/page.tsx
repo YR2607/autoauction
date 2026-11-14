@@ -45,7 +45,15 @@ export default function OrdersPage() {
               </div>
             </div>
             {(r.order.status === "PENDING_APPROVAL" || r.order.status === "APPROVED") && (
-              <OrderActions orderId={r.order.id} approved={r.order.status === "APPROVED"} />
+              <OrderActions
+                orderId={r.order.id}
+                approved={r.order.status === "APPROVED"}
+                endedByBuyNow={
+                  r.order.type === "BUY_NOW" &&
+                  r.auction?.status === "ENDED" &&
+                  r.auction?.closeReason === "buy_now"
+                }
+              />
             )}
           </Card>
         ))}

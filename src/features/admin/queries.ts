@@ -65,10 +65,16 @@ export function pendingOrderRows() {
 
 export function allOrders() {
   return db
-    .select({ order: schema.orders, vehicle: schema.vehicles, buyer: schema.users })
+    .select({
+      order: schema.orders,
+      vehicle: schema.vehicles,
+      buyer: schema.users,
+      auction: schema.auctions,
+    })
     .from(schema.orders)
     .innerJoin(schema.vehicles, eq(schema.vehicles.id, schema.orders.vehicleId))
     .innerJoin(schema.users, eq(schema.users.id, schema.orders.buyerId))
+    .leftJoin(schema.auctions, eq(schema.auctions.id, schema.orders.auctionId))
     .orderBy(desc(schema.orders.createdAt))
     .limit(300)
     .all();

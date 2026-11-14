@@ -15,6 +15,13 @@
       "when": 1794685446006,
       "tag": "0001_fancy_black_panther",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794688034064,
+      "tag": "0002_exotic_invaders",
+      "breakpoints": true
     }
   ]
 }

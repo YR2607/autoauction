@@ -57,7 +57,9 @@ function recordEvent(
 
 const ALLOWED: Record<AuctionStatus, AuctionStatus[]> = {
   DRAFT: ["SCHEDULED", "CANCELLED"],
-  SCHEDULED: ["LIVE", "CANCELLED"],
+  // SCHEDULED → ENDED happens only via an explicit terminal action that
+  // bypasses the live phase (e.g. Buy Now before the auction starts).
+  SCHEDULED: ["LIVE", "ENDED", "CANCELLED"],
   LIVE: ["ENDED", "CANCELLED"],
   ENDED: ["AWAITING_ADMIN_APPROVAL", "UNSOLD", "LIVE"], // LIVE = admin reopen
   AWAITING_ADMIN_APPROVAL: ["APPROVED", "REJECTED", "SOLD"],
@@ -305,7 +307,7 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
     if (auction && (auction.status === "LIVE" || auction.status === "SCHEDULED")) {
       transition(tx, auction, "ENDED", input.userId, "buy-now purchase");
       tx.update(schema.auctions)
-        .set({ finalizedAt: t })
+        .set({ finalizedAt: t, closeReason: "buy_now" })
         .where(eq(schema.auctions.id, auction.id))
         .run();
     }
@@ -376,6 +378,10 @@ export function finalizeDueAuctions(t = now()): string[] {
 
     for (const a of expired) {
       transition(tx, a, "ENDED", null, "auction expired");
+      tx.update(schema.auctions)
+        .set({ closeReason: "expired" })
+        .where(eq(schema.auctions.id, a.id))
+        .run();
       const top = tx
         .select()
         .from(schema.bids)
