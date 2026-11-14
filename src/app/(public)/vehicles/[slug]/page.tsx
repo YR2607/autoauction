@@ -73,16 +73,17 @@ export default async function VehiclePage({
         ? `•••••••••••••${v.vin.slice(-4)}`
         : "Hidden";
 
+  // Mirrors the server-side allowlist in buyNow(): purchasable states only,
+  // same currency, fixed price strictly above any accepted bid.
+  const buyNowAllowedStates = ["DRAFT", "SCHEDULED", "LIVE", "UNSOLD", "CANCELLED"];
   const showBuyNow =
     (v.saleType === "BUY_NOW" || v.saleType === "AUCTION_BUY_NOW") &&
     v.buyNowPrice != null &&
     v.status === "PUBLISHED" &&
-    (!auction || auction.status !== "SOLD") &&
-    // Never offer a fixed price below the bid already accepted.
     (!auction ||
-      auction.currentBid == null ||
-      auction.currency !== v.buyNowCurrency ||
-      auction.currentBid < v.buyNowPrice);
+      (buyNowAllowedStates.includes(auction.status) &&
+        auction.currency === v.buyNowCurrency &&
+        (auction.currentBid == null || auction.currentBid < v.buyNowPrice)));
 
   return (
     <>

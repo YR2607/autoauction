@@ -298,17 +298,21 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
     )
       throw new EngineError("BUY_NOW_UNAVAILABLE", "Buy Now not available");
 
-    // Atomically close a running/scheduled auction on this vehicle.
+    // Any auction record on this vehicle constrains the purchase — not just
+    // live ones. Rules applied regardless of the auction's state:
+    //   - currencies must match (comparison is otherwise meaningless);
+    //   - no Buy Now below a bid that was already accepted — including a
+    //     historical bid on an UNSOLD/CANCELLED auction.
+    // State allowlist: SCHEDULED/LIVE are atomically closed; DRAFT/UNSOLD/
+    // CANCELLED leave the auction untouched; ENDED/AWAITING/APPROVED/
+    // REJECTED/SOLD mean a resolution is in flight or done — never
+    // silently purchasable.
     const auction = tx
       .select()
       .from(schema.auctions)
       .where(eq(schema.auctions.vehicleId, vehicle.id))
       .get();
-    if (auction && (auction.status === "LIVE" || auction.status === "SCHEDULED")) {
-      // Business rule: a combined listing must never sell below the bid
-      // already accepted. A mismatched auction currency means the listing is
-      // misconfigured — comparison is impossible, so Buy Now is refused
-      // rather than guessing (createAuction prevents new mismatches).
+    if (auction) {
       if (auction.currency !== vehicle.buyNowCurrency)
         throw new EngineError(
           "BUY_NOW_UNAVAILABLE",
@@ -319,11 +323,18 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
           "BUY_NOW_UNAVAILABLE",
           "Buy Now unavailable: the current bid already meets the Buy Now price",
         );
-      transition(tx, auction, "ENDED", input.userId, "buy-now purchase");
-      tx.update(schema.auctions)
-        .set({ finalizedAt: t, closeReason: "buy_now" })
-        .where(eq(schema.auctions.id, auction.id))
-        .run();
+      if (auction.status === "LIVE" || auction.status === "SCHEDULED") {
+        transition(tx, auction, "ENDED", input.userId, "buy-now purchase");
+        tx.update(schema.auctions)
+          .set({ finalizedAt: t, closeReason: "buy_now" })
+          .where(eq(schema.auctions.id, auction.id))
+          .run();
+      } else if (!["DRAFT", "UNSOLD", "CANCELLED"].includes(auction.status)) {
+        throw new EngineError(
+          "VEHICLE_NOT_AVAILABLE",
+          `Vehicle not available: auction is ${auction.status}`,
+        );
+      }
     }
 
     const orderId = uuid();
