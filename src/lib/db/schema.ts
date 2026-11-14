@@ -6,6 +6,7 @@ import {
   uniqueIndex,
   primaryKey,
 } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 // ---------- users / auth ----------
 
@@ -51,6 +52,20 @@ export const sessions = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (t) => [index("sessions_user_idx").on(t.userId)],
+);
+
+export const passwordResetTokens = sqliteTable(
+  "password_reset_tokens",
+  {
+    id: text("id").primaryKey(), // sha256 hex of the emailed token
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: integer("expires_at").notNull(),
+    usedAt: integer("used_at"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("pwd_reset_user_idx").on(t.userId)],
 );
 
 // ---------- vehicles ----------
@@ -240,7 +255,10 @@ export const bids = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (t) => [
-    uniqueIndex("bids_idem_idx").on(t.auctionId, t.idempotencyKey),
+    // Idempotency is scoped to the bidder: a retry of *your own* request must
+    // return your recorded bid, while the same key from another user is an
+    // independent bid (evaluated on its own merits).
+    uniqueIndex("bids_idem_idx").on(t.auctionId, t.userId, t.idempotencyKey),
     index("bids_auction_amount_idx").on(t.auctionId, t.amount),
     index("bids_user_idx").on(t.userId, t.createdAt),
   ],
@@ -304,6 +322,11 @@ export const orders = sqliteTable(
     index("orders_vehicle_idx").on(t.vehicleId),
     index("orders_buyer_idx").on(t.buyerId, t.createdAt),
     index("orders_status_idx").on(t.status),
+    // At most one PENDING_APPROVAL order per vehicle — belt & braces on top of
+    // the serialized engine transactions.
+    uniqueIndex("orders_pending_vehicle_idx")
+      .on(t.vehicleId)
+      .where(sql`${t.status} = 'PENDING_APPROVAL'`),
   ],
 );
 

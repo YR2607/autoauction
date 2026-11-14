@@ -156,13 +156,15 @@ export function placeBid(input: PlaceBidInput): PlaceBidResult {
     const auction = loadAuction(tx, input.auctionId);
     if (!auction) throw new EngineError("NOT_FOUND", "Auction not found");
 
-    // Idempotent retry — return the already-recorded outcome.
+    // Idempotent retry — scoped to (auction, bidder, key). Returns the
+    // already-recorded outcome for *this* user's key.
     const existing = tx
       .select()
       .from(schema.bids)
       .where(
         and(
           eq(schema.bids.auctionId, auction.id),
+          eq(schema.bids.userId, input.userId),
           eq(schema.bids.idempotencyKey, input.idempotencyKey),
         ),
       )
@@ -269,8 +271,24 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
       .get();
     if (!vehicle) throw new EngineError("NOT_FOUND", "Vehicle not found");
     if (input.userRole === "admin") throw new EngineError("FORBIDDEN_ROLE", "Admins cannot purchase");
-    if (vehicle.status !== "PUBLISHED")
+    if (vehicle.status !== "PUBLISHED") {
+      // Idempotent replay: a repeated Buy Now (double click / retry) returns
+      // the user's existing pending request instead of a hard error.
+      const pending = tx
+        .select({ id: schema.orders.id })
+        .from(schema.orders)
+        .where(
+          and(
+            eq(schema.orders.vehicleId, vehicle.id),
+            eq(schema.orders.buyerId, input.userId),
+            eq(schema.orders.status, "PENDING_APPROVAL"),
+            eq(schema.orders.type, "BUY_NOW"),
+          ),
+        )
+        .get();
+      if (pending) return { orderId: pending.id, auctionId: null, replay: true };
       throw new EngineError("VEHICLE_NOT_AVAILABLE", "Vehicle is not available");
+    }
     if (
       (vehicle.saleType !== "BUY_NOW" && vehicle.saleType !== "AUCTION_BUY_NOW") ||
       vehicle.buyNowPrice == null ||
@@ -417,8 +435,24 @@ export function finalizeDueAuctions(t = now()): string[] {
   return finished.map((f) => f.id);
 }
 
+/** Delete expired sessions + used/expired reset tokens. Housekeeping. */
+export function cleanupExpiredAuth(t = now()): number {
+  return db.transaction((tx) => {
+    const s = tx
+      .delete(schema.sessions)
+      .where(lte(schema.sessions.expiresAt, t))
+      .run().changes;
+    const p = tx
+      .delete(schema.passwordResetTokens)
+      .where(lte(schema.passwordResetTokens.expiresAt, t))
+      .run().changes;
+    return s + p;
+  });
+}
+
 /** Periodic tick — call from instrumentation or a job runner. */
 export function schedulerTick() {
   activateDueAuctions();
   finalizeDueAuctions();
+  cleanupExpiredAuth();
 }

@@ -13,6 +13,9 @@ export async function GET(
   const b = bus();
   const channel = `auction:${id}`;
 
+  let onEvent: ((payload: unknown) => void) | null = null;
+  let heartbeat: ReturnType<typeof setInterval> | null = null;
+
   const stream = new ReadableStream({
     start(controller) {
       const enc = new TextEncoder();
@@ -23,10 +26,10 @@ export async function GET(
           /* closed */
         }
       };
-      const onEvent = (payload: unknown) => send(payload);
+      onEvent = (payload: unknown) => send(payload);
       b.on(channel, onEvent);
 
-      const heartbeat = setInterval(() => {
+      heartbeat = setInterval(() => {
         try {
           controller.enqueue(enc.encode(`: hb\n\n`));
         } catch {
@@ -35,13 +38,12 @@ export async function GET(
       }, 25_000);
 
       send({ event: "connected", auctionId: id });
-      return () => {
-        b.off(channel, onEvent);
-        clearInterval(heartbeat);
-      };
     },
     cancel() {
-      b.removeAllListeners(channel);
+      // Remove only THIS client's listener — other subscribers of the same
+      // auction channel must stay connected.
+      if (onEvent) b.off(channel, onEvent);
+      if (heartbeat) clearInterval(heartbeat);
     },
   });
 

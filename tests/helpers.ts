@@ -6,8 +6,8 @@ import { randomUUID } from "node:crypto";
 export async function resetDb() {
   const { sqlite } = await import("@/lib/db");
   const dir = path.join(process.cwd(), "drizzle");
-  const file = fs.readdirSync(dir).find((f) => f.endsWith(".sql"))!;
-  const sql = fs.readFileSync(path.join(dir, file), "utf8");
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
+  const sql = files.map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
   sqlite.exec(`
     PRAGMA foreign_keys = OFF;
     DROP TABLE IF EXISTS bids; DROP TABLE IF EXISTS auction_events;
@@ -17,6 +17,7 @@ export async function resetDb() {
     DROP TABLE IF EXISTS sessions; DROP TABLE IF EXISTS user_profiles;
     DROP TABLE IF EXISTS users; DROP TABLE IF EXISTS vehicle_images;
     DROP TABLE IF EXISTS vehicle_documents; DROP TABLE IF EXISTS vehicles;
+    DROP TABLE IF EXISTS password_reset_tokens;
     PRAGMA foreign_keys = ON;
   `);
   sqlite.exec(sql);
