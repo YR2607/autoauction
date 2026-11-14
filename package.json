@@ -13,7 +13,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "db:seed": "tsx src/lib/db/seed.ts",
-    "db:reset": "rm -f data/autoauction.db data/autoauction.db-wal data/autoauction.db-shm && pnpm db:migrate && pnpm db:seed"
+    "db:reset": "rm -f data/autoauction.db data/autoauction.db-wal data/autoauction.db-shm && pnpm db:migrate && pnpm db:seed",
+    "db:diagnose": "node scripts/db-diagnose.mjs",
+    "db:backup": "node scripts/backup.mjs",
+    "db:restore": "node scripts/restore.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.2.0",

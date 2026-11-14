@@ -12,6 +12,21 @@ fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const sqlite = new Database(dbPath);
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
+sqlite.pragma("synchronous = FULL");
+sqlite.pragma("busy_timeout = 5000");
+
+// Safety: snapshot the database before applying pending migrations.
+const pendingExist = fs.existsSync(journalPath) && fs.existsSync(dbPath) && fs.statSync(dbPath).size > 0;
+if (pendingExist) {
+  const backupDir = path.join(path.dirname(dbPath), "backups");
+  fs.mkdirSync(backupDir, { recursive: true });
+  const dest = path.join(
+    backupDir,
+    `${path.basename(dbPath, ".db")}-pre-migrate-${new Date().toISOString().replace(/[:.]/g, "-")}.db`,
+  );
+  await sqlite.backup(dest);
+  console.log(`pre-migration backup → ${dest}`);
+}
 
 sqlite.exec(
   `CREATE TABLE IF NOT EXISTS __migrations (
