@@ -4,6 +4,11 @@ Date: 2026-11-15 · Instance: `http://localhost:3300` (production build, main@`7
 Synthetic accounts only: `demo-admin@`, `demo-buyer1@`, `demo-buyer2@autoauction.dev`.
 All checks executed against the live HTTP API; results below are actual responses.
 
+> **Milestone 6 note:** these results remain valid for the local staging
+> instance. Public-HTTPS acceptance is pending VPS/domain/secrets — see
+> `docs/PUBLIC_STAGING_DEPLOYMENT_REPORT.md` for the PASS/PARTIAL/BLOCKED
+> classification of the public-staging acceptance checklist.
+
 ## Scenario A — Administrator
 
 | Step | Result | Evidence |
