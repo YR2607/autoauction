@@ -81,7 +81,7 @@ export default function HomePage() {
         <section className="border-b border-line bg-white">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-7 sm:grid-cols-3 sm:px-6">
             {[
-              { icon: Search, t: "Curated inventory", d: "Every vehicle inspected and documented before listing." },
+              { icon: Search, t: "Curated inventory", d: "Condition details and documents are published with every listing." },
               { icon: BadgeCheck, t: "Reviewed results", d: "Winning bids and purchases confirmed by our team." },
               { icon: Handshake, t: "Guided purchase", d: "We contact you to complete the deal after approval." },
             ].map((f) => (

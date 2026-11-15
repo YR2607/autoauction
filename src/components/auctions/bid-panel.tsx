@@ -258,7 +258,7 @@ export function BidPanel({
       >
         You are about to bid{" "}
         <b className="text-graphite">{formatMoney(amount, st.currency)}</b>. This is a
-        binding offer — if you win and the result is approved, you commit to purchase.
+        firm offer — if you win and the result is approved, you commit to purchase.
       </ConfirmModal>
     </div>
   );

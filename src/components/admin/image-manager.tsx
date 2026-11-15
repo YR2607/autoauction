@@ -55,7 +55,7 @@ export function ImageManager({
           e.target.value = "";
         }}
       />
-      <Button variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()} className="w-full">
+      <Button variant="outline" size="sm" loading={busy} onClick={() => input.current?.click()} className="w-full">
         <Upload className="h-4 w-4" /> {busy ? "Working…" : "Upload photo"}
       </Button>
       {err && <p className="mt-2 text-xs font-semibold text-error">{err}</p>}

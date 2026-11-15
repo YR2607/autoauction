@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { getVehicleBySlug, similarVehicles } from "@/features/vehicles/queries";
+import { buyNowAvailable } from "@/features/vehicles/availability";
 import { publicAuctionState } from "@/features/auctions/engine";
 import { formatMoney, type Currency } from "@/lib/currency";
 import { getSessionUser } from "@/lib/auth/session";
@@ -75,17 +76,8 @@ export default async function VehiclePage({
         ? `•••••••••••••${v.vin.slice(-4)}`
         : "Hidden";
 
-  // Mirrors the server-side allowlist in buyNow(): purchasable states only,
-  // same currency, fixed price strictly above any accepted bid.
-  const buyNowAllowedStates = ["DRAFT", "SCHEDULED", "LIVE", "UNSOLD", "CANCELLED"];
-  const showBuyNow =
-    (v.saleType === "BUY_NOW" || v.saleType === "AUCTION_BUY_NOW") &&
-    v.buyNowPrice != null &&
-    v.status === "PUBLISHED" &&
-    (!auction ||
-      (buyNowAllowedStates.includes(auction.status) &&
-        auction.currency === v.buyNowCurrency &&
-        (auction.currentBid == null || auction.currentBid < v.buyNowPrice)));
+  // Shared predicate — mirrors the server-side allowlist in buyNow().
+  const showBuyNow = buyNowAvailable(v, auction);
 
   const auctionVisible =
     auction &&

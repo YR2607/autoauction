@@ -1,5 +1,6 @@
 import { db, schema } from "@/lib/db";
 import { and, desc, asc, eq, gte, lte, like, inArray, sql, type SQL } from "drizzle-orm";
+import { buyNowAvailable, buyNowEligibleSQL } from "./availability";
 
 export type VehicleCard = {
   id: string;
@@ -18,6 +19,8 @@ export type VehicleCard = {
   status: string;
   buyNowPrice: number | null;
   buyNowCurrency: string | null;
+  /** Server-mirrored Buy Now eligibility (see features/vehicles/availability). */
+  buyNowAvailable: boolean;
   coverUrl: string | null;
   auction: {
     id: string;
@@ -60,6 +63,7 @@ function mapCard(r: {
     status: v.status,
     buyNowPrice: v.buyNowPrice,
     buyNowCurrency: v.buyNowCurrency,
+    buyNowAvailable: buyNowAvailable(v, r.auction),
     coverUrl: r.coverUrl,
     auction: r.auction
       ? {
@@ -116,19 +120,28 @@ export function listVehicles(f: CatalogFilters) {
   if (f.transmission) conds.push(eq(schema.vehicles.transmission, f.transmission));
   if (f.bodyType) conds.push(eq(schema.vehicles.bodyType, f.bodyType));
   if (f.saleType === "BUY_NOW") {
-    conds.push(inArray(schema.vehicles.saleType, ["BUY_NOW", "AUCTION_BUY_NOW"]));
-    conds.push(sql`${schema.vehicles.buyNowPrice} IS NOT NULL`);
+    conds.push(buyNowEligibleSQL);
   } else if (f.saleType === "AUCTION") {
     conds.push(inArray(schema.vehicles.saleType, ["AUCTION", "AUCTION_BUY_NOW"]));
   } else if (f.saleType) {
     conds.push(eq(schema.vehicles.saleType, f.saleType as never));
   }
-  if (f.currency === "buynow")
-    conds.push(eq(schema.vehicles.buyNowCurrency, f.currency as never));
+  if (f.currency)
+    conds.push(
+      sql`COALESCE(${schema.auctions.currency}, ${schema.vehicles.buyNowCurrency}) = ${f.currency}`,
+    );
   if (f.auctionStatus === "LIVE") conds.push(eq(schema.auctions.status, "LIVE"));
   if (f.auctionStatus === "SCHEDULED") conds.push(eq(schema.auctions.status, "SCHEDULED"));
 
-  const priceExpr = sql`COALESCE(${schema.vehicles.buyNowPrice}, ${schema.auctions.currentBid}, ${schema.auctions.startingPrice})`;
+  // Display-price semantics — must match VehicleCard:
+  // live/upcoming auction → auction price; else eligible Buy Now → fixed
+  // price; else last-known auction price, then fixed price.
+  const priceExpr = sql`CASE
+    WHEN ${schema.auctions.status} IN ('LIVE', 'SCHEDULED')
+      THEN COALESCE(${schema.auctions.currentBid}, ${schema.auctions.startingPrice})
+    WHEN ${buyNowEligibleSQL} THEN ${schema.vehicles.buyNowPrice}
+    ELSE COALESCE(${schema.auctions.currentBid}, ${schema.auctions.startingPrice}, ${schema.vehicles.buyNowPrice})
+  END`;
   if (f.priceMax) conds.push(lte(priceExpr, f.priceMax));
 
   const order =
@@ -286,8 +299,7 @@ export function buyNowCards(limit?: number) {
     .where(
       and(
         eq(schema.vehicles.status, "PUBLISHED"),
-        inArray(schema.vehicles.saleType, ["BUY_NOW", "AUCTION_BUY_NOW"]),
-        sql`${schema.vehicles.buyNowPrice} IS NOT NULL`,
+        buyNowEligibleSQL,
       ),
     )
     .orderBy(asc(schema.vehicles.buyNowPrice))

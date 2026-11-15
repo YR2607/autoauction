@@ -14,14 +14,20 @@ export function MobileNav({
   return (
     <div className="md:hidden">
       <button
-        aria-label="Menu"
-        className="rounded-lg p-2 hover:bg-graphite/5"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        aria-controls="mobile-nav-panel"
+        className="rounded-lg p-2 transition-colors hover:bg-graphite/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         onClick={() => setOpen(!open)}
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
       {open && (
-        <div className="absolute inset-x-0 top-16 border-b border-line bg-white p-4 shadow-lg">
+        <div
+          id="mobile-nav-panel"
+          className="anim-fade absolute inset-x-0 top-16 border-b border-line bg-white p-4 shadow-lg"
+          onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+        >
           <nav className="flex flex-col gap-1">
             {links.map((l) => (
               <Link

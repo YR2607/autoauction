@@ -5,6 +5,7 @@ import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { EmptyState } from "@/components/ui/empty";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { buyNowAvailable } from "@/features/vehicles/availability";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -28,7 +29,8 @@ export default async function FavoritesPage() {
       trim: v.trim, year: v.year, mileage: v.mileage, fuelType: v.fuelType,
       transmission: v.transmission, locationCity: v.locationCity,
       locationCountry: v.locationCountry, saleType: v.saleType, status: v.status,
-      buyNowPrice: v.buyNowPrice, buyNowCurrency: v.buyNowCurrency, coverUrl: r.coverUrl,
+      buyNowPrice: v.buyNowPrice, buyNowCurrency: v.buyNowCurrency,
+      buyNowAvailable: buyNowAvailable(v, auction), coverUrl: r.coverUrl,
       auction: auction
         ? { id: auction.id, status: auction.status, currency: auction.currency, currentBid: auction.currentBid, startingPrice: auction.startingPrice, bidCount: auction.bidCount, endsAt: auction.endsAt, startsAt: auction.startsAt }
         : null,

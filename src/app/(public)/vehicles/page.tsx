@@ -34,6 +34,7 @@ export default async function VehiclesPage({
     fuelType: s("fuelType"),
     transmission: s("transmission"),
     bodyType: s("bodyType"),
+    currency: s("currency"),
     saleType: s("saleType"),
     auctionStatus: s("auctionStatus"),
     sort: s("sort"),
@@ -49,7 +50,7 @@ export default async function VehiclesPage({
         <div className="mb-7">
           <h1 className="font-display text-3xl font-extrabold">Cars for sale</h1>
           <p className="mt-1 text-sm text-muted">
-            Fixed-price vehicles and live auction lots — inspected and documented.
+            Fixed-price vehicles and live auction lots — with documented condition details.
           </p>
         </div>
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Globe } from "lucide-react";
+import { siteConfig } from "@/lib/site";
 
 export function SiteFooter() {
   return (
@@ -16,11 +17,16 @@ export function SiteFooter() {
             Premium vehicles. Transparent auctions. Every sale reviewed by our team.
           </p>
           <p className="mt-5 flex items-center gap-2 text-sm text-white/60">
-            <Globe className="h-4 w-4" /> EUR · USD · GBP
+            <Globe className="h-4 w-4" /> {siteConfig.currencies.join(" · ")}
           </p>
-          <p className="mt-1.5 flex items-center gap-2 text-sm text-white/60">
-            <Mail className="h-4 w-4" /> support@autoauction.dev
-          </p>
+          {siteConfig.contactEmail && (
+            <p className="mt-1.5 flex items-center gap-2 text-sm text-white/60">
+              <Mail className="h-4 w-4" />{" "}
+              <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-white">
+                {siteConfig.contactEmail}
+              </a>
+            </p>
+          )}
         </div>
         <FooterCol
           title="Marketplace"

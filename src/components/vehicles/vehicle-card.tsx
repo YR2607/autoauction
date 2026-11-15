@@ -12,7 +12,8 @@ function km(n: number | null) {
 export function VehicleCard({ v }: { v: VC }) {
   const live = v.auction?.status === "LIVE";
   const scheduled = v.auction?.status === "SCHEDULED";
-  const buyNow = (v.saleType === "BUY_NOW" || v.saleType === "AUCTION_BUY_NOW") && v.buyNowPrice != null;
+  // Server-mirrored eligibility — never advertise an unavailable purchase.
+  const buyNow = v.buyNowAvailable;
 
   return (
     <Link
@@ -77,11 +78,23 @@ export function VehicleCard({ v }: { v: VC }) {
                 <p className="mt-0.5 text-[11px] font-semibold text-muted">{v.auction.bidCount} bids</p>
               )}
             </div>
-          ) : (
+          ) : buyNow ? (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Price</p>
               <p className="tnum font-display text-[19px] font-extrabold leading-tight text-graphite">
                 {formatMoney(v.buyNowPrice, (v.buyNowCurrency ?? "EUR") as Currency)}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                {v.auction?.currentBid != null ? "Final bid" : "Starting price"}
+              </p>
+              <p className="tnum font-display text-[19px] font-extrabold leading-tight text-graphite">
+                {formatMoney(
+                  v.auction?.currentBid ?? v.auction?.startingPrice ?? v.buyNowPrice,
+                  ((v.auction?.currency ?? v.buyNowCurrency) ?? "EUR") as Currency,
+                )}
               </p>
             </div>
           )}

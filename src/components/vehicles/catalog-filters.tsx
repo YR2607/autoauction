@@ -34,6 +34,7 @@ const FILTER_LABELS: Record<string, (v: string) => string> = {
   transmission: (v) => v,
   bodyType: (v) => v,
   saleType: (v) => (v === "BUY_NOW" ? "Buy Now" : v === "AUCTION" ? "Auction" : v),
+  currency: (v) => v,
   auctionStatus: (v) => (v === "LIVE" ? "Live auctions" : v === "SCHEDULED" ? "Upcoming" : v),
 };
 
@@ -133,6 +134,15 @@ export function FiltersPanel({
               onBlur={(e) => apply({ yearTo: e.target.value })}
             />
           </div>
+        </div>
+        <div>
+          <Label>Currency</Label>
+          <Select value={g("currency")} onChange={sel("currency")}>
+            <option value="">All</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+          </Select>
         </div>
         <div>
           <Label>Max price (major units)</Label>
