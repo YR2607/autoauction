@@ -5,6 +5,41 @@ makes no assumptions — staging copy is marked as draft where it depends on
 these answers. **None of this has been invented; every item needs an explicit
 client answer.**
 
+## Status legend
+
+- ✅ **Confirmed** — explicitly confirmed by the client.
+- 🔧 **Implementation default** — behavior the MVP ships with today; not a
+  confirmed business decision, but safe to demo. Changeable once the client
+  answers.
+- ⬜ **Unresolved** — needs an explicit client answer before production.
+
+## At-a-glance checklist
+
+| Item | Status |
+|---|---|
+| Operating jurisdiction | ⬜ Unresolved |
+| Legal entity details | ⬜ Unresolved |
+| Governing law / venue | ⬜ Unresolved |
+| Buyer commission | ⬜ Unresolved |
+| Seller commission | ⬜ Unresolved |
+| Payment method | 🔧 Default: manual admin order handling only — **no online payment implemented** |
+| Deposit requirements | ⬜ Unresolved |
+| Payment deadlines | ⬜ Unresolved |
+| Refund rules | ⬜ Unresolved |
+| Winner-default policy | 🔧 Default: admin chooses REOPEN / NEXT_BIDDER / UNSOLD per auction |
+| Vehicle handover process | ⬜ Unresolved |
+| Delivery responsibility | ⬜ Unresolved |
+| Final Terms of Use | ⬜ Unresolved — staging page is marked draft |
+| Privacy Policy | ⬜ Unresolved — staging page is marked draft |
+| Official contacts | ⬜ Unresolved — `NEXT_PUBLIC_CONTACT_EMAIL` placeholder |
+| Inspection policy | ⬜ Unresolved — no "inspected" claims in copy |
+| KYC / registration requirements | 🔧 Default: email + password only, no KYC |
+| Auction mechanics | ✅ Implemented: min bid, increments, anti-sniping extension, admin approval |
+| Buy Now mechanics | ✅ Implemented: fixed price, admin approval, concurrent-purchase guard |
+
+*Nothing in the ✅ rows is a business decision — they are the working product
+behaviors demonstrated on staging.*
+
 ## 1. Legal entity & jurisdiction
 
 - [ ] Country of operation (affects contract law, consumer protection, taxes)
