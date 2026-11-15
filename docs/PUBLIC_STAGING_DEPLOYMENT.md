@@ -216,4 +216,7 @@ Watch for: `scheduler tick failed`, `health check failed`,
 - [ ] Backup cron configured + first restore rehearsal done
 - [ ] All items in `docs/CLIENT_OPEN_DECISIONS.md` answered (jurisdiction, fees, payments, refunds, handover)
 - [ ] `ALLOW_LOCALHOST_DEPLOY`, `EMAIL_ALLOW_OUTBOX`, `ALLOW_DEV_SEED` all unset
+- [ ] `DEMO_MODE=1` set on staging (adds a STAGING DEMO banner + `X-Robots-Tag:
+      noindex, nofollow` on every response — keeps search engines out); unset
+      for real production
 - [ ] Confirm `/api/health` returns no diagnostic details
