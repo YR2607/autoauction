@@ -27,7 +27,7 @@ export async function SiteHeader() {
 
         <NavLinks links={links} />
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           {user ? (
             <>
               {user.role === "admin" && (

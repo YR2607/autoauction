@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export function NavLinks({ links }: { links: { href: string; label: string }[] }) {
   const path = usePathname();
   return (
-    <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+    <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
       {links.map((l) => {
         const active = path === l.href || (l.href !== "/" && path.startsWith(l.href));
         return (
