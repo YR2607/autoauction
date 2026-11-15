@@ -95,13 +95,19 @@ same architecture (edge TLS → loopback app), zero changes to existing sites.
 ## Demo environment (live now)
 
 - **URL:** https://autoauction.claimonetest.online (banner + noindex active)
-- **BMW M4 Competition** — LIVE auction, current bid €58,500, ends 2026-11-20
+- **19 vehicles** — full catalog: the 7 M4 staging lots plus 12 merged from the
+  local dev seed (BMW 530d, Mercedes E 220 d, Audi A6, Tesla Model 3, Range
+  Rover Sport, Golf, Land Cruiser, Mustang, XC60, Huracán…), all PUBLISHED
+  with complete specs and **real demo photos** (`/seed-images`, 36 JPEGs)
+- **2 LIVE auctions:** BMW M4 Competition (€58,500, 5 bids, ends 2026-11-20)
+  and Lamborghini Huracán (€187,500, 3 bids, ends 2026-11-19)
 - **Audi RS6** — published, auction scheduled 2026-11-17
 - **Porsche 911 / Toyota Supra** — SOLD (completed auction / Buy Now)
-- **Range Rover** — published + Buy Now; **Lexus LC 500** — pending Buy Now
+- **Range Rover Autobiography** — published + Buy Now; **Lexus LC 500** — pending Buy Now
 - Accounts: `demo-admin@` / `demo-buyer1@` / `demo-buyer2@autoauction.dev` —
   passwords rotated, unique per account, delivered out-of-band only
-- 12 synthetic SVG demo photos (clearly labeled); 6 private PDF docs, admin-only
+- 12 synthetic SVG placeholders for the M4-lot photos + real photos elsewhere;
+  7 private PDF docs (6 admin-only + 1 public inspection)
 
 ## Known limitations / remaining work
 
