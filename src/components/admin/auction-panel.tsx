@@ -97,7 +97,7 @@ export function AuctionPanel({
           <div><Label>Duration (hours)</Label><Input name="durationH" type="number" required min="1" defaultValue="72" /></div>
         </div>
         {err && <p className="text-xs font-semibold text-error">{err}</p>}
-        <Button type="submit" size="sm" disabled={busy} className="w-full">Create auction (draft)</Button>
+        <Button type="submit" size="sm" loading={busy} className="w-full">Create auction (draft)</Button>
       </form>
     );
   }
@@ -119,12 +119,12 @@ export function AuctionPanel({
       </dl>
 
       {auction.status === "DRAFT" && (
-        <Button size="sm" className="w-full" disabled={busy} onClick={() => action({ action: "schedule" })}>
+        <Button size="sm" className="w-full" loading={busy} onClick={() => action({ action: "schedule" })}>
           Schedule auction
         </Button>
       )}
       {(auction.status === "DRAFT" || auction.status === "SCHEDULED" || auction.status === "LIVE") && (
-        <Button size="sm" variant="danger" className="w-full" disabled={busy} onClick={() => setCancelOpen(true)}>
+        <Button size="sm" variant="danger" className="w-full" loading={busy} onClick={() => setCancelOpen(true)}>
           Cancel auction
         </Button>
       )}

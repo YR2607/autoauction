@@ -52,7 +52,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           {err}
         </p>
       )}
-      <Button type="submit" className="w-full" size="lg" disabled={busy}>
+      <Button type="submit" className="w-full" size="lg" loading={busy}>
         {busy ? "Saving…" : "Set new password"}
       </Button>
     </form>

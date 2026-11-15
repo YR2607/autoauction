@@ -53,7 +53,7 @@ export function ForgotPasswordForm() {
           {err}
         </p>
       )}
-      <Button type="submit" className="w-full" size="lg" disabled={busy}>
+      <Button type="submit" className="w-full" size="lg" loading={busy}>
         {busy ? "Sending…" : "Send reset link"}
       </Button>
       <p className="text-center text-sm text-muted">

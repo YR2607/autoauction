@@ -89,9 +89,16 @@ export default async function AccountPage() {
 
 function Stat({ label, value, href, tone }: { label: string; value: number; href: string; tone?: "success" | "error" | "warning" }) {
   const color = tone === "success" ? "text-success" : tone === "error" ? "text-error" : tone === "warning" ? "text-warning" : "text-graphite";
+  const ring = tone === "success" ? "bg-success/10" : tone === "error" ? "bg-error/10" : tone === "warning" ? "bg-warning/15" : "bg-graphite/5";
   return (
-    <Link href={href} className="rounded-[14px] border border-line bg-white p-4 transition-shadow hover:shadow-md">
-      <p className={`font-display text-2xl font-extrabold ${color}`}>{value}</p>
+    <Link
+      href={href}
+      className="group rounded-[14px] border border-line bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-card"
+    >
+      <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${ring}`}>
+        <span className={`h-2 w-2 rounded-full ${color.replace("text-", "bg-")}`} />
+      </span>
+      <p className={`mt-2 font-display text-2xl font-extrabold ${color}`}>{value}</p>
       <p className="mt-0.5 text-xs font-semibold text-muted">{label}</p>
     </Link>
   );

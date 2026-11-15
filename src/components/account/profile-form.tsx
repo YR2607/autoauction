@@ -49,6 +49,7 @@ export function ProfileForm({ initial }: { initial: Fields }) {
   return (
     <div className="space-y-8">
       <form onSubmit={submit} className="space-y-4 rounded-[14px] border border-line bg-white p-6">
+        <h2 className="font-display text-base font-bold">Personal information</h2>
         <div className="grid grid-cols-2 gap-4">
           <div><Label>First name</Label><Input name="firstName" defaultValue={initial.firstName} /></div>
           <div><Label>Last name</Label><Input name="lastName" defaultValue={initial.lastName} /></div>
@@ -59,17 +60,17 @@ export function ProfileForm({ initial }: { initial: Fields }) {
           <div><Label>City</Label><Input name="city" defaultValue={initial.city} /></div>
           <div><Label>Country</Label><Input name="country" defaultValue={initial.country} /></div>
         </div>
-        <Button type="submit" disabled={busy}>Save profile</Button>
+        <Button type="submit" loading={busy}>Save profile</Button>
       </form>
 
       <form onSubmit={changePassword} className="space-y-4 rounded-[14px] border border-line bg-white p-6">
         <h2 className="font-display text-base font-bold">Change password</h2>
         <div><Label>Current password</Label><Input name="currentPassword" type="password" required /></div>
         <div><Label>New password (8+ chars)</Label><Input name="newPassword" type="password" required minLength={8} /></div>
-        <Button type="submit" variant="outline" disabled={busy}>Change password</Button>
+        <Button type="submit" variant="outline" loading={busy}>Change password</Button>
       </form>
 
-      {msg && <p className="rounded-lg bg-success/10 px-3 py-2 text-sm font-semibold text-success">{msg}</p>}
+      {msg && <p role="status" className={`rounded-lg px-3 py-2 text-sm font-semibold ${msg.includes("fail") || msg.includes("Fail") ? "bg-error/10 text-error" : "bg-success/10 text-success"}`}>{msg}</p>}
     </div>
   );
 }

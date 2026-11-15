@@ -1,7 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useId, useRef } from "react";
 import { Button } from "./button";
+import { useDialogA11y } from "@/lib/use-dialog-a11y";
 
 export function Modal({
   open,
@@ -18,30 +19,29 @@ export function Modal({
   footer?: React.ReactNode;
   width?: string;
 }) {
-  useEffect(() => {
-    if (!open) return;
-    const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", h);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", h);
-      document.body.style.overflow = "";
-    };
-  }, [open, onClose]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialogA11y(open, onClose, panelRef);
 
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 backdrop-blur-[2px] sm:items-center"
+      className="anim-fade fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 backdrop-blur-[2px] sm:items-center"
       onClick={onClose}
-      role="dialog"
-      aria-modal="true"
     >
       <div
-        className={cn("w-full rounded-2xl bg-white p-6 shadow-xl", width)}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className={cn(
+          "anim-pop w-full rounded-2xl bg-white p-6 shadow-xl outline-none",
+          width,
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="font-display text-lg font-bold">{title}</h3>
+        <h3 id={titleId} className="font-display text-lg font-bold">{title}</h3>
         <div className="mt-3 text-sm text-muted">{children}</div>
         {footer && <div className="mt-6 flex justify-end gap-2">{footer}</div>}
       </div>
@@ -75,15 +75,15 @@ export function ConfirmModal({
       title={title}
       footer={
         <>
-          <Button variant="outline" onClick={onClose} disabled={busy}>
+          <Button variant="outline" onClick={onClose} loading={busy}>
             Cancel
           </Button>
           <Button
             variant={danger ? "danger" : "primary"}
             onClick={onConfirm}
-            disabled={busy}
+            loading={busy}
           >
-            {busy ? "Working…" : confirmLabel}
+            {confirmLabel}
           </Button>
         </>
       }

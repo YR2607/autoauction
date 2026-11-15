@@ -83,7 +83,7 @@ export function DocumentManager({
             <input ref={publicInput} type="checkbox" /> Public
           </label>
         </div>
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()} className="w-full">
+        <Button variant="outline" size="sm" loading={busy} onClick={() => input.current?.click()} className="w-full">
           <Upload className="h-4 w-4" /> {busy ? "Working…" : "Upload document"}
         </Button>
       </div>

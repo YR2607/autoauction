@@ -42,7 +42,7 @@ export function SettingsForm({
         </div>
       ))}
       {msg && <p className="rounded-lg bg-success/10 px-3 py-2 text-sm font-semibold text-success">{msg}</p>}
-      <Button type="submit" disabled={busy}>Save settings</Button>
+      <Button type="submit" loading={busy}>Save settings</Button>
     </form>
   );
 }
