@@ -1,5 +1,5 @@
 "use client";
-import { useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { useDialogA11y } from "@/lib/use-dialog-a11y";
 
@@ -20,6 +20,17 @@ export function Drawer({
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   useDialogA11y(open, onClose, panelRef);
+
+  // The drawer is mobile-only (`lg:hidden`). If the viewport grows past the
+  // desktop breakpoint while it is open, close it — otherwise the hidden
+  // overlay would leave body scroll locked and the trap active.
+  useEffect(() => {
+    if (!open || typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const close = () => mq.matches && onClose();
+    mq.addEventListener("change", close);
+    return () => mq.removeEventListener("change", close);
+  }, [open, onClose]);
 
   if (!open) return null;
   return (

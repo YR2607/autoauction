@@ -30,7 +30,7 @@ fixed price; else last known auction price, then fixed price). Used for
 **Currency filter** — previously dead code (`currency === "buynow"`); now a
 working select in the filter panel matching the display currency.
 
-**Tests:** `tests/buy-now-catalog.test.ts` — 12 tests (predicate allowlist,
+**Tests:** `tests/buy-now-catalog.test.ts` — 13 tests (predicate allowlist,
 bid/currency exclusions, catalog exclusion, card flag, priceMax/sort/currency
 semantics, engine still rejects over-bid purchases).
 
@@ -41,6 +41,12 @@ semantics, engine still rejects over-bid purchases).
 - `Modal` / `ConfirmModal` / `Drawer` rebuilt on the hook; `role="dialog"`,
   `aria-modal`, `aria-labelledby`, `tabIndex={-1}` panel fallback.
 - `Tabs`: roving tabindex, ArrowLeft/Right/Home/End navigation, `aria-label` prop.
+- M3.1.1 follow-up: `onClose` held in a ref so a new callback identity no longer
+  tears down focus trapping or restores focus mid-dialog; `Drawer` auto-closes
+  past the `lg` breakpoint so an open mobile drawer can't leave scroll locked.
+- M3.1.1 SQL parity: `buyNowEligibleSQL` now also requires
+  `buy_now_currency IS NOT NULL`, matching the JS predicate (regression test
+  covers both the no-auction and joined-auction paths).
 - Mobile nav: `aria-expanded`/`aria-controls`, Escape-to-close, visible focus styles.
 - All overlays keep `prefers-reduced-motion` support (animations already gated).
 - Uniform `focus-visible` outlines on new interactive elements.
@@ -81,7 +87,7 @@ dialog focus trap verified in code (initial focus, trap, restore).
 |---|---|
 | `pnpm typecheck` | ✅ clean |
 | `pnpm build` | ✅ clean |
-| `pnpm test` | ✅ **121/121** (109 baseline + 12 new) |
+| `pnpm test` | ✅ **127/127** (109 baseline + 12 catalog + 1 SQL-parity + 5 dialog a11y) |
 
 No schema changes, no engine/financial-logic changes. The only API delta remains
 the additive `isLeading` field from M3.

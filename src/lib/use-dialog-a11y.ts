@@ -43,7 +43,7 @@ export function useDialogA11y(
       }
       if (e.key !== "Tab" || !panel) return;
       const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
-        (el) => el.offsetParent !== null,
+        (el) => !el.hidden && !(el as HTMLButtonElement).disabled,
       );
       if (items.length === 0) {
         e.preventDefault();
