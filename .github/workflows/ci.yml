@@ -39,3 +39,23 @@ jobs:
       # never touches any real database. No secrets required.
       - name: Test
         run: pnpm test
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # compose interpolation reads .env — provide the placeholder example.
+      - name: Validate docker-compose configuration
+        run: |
+          cp .env.example .env
+          docker compose config -q
+
+      - name: Docker build with synthetic public config
+        run: docker build --build-arg NEXT_PUBLIC_CONTACT_EMAIL=ci-contact@example.dev -t autoauction:ci .
+
+      # The build-time NEXT_PUBLIC_ value must land in the client bundle.
+      - name: Verify build-time contact email is in the image
+        run: |
+          docker run --rm --entrypoint sh autoauction:ci -c \
+            "grep -rq 'ci-contact@example.dev' /app/.next && echo 'contact email baked into bundle'"

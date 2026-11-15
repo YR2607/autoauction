@@ -12,7 +12,12 @@
 # Optional: ALLOW_LOCALHOST_DEPLOY=1 (local demo runs only)
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        # Public contact email is baked into the client bundle at build
+        # time — changing it requires `docker compose build` again.
+        NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-}
     # Bound to loopback — the reverse proxy (Caddy/Nginx) is the only
     # public entry point. For a firewalled VPS you may bind 0.0.0.0 instead.
     ports:
