@@ -8,9 +8,9 @@ transactions are represented.
 
 | Item | Value |
 |---|---|
-| Public staging URL | `https://<staging-domain>` — pending VPS/DNS (see `docs/PUBLIC_STAGING_DEPLOYMENT_REPORT.md`) |
-| Local staging fallback | `http://localhost:3300` — `next start` against the production build, verified in the Milestone 4 acceptance run |
-| Staging notice | When `DEMO_MODE=1` is set, a "STAGING DEMO" banner shows on every page and `X-Robots-Tag: noindex` keeps the site out of search engines |
+| Public staging URL | **https://autoauction.claimonetest.online** — live on Tencent VPS (nginx + Let's Encrypt) |
+| Local staging fallback | `http://localhost:3300` — `next start` against the production build |
+| Staging notice | `DEMO_MODE=1` is set — "STAGING DEMO" banner on every page + `X-Robots-Tag: noindex` |
 
 ## Demo accounts
 
