@@ -17,3 +17,4 @@ public/uploads/*
 tests/tmp/
 .DS_Store
 coverage
+staging/
