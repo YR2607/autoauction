@@ -9,6 +9,10 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
+  // Fail fast on invalid production config (no-op outside production).
+  const { assertEnv } = await import("@/lib/env");
+  assertEnv();
+
   const { schedulerTick } = await import("@/features/auctions/engine");
   const { sqlite } = await import("@/lib/db");
 

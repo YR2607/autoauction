@@ -1,20 +1,32 @@
 # Single-node compose setup — SQLite requires ONE writer process.
-# Do NOT scale this service above 1 replica.
+# Do NOT scale this service above 1 replica (see deploy notes in
+# docs/PUBLIC_STAGING_DEPLOYMENT.md — single-instance limitation).
+#
+# Configuration comes from a local `.env` file (NOT committed — copy
+# .env.example and fill in real values). Required there:
+#   APP_BASE_URL=https://staging.example.com   (public https URL)
+#   EMAIL_TRANSPORT=webhook | outbox
+#   EMAIL_WEBHOOK_URL=...   (when transport=webhook)
+#   EMAIL_FROM=...
+#   NEXT_PUBLIC_CONTACT_EMAIL=...   (build-time; rebuild to change)
+# Optional: ALLOW_LOCALHOST_DEPLOY=1 (local demo runs only)
 services:
   app:
     build: .
+    # Bound to loopback — the reverse proxy (Caddy/Nginx) is the only
+    # public entry point. For a firewalled VPS you may bind 0.0.0.0 instead.
     ports:
-      - "3100:3100"
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3100}:3100"
+    env_file: .env
     environment:
       DATABASE_PATH: /app/data/autoauction.db
       DOCUMENTS_DIR: /app/data/documents
-      APP_BASE_URL: http://localhost:3100
-      EMAIL_TRANSPORT: webhook
-      # EMAIL_WEBHOOK_URL: https://your-mail-endpoint
-      SESSION_COOKIE_NAME: aa_session
+      APP_BASE_URL: ${APP_BASE_URL:?set APP_BASE_URL in .env}
+      EMAIL_TRANSPORT: ${EMAIL_TRANSPORT:-webhook}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-aa_session}
     volumes:
-      - aa-data:/app/data            # database + backups + private documents
-      - aa-uploads:/app/public/uploads  # public vehicle images
+      - aa-data:/app/data              # database + backups + private documents
+      - aa-uploads:/app/public/uploads # public vehicle images
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3100/api/health"]
