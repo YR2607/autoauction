@@ -13,6 +13,26 @@ Owner substitutes real domain/secrets — nothing is invented here.
 | Ports | 22 (SSH), 80 + 443 (HTTP/HTTPS) open; **nothing else needs to be public** |
 | Email provider | webhook endpoint for `EMAIL_WEBHOOK_URL`, or accept outbox (demo only) |
 
+### Preflight checklist (owner inputs)
+
+Every input must be supplied before deployment starts — the app refuses to
+boot on missing/invalid production config (by design). Do not paste private
+keys or passwords into chat or the repo; use an SSH agent or a secret store.
+
+| # | Input | Status |
+|---|---|---|
+| 1 | VPS public IP | ⬜ MISSING |
+| 2 | SSH access (key-based; agent or approved secret store) | ⬜ MISSING |
+| 3 | Staging domain | ⬜ MISSING |
+| 4 | DNS A record → VPS IP | ⬜ MISSING — needs domain + IP first |
+| 5 | Email: `EMAIL_WEBHOOK_URL` + `EMAIL_FROM` **or** explicit approval for outbox-only demo (`EMAIL_ALLOW_OUTBOX=1`) | ⬜ MISSING |
+| 6 | Official public contact email → `NEXT_PUBLIC_CONTACT_EMAIL` (build-time, requires image rebuild) | ⬜ MISSING |
+| 7 | VPS persistent storage ≥10 GB (data, uploads, backups) | ⬜ MISSING — verified at VPS validation |
+| 8 | Firewall: 22/80/443 inbound; **3100 must NOT be public** | ⬜ MISSING — verified at VPS validation |
+
+Once 1–6 are provided, deployment is a straight run of §1–§7 (~30–60 min).
+Items 7–8 are verified on the VPS itself during Phase 3.
+
 ## 1. Install Docker + Compose plugin
 
 ```bash
