@@ -113,6 +113,17 @@ describe("buyNowCards / catalog Buy Now filter", () => {
     expect(ids).toContain(ok);
   });
 
+  it("excludes vehicles with a null Buy Now currency (JS/SQL parity)", async () => {
+    const { buyNowCards, listVehicles } = await queries();
+    const v = await buyNowVehicle({ buyNowCurrency: null }); // price set, currency null
+    expect(buyNowCards().map((c) => c.id)).not.toContain(v);
+    expect(listVehicles({ saleType: "BUY_NOW" }).items.map((c) => c.id)).not.toContain(v);
+    // …and the auction-joined path (eligibility sits inside the OR branch)
+    const v2 = await buyNowVehicle({ buyNowCurrency: null });
+    await makeAuction(v2, { status: "DRAFT", currency: "EUR" });
+    expect(buyNowCards().map((c) => c.id)).not.toContain(v2);
+  });
+
   it("cards expose a consistent buyNowAvailable flag", async () => {
     const { listVehicles } = await queries();
     const v = await buyNowVehicle();

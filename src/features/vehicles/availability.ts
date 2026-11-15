@@ -57,6 +57,7 @@ export function buyNowAvailable(v: VehicleLike, a: AuctionLike): boolean {
 export const buyNowEligibleSQL = sql`
   ${schema.vehicles.saleType} IN ('BUY_NOW', 'AUCTION_BUY_NOW')
   AND ${schema.vehicles.buyNowPrice} IS NOT NULL
+  AND ${schema.vehicles.buyNowCurrency} IS NOT NULL
   AND (
     ${schema.auctions.id} IS NULL
     OR (

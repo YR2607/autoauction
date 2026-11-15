@@ -18,6 +18,11 @@ export function useDialogA11y(
   panelRef: React.RefObject<HTMLElement | null>,
 ) {
   const restoreRef = useRef<Element | null>(null);
+  // Keep the latest callback without re-running the effect — a new onClose
+  // identity on re-render must not tear down focus trapping or restore
+  // focus while the dialog is still open.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
@@ -33,7 +38,7 @@ export function useDialogA11y(
     const h = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !panel) return;
@@ -65,5 +70,5 @@ export function useDialogA11y(
       document.body.style.overflow = prevOverflow;
       (restoreRef.current as HTMLElement | null)?.focus?.();
     };
-  }, [open, onClose, panelRef]);
+  }, [open, panelRef]);
 }
