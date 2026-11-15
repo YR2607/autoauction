@@ -6,6 +6,8 @@
 #           autoauction
 FROM node:22-alpine AS deps
 WORKDIR /app
+# better-sqlite3 compiles from source on musl (no prebuilt alpine binary).
+RUN apk add --no-cache python3 make g++
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
@@ -13,6 +15,10 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 WORKDIR /app
 COPY . .
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time.
+# Changing this requires an image rebuild — never put secrets here.
+ARG NEXT_PUBLIC_CONTACT_EMAIL=""
+ENV NEXT_PUBLIC_CONTACT_EMAIL=$NEXT_PUBLIC_CONTACT_EMAIL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 

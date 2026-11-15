@@ -4,6 +4,10 @@ Single-process Next.js + SQLite app. One instance, one scheduler, one writer.
 Do not scale horizontally — in-process SSE and the auction scheduler assume
 exactly one process.
 
+> **Milestone 6 note:** for the public VPS deployment path (Docker + Caddy +
+> HTTPS + `DEMO_MODE`), use `docs/PUBLIC_STAGING_DEPLOYMENT.md` and the
+> status ledger in `docs/PUBLIC_STAGING_DEPLOYMENT_REPORT.md`.
+
 ## Start / stop / restart
 
 ```bash

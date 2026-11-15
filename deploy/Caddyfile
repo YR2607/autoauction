@@ -1,0 +1,31 @@
+# Caddy reverse proxy for AutoAuction public staging.
+# Caddy provisions and renews TLS automatically — HTTPS with zero cert setup.
+#
+# Replace the domain, then: `caddy run --config deploy/Caddyfile`
+# (or drop into /etc/caddy/Caddyfile for systemd).
+#
+# Requires: DNS A/AAAA record pointing at this VPS, ports 80+443 open.
+
+staging.example.com {
+	# Security: only the proxy reaches the app (compose binds 127.0.0.1).
+	reverse_proxy 127.0.0.1:3100
+
+	# Uploads up to the app's 10 MB media limit (+ headroom).
+	request_body {
+		max_size 12MB
+	}
+
+	# SSE: flush immediately, no response buffering.
+	@events path /api/auctions/*/events
+	handle @events {
+		reverse_proxy 127.0.0.1:3100 {
+			flush_interval -1
+		}
+	}
+
+	# Never serve internal paths even if the app is misconfigured.
+	@internal path /data/* /documents/*
+	respond @internal 404
+
+	encode zstd gzip
+}

@@ -129,6 +129,8 @@ beforeAll(async () => {
       DOCUMENTS_DIR: path.join(CWD, "tests", "tmp", "documents"),
       EMAIL_TRANSPORT: "outbox",
       EMAIL_ALLOW_OUTBOX: "1", // next start runs NODE_ENV=production
+      APP_BASE_URL: `http://localhost:${PORT}`,
+      ALLOW_LOCALHOST_DEPLOY: "1", // prod-config validation: localhost needs the explicit opt-in
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
