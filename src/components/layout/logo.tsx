@@ -1,11 +1,10 @@
 export function Logo({ inverted = false }: { inverted?: boolean }) {
   return (
-    <span
-      className={`font-display text-lg font-extrabold tracking-tight ${
-        inverted ? "text-white" : "text-ink"
-      }`}
-    >
-      AutoAuction
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/logo.png"
+      alt="AutoAuction"
+      className={inverted ? "h-9 w-auto brightness-0 invert" : "h-9 w-auto"}
+    />
   );
 }
