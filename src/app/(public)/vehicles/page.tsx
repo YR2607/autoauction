@@ -1,6 +1,6 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { VehicleCard } from "@/components/vehicles/vehicle-card";
+import { VehicleRow } from "@/components/vehicles/vehicle-row";
 import { CatalogLayout } from "@/components/vehicles/catalog-filters";
 import { Pagination } from "@/components/vehicles/pagination";
 import { EmptyState } from "@/components/ui/empty";
@@ -29,6 +29,7 @@ export default async function VehiclesPage({
     model: s("model"),
     yearFrom: n("yearFrom"),
     yearTo: n("yearTo"),
+    priceMin: n("priceMin") ? n("priceMin")! * 100 : undefined,
     priceMax: n("priceMax") ? n("priceMax")! * 100 : undefined,
     mileageMax: n("mileageMax"),
     fuelType: s("fuelType"),
@@ -48,9 +49,9 @@ export default async function VehiclesPage({
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-7">
-          <h1 className="font-display text-3xl font-extrabold">Cars for sale</h1>
+          <h1 className="font-display text-3xl font-extrabold text-ink">Cars for sale</h1>
           <p className="mt-1 text-sm text-muted">
-            Fixed-price vehicles and live auction lots — with documented condition details.
+            Fixed-price vehicles and live auction lots with documented condition details.
           </p>
         </div>
 
@@ -62,9 +63,9 @@ export default async function VehiclesPage({
             />
           ) : (
             <>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="overflow-hidden rounded-lg border border-line bg-white">
                 {items.map((v) => (
-                  <VehicleCard key={v.id} v={v} />
+                  <VehicleRow key={v.id} v={v} />
                 ))}
               </div>
               <Pagination

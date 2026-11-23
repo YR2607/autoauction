@@ -1,4 +1,5 @@
-import { allOrders } from "@/features/admin/queries";
+import { allOrders, ordersCount } from "@/features/admin/queries";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { OrderActions } from "@/components/admin/order-actions";
@@ -16,12 +17,20 @@ const tone: Record<string, "warning" | "success" | "live" | "neutral"> = {
   CANCELLED: "neutral",
 };
 
-export default function OrdersPage() {
-  const rows = allOrders();
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const perPage = 20;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = ordersCount();
+  const rows = allOrders(perPage, (page - 1) * perPage);
   return (
     <div>
       <h1 className="font-display text-2xl font-extrabold">Orders</h1>
-      <p className="mt-1 text-sm text-muted">All purchase requests — auction wins and Buy Now.</p>
+      <p className="mt-1 text-sm text-muted">All purchase requests: auction wins and Buy Now.</p>
       <div className="mt-6 space-y-4">
         {rows.map((r) => (
           <Card key={r.order.id} className="p-5">
@@ -45,9 +54,9 @@ export default function OrdersPage() {
               </div>
             </div>
             {r.order.status === "PENDING_APPROVAL" && r.order.type === "AUCTION_WIN" ? (
-              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-[14px] border border-warning/30 bg-warning/10 px-4 py-3 text-sm">
+              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm">
                 <span className="font-semibold text-[#92600a]">
-                  Auction result — review and decide in Auction Approvals. Order actions are
+                  Auction result. Review and decide in Auction Approvals. Order actions are
                   disabled to keep auction/order states consistent.
                 </span>
                 <a href="/admin/approvals" className="font-bold text-primary hover:underline">
@@ -70,11 +79,12 @@ export default function OrdersPage() {
           </Card>
         ))}
         {rows.length === 0 && (
-          <p className="rounded-[14px] border border-dashed border-line bg-white px-6 py-10 text-center text-sm text-muted">
+          <p className="rounded-lg border border-dashed border-line bg-white px-6 py-10 text-center text-sm text-muted">
             No orders yet.
           </p>
         )}
       </div>
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/admin/orders" />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, NavArrowLeft as ChevronLeft, NavArrowRight as ChevronRight } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 const GENERAL: FieldDef[] = [
@@ -111,22 +111,22 @@ export function VehicleForm({
 
   function reviewRows() {
     const b = collectBody();
-    const pick = (k: string) => (b[k] ? String(b[k]) : "—");
+    const pick = (k: string) => (b[k] ? String(b[k]) : "N/A");
     return [
       ["Vehicle", `${pick("make")} ${pick("model")} ${pick("trim")} ${pick("year")}`.replace(/\s+/g, " ")],
       ["VIN", pick("vin")],
-      ["Mileage", b.mileage ? `${Number(b.mileage).toLocaleString("en-GB")} km` : "—"],
+      ["Mileage", b.mileage ? `${Number(b.mileage).toLocaleString("en-GB")} km` : "N/A"],
       ["Body / fuel", `${pick("bodyType")} · ${pick("fuelType")}`],
       ["Condition", pick("conditionOverall")],
-      ["Sale type", String(b.saleType ?? "—").replace(/_/g, " + ")],
-      ["Buy Now", b.buyNowPrice ? `${b.buyNowPrice} ${b.buyNowCurrency}` : "—"],
+      ["Sale type", String(b.saleType ?? "N/A").replace(/_/g, " + ")],
+      ["Buy Now", b.buyNowPrice ? `${b.buyNowPrice} ${b.buyNowCurrency}` : "N/A"],
     ];
   }
 
   return (
     <div>
       {/* stepper */}
-      <ol className="scroll-thin mb-6 flex gap-1 overflow-x-auto rounded-[14px] border border-line bg-white p-1.5">
+      <ol className="scroll-thin mb-6 flex gap-1 overflow-x-auto rounded-lg border border-line bg-white p-1.5">
         {STEPS.map((label, i) => (
           <li key={label} className="shrink-0">
             <button
@@ -231,7 +231,7 @@ export function VehicleForm({
               ))}
             </dl>
             <p className="mt-4 rounded-lg bg-graphite/5 px-3.5 py-2.5 text-xs font-semibold text-muted">
-              The vehicle is {vehicleId ? "updated in place" : "created as DRAFT"} — photos, documents
+              The vehicle is {vehicleId ? "updated in place" : "created as DRAFT"}. Photos, documents
               and auction scheduling are managed on the vehicle page.
             </p>
           </Section>
@@ -274,7 +274,7 @@ export function VehicleForm({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[14px] border border-line bg-white p-6">
+    <section className="rounded-lg border border-line bg-white p-6">
       <h2 className="mb-4 font-display text-base font-bold">{title}</h2>
       {children}
     </section>
@@ -296,7 +296,7 @@ function Field({
 }) {
   if (f.type === "checkbox") {
     return (
-      <label className="flex h-11 items-center gap-2.5 rounded-xl border border-line bg-white px-4 text-sm font-semibold transition-colors hover:border-graphite/30">
+      <label className="flex h-11 items-center gap-2.5 rounded-md border border-line bg-white px-4 text-sm font-semibold transition-colors hover:border-graphite/30">
         <input type="checkbox" name={f.name} defaultChecked={defaultChecked} className="h-4 w-4 accent-[#2563eb]" />
         {f.label}
       </label>
@@ -310,7 +310,7 @@ function Field({
       </Label>
       {f.options ? (
         <Select name={f.name} defaultValue={defaultValue}>
-          <option value="">—</option>
+          <option value="">None</option>
           {f.options.map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}

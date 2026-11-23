@@ -21,7 +21,7 @@ function fmt(currency: Currency, locale = "en-GB") {
 
 /** minor units → "€25,000" */
 export function formatMoney(minor: number | null | undefined, currency: Currency) {
-  if (minor == null) return "—";
+  if (minor == null) return "N/A";
   return fmt(currency).format(minor / 100);
 }
 

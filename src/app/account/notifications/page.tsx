@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
-import { myNotifications } from "@/features/account/queries";
+import { myNotifications, myNotificationsCount } from "@/features/account/queries";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty";
 import { MarkAllRead } from "@/components/account/mark-all-read";
@@ -10,10 +11,18 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Notifications" };
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const items = myNotifications(user.id);
+  const sp = await searchParams;
+  const perPage = 25;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = myNotificationsCount(user.id);
+  const items = myNotifications(user.id, perPage, (page - 1) * perPage);
 
   return (
     <div>
@@ -41,6 +50,7 @@ export default async function NotificationsPage() {
           ))}
         </Card>
       )}
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/account/notifications" />
     </div>
   );
 }

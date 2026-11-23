@@ -9,7 +9,7 @@ export default function RegisterPage() {
     <>
       <SiteHeader />
       <main className="mx-auto flex max-w-md flex-col px-4 py-16">
-        <h1 className="font-display text-3xl font-extrabold">Create account</h1>
+        <h1 className="font-display text-3xl font-extrabold text-ink">Create account</h1>
         <p className="mt-2 text-sm text-muted">Join to bid in auctions and buy vehicles.</p>
         <AuthForm mode="register" />
       </main>

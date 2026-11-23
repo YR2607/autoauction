@@ -36,7 +36,7 @@ export function Modal({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "anim-pop w-full rounded-2xl bg-white p-6 shadow-xl outline-none",
+          "anim-pop w-full rounded-lg bg-white p-6 shadow-xl outline-none",
           width,
         )}
         onClick={(e) => e.stopPropagation()}

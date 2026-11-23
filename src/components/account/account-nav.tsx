@@ -2,15 +2,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Gavel,
-  ShoppingBag,
-  Heart,
-  Bell,
-  User,
-  ShieldCheck,
-} from "lucide-react";
+import { DashboardDots as LayoutDashboard, ShoppingBag, Heart, Bell, User, ShieldCheck } from "iconoir-react";
+import { Gavel } from "@phosphor-icons/react/ssr";
 
 const items = [
   { href: "/account", label: "Dashboard", icon: LayoutDashboard },
@@ -30,7 +23,7 @@ export function AccountNav({
 }) {
   const path = usePathname();
   return (
-    <aside className="h-fit rounded-[14px] border border-line bg-white p-2 shadow-xs lg:sticky lg:top-20">
+    <aside className="h-fit rounded-lg border border-line bg-white p-2 lg:sticky lg:top-20">
       <nav aria-label="Account" className="scroll-thin flex gap-1 overflow-x-auto lg:flex-col">
         {items.map((i) => (
           <Link
@@ -38,9 +31,9 @@ export function AccountNav({
             href={i.href}
             aria-current={path === i.href ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors",
+              "flex shrink-0 items-center gap-2.5 rounded-md px-3.5 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors",
               path === i.href
-                ? "bg-graphite text-white"
+                ? "bg-ink text-white"
                 : "text-graphite/70 hover:bg-graphite/5",
             )}
           >
@@ -49,8 +42,8 @@ export function AccountNav({
             {i.href === "/account/notifications" && unread > 0 && (
               <span
                 className={cn(
-                  "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                  path === i.href ? "bg-white/20 text-white" : "bg-primary text-white",
+                  "ml-auto rounded px-1.5 py-0.5 text-[10px] font-bold",
+                  path === i.href ? "bg-white/20 text-white" : "bg-cta text-white",
                 )}
               >
                 {unread}

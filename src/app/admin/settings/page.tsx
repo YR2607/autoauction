@@ -25,7 +25,7 @@ export default function SettingsPage() {
   return (
     <div>
       <h1 className="font-display text-2xl font-extrabold">Settings</h1>
-      <p className="mt-1 text-sm text-muted">Configurable business rules — changes apply within ~10 seconds.</p>
+      <p className="mt-1 text-sm text-muted">Configurable business rules. Changes apply within ~10 seconds.</p>
       <div className="mt-6 max-w-xl">
         <SettingsForm fields={KEYS} values={values} />
       </div>

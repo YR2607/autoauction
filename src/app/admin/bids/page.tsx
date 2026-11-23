@@ -1,4 +1,5 @@
-import { allBids } from "@/features/admin/queries";
+import { allBids, bidsCount } from "@/features/admin/queries";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney, type Currency } from "@/lib/currency";
@@ -7,8 +8,16 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Bids · Admin" };
 
-export default function BidsPage() {
-  const rows = allBids();
+export default async function BidsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const perPage = 25;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = bidsCount();
+  const rows = allBids(perPage, (page - 1) * perPage);
   return (
     <div>
       <h1 className="font-display text-2xl font-extrabold">Bid history</h1>
@@ -40,6 +49,7 @@ export default function BidsPage() {
           </tbody>
         </table>
       </Card>
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/admin/bids" />
     </div>
   );
 }

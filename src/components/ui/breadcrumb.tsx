@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { NavArrowRight as ChevronRight } from "iconoir-react";
 
 export function Breadcrumb({
   items,

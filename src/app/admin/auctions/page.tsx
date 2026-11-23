@@ -1,6 +1,7 @@
 import { db, schema } from "@/lib/db";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { Card } from "@/components/ui/card";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Countdown } from "@/components/auctions/countdown";
 import { formatMoney, type Currency } from "@/lib/currency";
@@ -23,19 +24,28 @@ const tone: Record<string, "live" | "warning" | "success" | "neutral" | "primary
   REJECTED: "live",
 };
 
-export default function AdminAuctionsPage() {
+export default async function AdminAuctionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const perPage = 25;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = db.select({ c: sql<number>`count(*)` }).from(schema.auctions).get()?.c ?? 0;
   const rows = db
     .select({ auction: schema.auctions, vehicle: schema.vehicles })
     .from(schema.auctions)
     .innerJoin(schema.vehicles, eq(schema.vehicles.id, schema.auctions.vehicleId))
     .orderBy(desc(schema.auctions.createdAt))
-    .limit(300)
+    .limit(perPage)
+    .offset((page - 1) * perPage)
     .all();
 
   return (
     <div>
       <h1 className="font-display text-2xl font-extrabold">Auctions</h1>
-      <p className="mt-1 text-sm text-muted">Manage on the vehicle page — create, schedule, cancel, approve.</p>
+      <p className="mt-1 text-sm text-muted">Manage on the vehicle page: create, schedule, cancel, approve.</p>
       <Card className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[820px] text-sm">
           <thead>
@@ -80,6 +90,7 @@ export default function AdminAuctionsPage() {
           </tbody>
         </table>
       </Card>
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/admin/auctions" />
     </div>
   );
 }

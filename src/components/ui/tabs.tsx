@@ -36,7 +36,7 @@ export function Tabs({
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-line bg-white p-1",
+        "inline-flex items-center gap-0.5 rounded-md border border-line bg-white p-1",
         className,
       )}
     >
@@ -51,8 +51,8 @@ export function Tabs({
           tabIndex={value === it.value ? 0 : -1}
           onClick={() => onChange(it.value)}
           className={cn(
-            "rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+            "rounded px-4 py-1.5 text-[13px] font-semibold transition-colors",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
             value === it.value
               ? "bg-graphite text-white"
               : "text-muted hover:text-graphite",

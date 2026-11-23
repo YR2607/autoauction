@@ -488,7 +488,7 @@ describe("HTTP / admin approval workflow", () => {
     const html = await r.text();
     expect(r.status).toBe(200);
     expect(html).toContain("Go to Approvals");
-    expect(html).toContain("review and decide");
+    expect(html).toContain("Review and decide");
   });
 
   it("buy-now rejection via orders endpoint honors REOPEN with a chosen end time", async () => {

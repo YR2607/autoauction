@@ -1,11 +1,17 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { Input, Label, Select } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { Input, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { FilterChip } from "@/components/ui/chip";
-import { SlidersHorizontal, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  FilterList as SlidersHorizontal,
+  Search,
+  NavArrowRight,
+  Check,
+} from "iconoir-react";
 
 export type FilterOptions = {
   makes: string[];
@@ -28,6 +34,7 @@ const FILTER_LABELS: Record<string, (v: string) => string> = {
   model: (v) => v,
   yearFrom: (v) => `Year ≥ ${v}`,
   yearTo: (v) => `Year ≤ ${v}`,
+  priceMin: (v) => `≥ ${Number(v).toLocaleString("en-GB")}`,
   priceMax: (v) => `≤ ${Number(v).toLocaleString("en-GB")}`,
   mileageMax: (v) => `≤ ${Number(v).toLocaleString("en-GB")} km`,
   fuelType: (v) => v,
@@ -38,20 +45,176 @@ const FILTER_LABELS: Record<string, (v: string) => string> = {
   auctionStatus: (v) => (v === "LIVE" ? "Live auctions" : v === "SCHEDULED" ? "Upcoming" : v),
 };
 
-/** Fields rendered inside the filters panel (desktop aside + mobile drawer). */
+/** Collapsible filter section — module-level so re-renders don't remount inputs. */
+function FilterSection({
+  title,
+  summary,
+  expanded,
+  onToggle,
+  children,
+}: {
+  title: string;
+  summary?: string;
+  expanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-b border-line">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
+      >
+        <span className="min-w-0">
+          <span className="block text-[13.5px] font-semibold text-ink">
+            {title}
+          </span>
+          {summary && (
+            <span className="mt-0.5 block truncate text-xs text-primary">
+              {summary}
+            </span>
+          )}
+        </span>
+        <NavArrowRight
+          className={cn(
+            "h-3.5 w-3.5 shrink-0 text-muted transition-transform duration-200",
+            expanded && "rotate-90",
+          )}
+          aria-hidden
+        />
+      </button>
+      {expanded && <div className="pb-4">{children}</div>}
+    </div>
+  );
+}
+
+/** Checkbox-style option list — module-level for the same reason. */
+function FilterOptList({
+  items,
+  activeValue,
+  onPick,
+}: {
+  items: (string | [string, string])[];
+  activeValue: string;
+  onPick: (value: string) => void;
+}) {
+  return (
+    <ul className="scroll-thin -mx-1 max-h-44 overflow-y-auto">
+      {items.map((it) => {
+        const [v, label] = Array.isArray(it) ? it : [it, it];
+        const active = activeValue === v;
+        return (
+          <li key={v}>
+            <button
+              type="button"
+              onClick={() => onPick(v)}
+              className={cn(
+                "flex w-full items-center gap-2.5 rounded px-1.5 py-1.5 text-left text-[13px] transition-colors",
+                active
+                  ? "font-bold text-ink"
+                  : "text-graphite/70 hover:text-ink",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border transition-colors",
+                  active ? "border-ink bg-ink" : "border-graphite/30",
+                )}
+              >
+                {active && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+              </span>
+              {label}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+const SECTION_PARAMS: Record<string, string[]> = {
+  make: ["make", "model"],
+  fuel: ["fuelType"],
+  year: ["yearFrom", "yearTo"],
+  transmission: ["transmission"],
+  mileage: ["mileageMax"],
+  price: ["priceMin", "priceMax", "currency"],
+  body: ["bodyType"],
+  sale: ["saleType"],
+  status: ["auctionStatus"],
+};
+
+/** Accordion filter sidebar — mobile.de-style collapsible sections. */
 export function FiltersPanel({
   options,
   current,
+  total,
+  basePath = "/vehicles",
   onApply,
 }: {
   options: FilterOptions;
   current: Record<string, string | string[] | undefined>;
+  total: number;
+  basePath?: string;
   onApply?: () => void;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
   const g = (k: string) => (typeof current[k] === "string" ? (current[k] as string) : "");
-  const [q, setQ] = useState(g("q"));
+
+  // Text inputs are drafted locally so typing doesn't navigate; they apply
+  // on blur / Enter. Drafts re-sync whenever the applied params change.
+  const DRAFT_KEYS = ["q", "model", "yearFrom", "yearTo", "mileageMax", "priceMin", "priceMax"] as const;
+  const curKey = DRAFT_KEYS.map((k) => g(k)).join("|");
+  const [draft, setDraft] = useState<Record<string, string>>(() =>
+    Object.fromEntries(DRAFT_KEYS.map((k) => [k, g(k)])),
+  );
+  const [preview, setPreview] = useState<number | null>(null);
+  useEffect(() => {
+    setDraft(Object.fromEntries(DRAFT_KEYS.map((k) => [k, g(k)])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curKey]);
+
+  // Live match preview while drafting — no navigation, just a count.
+  useEffect(() => {
+    const dirty = DRAFT_KEYS.some((k) => (draft[k] ?? "").trim() !== g(k));
+    if (!dirty) {
+      setPreview(null);
+      return;
+    }
+    const t = setTimeout(() => {
+      const qs = new URLSearchParams();
+      for (const [k, v] of Object.entries(current)) {
+        if (typeof v === "string" && v) qs.set(k, v);
+      }
+      for (const k of DRAFT_KEYS) {
+        const d = (draft[k] ?? "").trim();
+        if (d) qs.set(k, d);
+        else qs.delete(k);
+      }
+      qs.delete("page");
+      const scope = basePath === "/auctions" ? "auctions" : basePath === "/buy-now" ? "buy-now" : "vehicles";
+      qs.set("scope", scope);
+      fetch(`/api/vehicles/count?${qs.toString()}`)
+        .then((r) => r.json())
+        .then((j) => setPreview(typeof j.total === "number" ? j.total : null))
+        .catch(() => setPreview(null));
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft]);
+
+  // Sections with active values start expanded.
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      Object.entries(SECTION_PARAMS).map(([id, params]) => [
+        id,
+        params.some((p) => g(p)),
+      ]),
+    ),
+  );
 
   function apply(kv: Record<string, string>) {
     const params = new URLSearchParams(sp.toString());
@@ -60,160 +223,263 @@ export function FiltersPanel({
       else params.delete(k);
     }
     params.delete("page");
-    router.push(`/vehicles?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
     onApply?.();
   }
 
-  const sel = (key: string) => (e: React.ChangeEvent<HTMLSelectElement>) =>
-    apply({ [key]: e.target.value });
+  const toggle = (id: string) => setOpen((s) => ({ ...s, [id]: !s[id] }));
+  const setD = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDraft((d) => ({ ...d, [k]: e.target.value }));
+  // Apply every pending draft in a single navigation — never on blur,
+  // otherwise clicking the next input closes the drawer / loses focus.
+  function applyDrafts() {
+    const kv: Record<string, string> = {};
+    for (const k of DRAFT_KEYS) {
+      const v = (draft[k] ?? "").trim();
+      if (v !== g(k)) kv[k] = v;
+    }
+    if (Object.keys(kv).length) apply(kv);
+  }
+  const onEnter = (e: React.KeyboardEvent<HTMLInputElement>) =>
+    e.key === "Enter" && applyDrafts();
+
+  const sectionProps = (id: string) => ({
+    expanded: !!open[id],
+    onToggle: () => toggle(id),
+  });
+  const pick = (param: string) => (v: string) =>
+    apply({ [param]: g(param) === v ? "" : v });
+
+  const buyNowOnly = g("saleType") === "BUY_NOW";
+  const liveOnly = g("auctionStatus") === "LIVE";
 
   return (
     <div>
+      {/* Result count — reference-style header */}
+      <p className="border-b border-line pb-3.5 text-center text-[13px] text-muted">
+        <b className="text-ink">{total.toLocaleString("en-GB")}</b>{" "}
+        vehicle{total === 1 ? "" : "s"} found
+      </p>
+      {preview !== null && (
+        <button
+          type="button"
+          onClick={applyDrafts}
+          aria-live="polite"
+          className={cn(
+            "block w-full border-b border-line py-2 text-center text-xs font-bold transition-colors hover:bg-bg",
+            preview === 0 ? "text-error" : "text-primary",
+          )}
+        >
+          {preview === 0
+            ? "No matches — apply anyway"
+            : `${preview.toLocaleString("en-GB")} will match — click to apply`}
+        </button>
+      )}
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          apply({ q });
+          apply({ q: (draft.q ?? "").trim() });
         }}
-        className="mb-5"
+        className="border-b border-line py-3.5"
       >
-        <Label>Search</Label>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
           <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            value={draft.q ?? ""}
+            onChange={setD("q")}
             placeholder="Make, model, lot…"
-            className="pl-9"
+            className="h-9 pl-8 text-[13px]"
+            aria-label="Search vehicles"
           />
         </div>
       </form>
 
-      <div className="space-y-4">
-        <div>
-          <Label>Sale type</Label>
-          <Select value={g("saleType")} onChange={sel("saleType")}>
-            <option value="">All</option>
-            <option value="AUCTION">Auction</option>
-            <option value="BUY_NOW">Buy Now</option>
-            <option value="AUCTION_BUY_NOW">Auction + Buy Now</option>
-          </Select>
-        </div>
-        <div>
-          <Label>Auction status</Label>
-          <Select value={g("auctionStatus")} onChange={sel("auctionStatus")}>
-            <option value="">All</option>
-            <option value="LIVE">Live now</option>
-            <option value="SCHEDULED">Upcoming</option>
-          </Select>
-        </div>
-        <div>
-          <Label>Make</Label>
-          <Select value={g("make")} onChange={sel("make")}>
-            <option value="">All makes</option>
-            {options.makes.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </Select>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Year from</Label>
-            <Input
-              type="number"
-              defaultValue={g("yearFrom")}
-              placeholder="2018"
-              onBlur={(e) => apply({ yearFrom: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label>Year to</Label>
-            <Input
-              type="number"
-              defaultValue={g("yearTo")}
-              placeholder="2024"
-              onBlur={(e) => apply({ yearTo: e.target.value })}
-            />
-          </div>
-        </div>
-        <div>
-          <Label>Currency</Label>
-          <Select value={g("currency")} onChange={sel("currency")}>
-            <option value="">All</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-            <option value="GBP">GBP</option>
-          </Select>
-        </div>
-        <div>
-          <Label>Max price (major units)</Label>
+      <FilterSection {...sectionProps("make")} title="Make" summary={[g("make"), g("model")].filter(Boolean).join(" · ") || undefined}>
+        <FilterOptList activeValue={g("make")} onPick={pick("make")} items={options.makes} />
+        <Input
+          value={draft.model ?? ""}
+          onChange={setD("model")}
+          placeholder="Model, e.g. M4"
+          className="mt-2.5 h-9 text-[13px]"
+          onKeyDown={onEnter}
+          aria-label="Model"
+        />
+      </FilterSection>
+
+      <FilterSection {...sectionProps("fuel")} title="Fuel type" summary={g("fuelType") || undefined}>
+        <FilterOptList activeValue={g("fuelType")} onPick={pick("fuelType")} items={options.fuelTypes} />
+      </FilterSection>
+
+      <FilterSection {...sectionProps("year")}
+      title="Year"
+        summary={
+          g("yearFrom") || g("yearTo")
+            ? `${g("yearFrom") || "…"} to ${g("yearTo") || "…"}`
+            : undefined
+        }
+      >
+        <div className="grid grid-cols-2 gap-2">
           <Input
             type="number"
-            defaultValue={g("priceMax")}
-            placeholder="50000"
-            onBlur={(e) => apply({ priceMax: e.target.value })}
+            value={draft.yearFrom ?? ""}
+            onChange={setD("yearFrom")}
+            placeholder="From"
+            className="h-9 text-[13px]"
+            onKeyDown={onEnter}
+            aria-label="Year from"
           />
-        </div>
-        <div>
-          <Label>Max mileage (km)</Label>
           <Input
             type="number"
-            defaultValue={g("mileageMax")}
-            placeholder="60000"
-            onBlur={(e) => apply({ mileageMax: e.target.value })}
+            value={draft.yearTo ?? ""}
+            onChange={setD("yearTo")}
+            placeholder="To"
+            className="h-9 text-[13px]"
+            onKeyDown={onEnter}
+            aria-label="Year to"
           />
         </div>
-        <div>
-          <Label>Fuel</Label>
-          <Select value={g("fuelType")} onChange={sel("fuelType")}>
-            <option value="">All</option>
-            {options.fuelTypes.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </Select>
+      </FilterSection>
+
+      <FilterSection {...sectionProps("transmission")} title="Transmission" summary={g("transmission") || undefined}>
+        <FilterOptList activeValue={g("transmission")} onPick={pick("transmission")} items={options.transmissions} />
+      </FilterSection>
+
+      <FilterSection {...sectionProps("mileage")}
+      title="Mileage"
+        summary={g("mileageMax") ? `≤ ${Number(g("mileageMax")).toLocaleString("en-GB")} km` : undefined}
+      >
+        <Input
+          type="number"
+          value={draft.mileageMax ?? ""}
+          onChange={setD("mileageMax")}
+          placeholder="Max km"
+          className="h-9 text-[13px]"
+          onKeyDown={onEnter}
+          aria-label="Max mileage"
+        />
+      </FilterSection>
+
+      <FilterSection {...sectionProps("price")}
+      title="Price"
+        summary={
+          g("priceMin") || g("priceMax")
+            ? `${g("priceMin") ? `≥ ${Number(g("priceMin")).toLocaleString("en-GB")}` : "…"} to ${g("priceMax") ? `≤ ${Number(g("priceMax")).toLocaleString("en-GB")}` : "…"} ${g("currency") || ""}`.trim()
+            : g("currency") || undefined
+        }
+      >
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            type="number"
+            value={draft.priceMin ?? ""}
+            onChange={setD("priceMin")}
+            placeholder="Min"
+            className="h-9 text-[13px]"
+            onKeyDown={onEnter}
+            aria-label="Min price (major units)"
+          />
+          <Input
+            type="number"
+            value={draft.priceMax ?? ""}
+            onChange={setD("priceMax")}
+            placeholder="Max"
+            className="h-9 text-[13px]"
+            onKeyDown={onEnter}
+            aria-label="Max price (major units)"
+          />
         </div>
-        <div>
-          <Label>Transmission</Label>
-          <Select value={g("transmission")} onChange={sel("transmission")}>
-            <option value="">All</option>
-            {options.transmissions.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <Label>Body type</Label>
-          <Select value={g("bodyType")} onChange={sel("bodyType")}>
-            <option value="">All</option>
-            {options.bodyTypes.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </Select>
-        </div>
-        <Button
-          variant="outline"
-          className="w-full"
-          type="button"
-          onClick={() => router.push("/vehicles")}
+        <Select
+          value={g("currency")}
+          onChange={(e) => apply({ currency: e.target.value })}
+          className="mt-2 h-9 text-[13px]"
+          aria-label="Currency"
         >
-          Clear all filters
-        </Button>
-      </div>
+          <option value="">Any currency</option>
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+          <option value="GBP">GBP</option>
+        </Select>
+      </FilterSection>
+
+      <FilterSection {...sectionProps("body")} title="Body type" summary={g("bodyType") || undefined}>
+        <FilterOptList activeValue={g("bodyType")} onPick={pick("bodyType")} items={options.bodyTypes} />
+      </FilterSection>
+
+      {basePath === "/vehicles" && (
+        <FilterSection {...sectionProps("sale")}
+      title="Sale type"
+          summary={g("saleType") ? FILTER_LABELS.saleType(g("saleType")) : undefined}
+        >
+          <FilterOptList activeValue={g("saleType")} onPick={pick("saleType")} items={[
+              ["AUCTION", "Auction"],
+              ["BUY_NOW", "Buy Now"],
+              ["AUCTION_BUY_NOW", "Auction + Buy Now"],
+            ]}
+          />
+        </FilterSection>
+      )}
+
+      <FilterSection {...sectionProps("status")}
+      title="Auction status"
+        summary={g("auctionStatus") ? FILTER_LABELS.auctionStatus(g("auctionStatus")) : undefined}
+      >
+        <FilterOptList activeValue={g("auctionStatus")} onPick={pick("auctionStatus")} items={[
+            ["LIVE", "Live now"],
+            ["SCHEDULED", "Upcoming"],
+          ]}
+        />
+      </FilterSection>
+
+      {/* Standalone quick checkboxes — reference-style */}
+      {basePath === "/vehicles" && (
+        <label className="flex cursor-pointer items-center gap-2.5 border-b border-line py-3.5 text-[13.5px] font-semibold text-ink">
+          <input
+            type="checkbox"
+            checked={buyNowOnly}
+            onChange={(e) => apply({ saleType: e.target.checked ? "BUY_NOW" : "" })}
+            className="h-4 w-4 rounded-[3px] border-graphite/30 accent-ink"
+          />
+          Buy now only
+        </label>
+      )}
+      <label className="flex cursor-pointer items-center gap-2.5 border-b border-line py-3.5 text-[13.5px] font-semibold text-ink">
+        <input
+          type="checkbox"
+          checked={liveOnly}
+          onChange={(e) => apply({ auctionStatus: e.target.checked ? "LIVE" : "" })}
+          className="h-4 w-4 rounded-[3px] border-graphite/30 accent-ink"
+        />
+        Live auctions only
+      </label>
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt-4 w-full"
+        type="button"
+        onClick={() => router.push(basePath)}
+      >
+        Clear all filters
+      </Button>
     </div>
   );
 }
 
 /**
- * Catalog chrome: result count, active-filter chips, sort control and the
- * mobile filter drawer trigger. `panel` is the <FiltersPanel/> instance —
- * rendered once for the aside and once for the drawer by the page.
+ * Catalog chrome: active-filter chips, sort control and the
+ * mobile filter drawer trigger.
  */
 export function CatalogToolbar({
   total,
   current,
+  basePath = "/vehicles",
+  filters = "sidebar",
   onOpenFilters,
 }: {
   total: number;
   current: Record<string, string | string[] | undefined>;
+  basePath?: string;
+  filters?: "sidebar" | "drawer";
   onOpenFilters: () => void;
 }) {
   const router = useRouter();
@@ -225,27 +491,27 @@ export function CatalogToolbar({
     const params = new URLSearchParams(sp.toString());
     params.delete(k);
     params.delete("page");
-    router.push(`/vehicles?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
   function sort(v: string) {
     const params = new URLSearchParams(sp.toString());
     params.set("sort", v);
     params.delete("page");
-    router.push(`/vehicles?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
 
   return (
     <div className="mb-5 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-muted">
+        <p className={cn("text-sm font-semibold text-muted", filters === "sidebar" && "lg:hidden")}>
           <b className="text-graphite">{total}</b> vehicle{total === 1 ? "" : "s"}
           {active.length > 0 && ` · ${active.length} filter${active.length === 1 ? "" : "s"}`}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 lg:ml-auto">
           <Button
             variant="outline"
             size="sm"
-            className="lg:hidden"
+            className={cn(filters === "sidebar" && "lg:hidden")}
             onClick={onOpenFilters}
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -269,8 +535,8 @@ export function CatalogToolbar({
             <FilterChip key={k} label={FILTER_LABELS[k](g(k))} onRemove={() => remove(k)} />
           ))}
           <button
-            onClick={() => router.push("/vehicles")}
-            className="text-xs font-bold text-primary hover:underline"
+            onClick={() => router.push(basePath)}
+            className="text-xs font-bold text-graphite/60 underline underline-offset-2 hover:text-ink"
           >
             Clear all
           </button>
@@ -285,34 +551,42 @@ export function CatalogLayout({
   options,
   current,
   total,
+  basePath = "/vehicles",
+  filters = "sidebar",
   children,
 }: {
   options: FilterOptions;
   current: Record<string, string | string[] | undefined>;
   total: number;
+  basePath?: string;
+  /** "sidebar" — desktop aside + mobile drawer; "drawer" — filter button + drawer everywhere. */
+  filters?: "sidebar" | "drawer";
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="grid gap-8 lg:grid-cols-[264px_1fr]">
-      <aside className="hidden h-fit rounded-[14px] border border-line bg-white p-5 shadow-xs lg:sticky lg:top-20 lg:block">
-        <FiltersPanel options={options} current={current} />
-      </aside>
+    <div className={cn(filters === "sidebar" && "grid gap-8 lg:grid-cols-[264px_1fr]")}>
+      {filters === "sidebar" && (
+        <aside className="hidden h-fit rounded-lg border border-line bg-white px-5 pt-4 pb-5 lg:sticky lg:top-20 lg:block">
+          <FiltersPanel options={options} current={current} total={total} basePath={basePath} />
+        </aside>
+      )}
       <div className="min-w-0">
-        <CatalogToolbar total={total} current={current} onOpenFilters={() => setOpen(true)} />
+        <CatalogToolbar total={total} current={current} basePath={basePath} filters={filters} onOpenFilters={() => setOpen(true)} />
         {children}
       </div>
       <Drawer
         open={open}
         onClose={() => setOpen(false)}
         title="Filters"
+        desktop={filters === "drawer"}
         footer={
           <Button className="w-full" onClick={() => setOpen(false)}>
             Show {total} results
           </Button>
         }
       >
-        <FiltersPanel options={options} current={current} onApply={() => setOpen(false)} />
+        <FiltersPanel options={options} current={current} total={total} basePath={basePath} />
       </Drawer>
     </div>
   );

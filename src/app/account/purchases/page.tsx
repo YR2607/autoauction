@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
-import { myOrders } from "@/features/account/queries";
+import { myOrders, myOrdersCount } from "@/features/account/queries";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty";
@@ -19,10 +20,18 @@ const tone: Record<string, "success" | "live" | "warning" | "neutral"> = {
   CANCELLED: "neutral",
 };
 
-export default async function PurchasesPage() {
+export default async function PurchasesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const rows = myOrders(user.id);
+  const sp = await searchParams;
+  const perPage = 20;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = myOrdersCount(user.id);
+  const rows = myOrders(user.id, perPage, (page - 1) * perPage);
 
   return (
     <div>
@@ -32,7 +41,7 @@ export default async function PurchasesPage() {
           className="mt-6"
           title="No purchases yet"
           body="Won auctions and Buy Now requests will appear here."
-          action={<Link href="/buy-now" className="rounded-full bg-graphite px-5 py-2.5 text-sm font-semibold text-white">Browse Buy Now</Link>}
+          action={<Link href="/buy-now" className="rounded-md bg-cta px-5 py-2.5 text-sm font-semibold text-white">Browse Buy Now</Link>}
         />
       ) : (
         <Card className="mt-6 overflow-x-auto">
@@ -74,6 +83,7 @@ export default async function PurchasesPage() {
           </table>
         </Card>
       )}
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/account/purchases" />
     </div>
   );
 }

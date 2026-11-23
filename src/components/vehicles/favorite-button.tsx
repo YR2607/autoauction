@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Heart } from "lucide-react";
+import { Heart } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 export function FavoriteButton({
@@ -28,7 +28,7 @@ export function FavoriteButton({
         setBusy(false);
       }}
       className={cn(
-        "flex h-11 w-11 items-center justify-center rounded-full border transition-all",
+        "flex h-11 w-11 items-center justify-center rounded-md border transition-all",
         fav
           ? "border-error/30 bg-error/10 text-error"
           : "border-line bg-white text-muted hover:text-error",

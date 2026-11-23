@@ -1,6 +1,7 @@
 import { db, schema } from "@/lib/db";
 import { desc, eq, sql } from "drizzle-orm";
 import { Card } from "@/components/ui/card";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -10,7 +11,15 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Vehicles · Admin" };
 
-export default function AdminVehiclesPage() {
+export default async function AdminVehiclesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const perPage = 25;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = db.select({ c: sql<number>`count(*)` }).from(schema.vehicles).get()?.c ?? 0;
   const rows = db
     .select({
       vehicle: schema.vehicles,
@@ -21,7 +30,8 @@ export default function AdminVehiclesPage() {
     .from(schema.vehicles)
     .leftJoin(schema.auctions, eq(schema.auctions.vehicleId, schema.vehicles.id))
     .orderBy(desc(schema.vehicles.createdAt))
-    .limit(200)
+    .limit(perPage)
+    .offset((page - 1) * perPage)
     .all();
 
   return (
@@ -84,6 +94,7 @@ export default function AdminVehiclesPage() {
           </tbody>
         </table>
       </Card>
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/admin/vehicles" />
     </div>
   );
 }

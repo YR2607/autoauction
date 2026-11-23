@@ -89,6 +89,7 @@ export type CatalogFilters = {
   model?: string;
   yearFrom?: number;
   yearTo?: number;
+  priceMin?: number; // minor units
   priceMax?: number; // minor units
   mileageMax?: number;
   fuelType?: string;
@@ -142,6 +143,7 @@ export function listVehicles(f: CatalogFilters) {
     WHEN ${buyNowEligibleSQL} THEN ${schema.vehicles.buyNowPrice}
     ELSE COALESCE(${schema.auctions.currentBid}, ${schema.auctions.startingPrice}, ${schema.vehicles.buyNowPrice})
   END`;
+  if (f.priceMin) conds.push(gte(priceExpr, f.priceMin));
   if (f.priceMax) conds.push(lte(priceExpr, f.priceMax));
 
   const order =

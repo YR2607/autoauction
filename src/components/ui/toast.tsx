@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useState } from "react";
-import { CheckCircle2, XCircle, Info } from "lucide-react";
+import { CheckCircle as CheckCircle2, XmarkCircle as XCircle, InfoCircle as Info } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 type Toast = { id: number; kind: "ok" | "err" | "info"; text: string };
@@ -23,7 +23,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              "anim-pop pointer-events-auto flex items-start gap-2.5 rounded-xl border bg-white px-4 py-3 text-sm font-semibold shadow-pop",
+              "anim-pop pointer-events-auto flex items-start gap-2.5 rounded-md border bg-white px-4 py-3 text-sm font-semibold shadow-pop",
               t.kind === "ok" && "border-success/30 text-success",
               t.kind === "err" && "border-error/30 text-error",
               t.kind === "info" && "border-line text-graphite",

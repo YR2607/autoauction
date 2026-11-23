@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Upload, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash as Trash2, Upload, Star, NavArrowLeft as ChevronLeft, NavArrowRight as ChevronRight } from "iconoir-react";
 
 export function ImageManager({
   vehicleId,

@@ -64,7 +64,7 @@ export function createAuction(input: CreateAuctionInput): string {
     if (vehicle.status !== "PUBLISHED")
       throw new EngineError(
         "BAD_TRANSITION",
-        `Vehicle is ${vehicle.status} — only published vehicles can get an auction`,
+        `Vehicle is ${vehicle.status}. Only published vehicles can get an auction`,
       );
     const pendingBuyNow = tx
       .select({ id: schema.orders.id })
@@ -142,7 +142,7 @@ export function scheduleAuction(auctionId: string, adminId: string) {
     if (vehicle.status !== "PUBLISHED")
       throw new EngineError(
         "BAD_TRANSITION",
-        `Vehicle is ${vehicle.status} — cannot schedule its auction`,
+        `Vehicle is ${vehicle.status}, cannot schedule its auction`,
       );
     const pendingBuyNow = tx
       .select({ id: schema.orders.id })
@@ -156,7 +156,7 @@ export function scheduleAuction(auctionId: string, adminId: string) {
       )
       .get();
     if (pendingBuyNow)
-      throw new EngineError("BAD_TRANSITION", "Vehicle has a pending Buy Now order — cannot schedule");
+      throw new EngineError("BAD_TRANSITION", "Vehicle has a pending Buy Now order. Cannot schedule");
     const before = { status: a.status };
     transition(tx, a, "SCHEDULED", adminId);
     audit(tx, adminId, "auction.schedule", "auction", auctionId, before, { status: "SCHEDULED" });
@@ -181,7 +181,7 @@ export function cancelAuction(auctionId: string, adminId: string, reason: string
     if (pendingOrder)
       throw new EngineError(
         "BAD_TRANSITION",
-        "Cannot cancel while a pending order exists — decide the order first",
+        "Cannot cancel while a pending order exists. Decide the order first",
       );
     const before = { status: a.status };
     transition(tx, a, "CANCELLED", adminId, reason);
@@ -219,7 +219,7 @@ export function approveResult(auctionId: string, adminId: string, expectedOrderI
     // Stale-request guard: the caller addressed a specific order; refuse to
     // decide a different one that appeared since (e.g. a NEXT_BIDDER order).
     if (expectedOrderId && order.id !== expectedOrderId)
-      throw new EngineError("BAD_TRANSITION", "Pending order changed — refresh and retry");
+      throw new EngineError("BAD_TRANSITION", "Pending order changed. Refresh and retry");
 
     const t = now();
     transition(tx, a, "APPROVED", adminId);
@@ -233,7 +233,7 @@ export function approveResult(auctionId: string, adminId: string, expectedOrderI
       .where(eq(schema.vehicles.id, a.vehicleId))
       .run();
     notify(tx, order.buyerId, "auction_won", "You won the auction",
-      "Your winning bid was approved. The vehicle is yours — our team will contact you.",
+      "Your winning bid was approved. The vehicle is yours. Our team will contact you.",
       { auctionId: a.id, orderId: order.id });
     audit(tx, adminId, "auction.approve", "auction", auctionId,
       { status: "AWAITING_ADMIN_APPROVAL" }, { status: "SOLD" });
@@ -270,7 +270,7 @@ export function rejectResult(
     if (!order) throw new EngineError("NO_ACTIVE_ORDER", "Pending order not found");
     // Stale-request guard — see approveResult.
     if (expectedOrderId && order.id !== expectedOrderId)
-      throw new EngineError("BAD_TRANSITION", "Pending order changed — refresh and retry");
+      throw new EngineError("BAD_TRANSITION", "Pending order changed. Refresh and retry");
 
     const t = now();
     transition(tx, a, "REJECTED", adminId, reason);
@@ -358,7 +358,7 @@ export function rejectResult(
           })
           .run();
         notify(tx, next.userId, "result_pending", "Auction result pending approval",
-          "You are now the leading bidder — result awaiting administrator approval.",
+          "You are now the leading bidder. Result awaiting administrator approval.",
           { auctionId: a.id, orderId: newOrderId });
       }
     } else {
@@ -492,7 +492,7 @@ export function rejectOrder(
           )
           .get();
         if (soldOrder)
-          throw new EngineError("BAD_TRANSITION", "Vehicle already sold — cannot reopen auction");
+          throw new EngineError("BAD_TRANSITION", "Vehicle already sold. Cannot reopen auction");
         const ends = opts.newEndsAt ?? t + 24 * 3600 * 1000;
         if (ends <= t)
           throw new EngineError("BAD_TRANSITION", "newEndsAt must be in the future");

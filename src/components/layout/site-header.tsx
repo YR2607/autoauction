@@ -3,10 +3,12 @@ import { getSessionUser } from "@/lib/auth/session";
 import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
+import { Logo } from "./logo";
 
 const links = [
-  { href: "/vehicles", label: "Cars" },
+  { href: "/#about", label: "About" },
   { href: "/auctions", label: "Auctions" },
+  { href: "/vehicles", label: "Vehicles" },
   { href: "/buy-now", label: "Buy Now" },
   { href: "/#how-it-works", label: "How It Works" },
 ];
@@ -14,15 +16,10 @@ const links = [
 export async function SiteHeader() {
   const user = await getSessionUser();
   return (
-    <header className="sticky top-0 z-40 border-b border-line/60 bg-white/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-line bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2" aria-label="AutoAuction home">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-graphite text-sm font-black text-white">
-            A
-          </span>
-          <span className="font-display text-lg font-extrabold tracking-tight">
-            AutoAuction
-          </span>
+        <Link href="/" aria-label="AutoAuction home">
+          <Logo />
         </Link>
 
         <NavLinks links={links} />
@@ -33,14 +30,14 @@ export async function SiteHeader() {
               {user.role === "admin" && (
                 <Link
                   href="/admin"
-                  className="rounded-full px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10"
+                  className="rounded-md px-4 py-2 text-[13.5px] font-medium text-graphite/70 transition-colors hover:bg-graphite/5 hover:text-ink"
                 >
                   Admin
                 </Link>
               )}
               <Link
                 href="/account"
-                className="rounded-full px-4 py-2 text-sm font-semibold text-graphite/80 hover:bg-graphite/5"
+                className="rounded-md px-4 py-2 text-[13.5px] font-medium text-graphite/70 transition-colors hover:bg-graphite/5 hover:text-ink"
               >
                 Account
               </Link>
@@ -50,13 +47,13 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="rounded-full px-4 py-2 text-sm font-semibold text-graphite/80 hover:bg-graphite/5"
+                className="rounded-md px-4 py-2 text-[13.5px] font-medium text-graphite/70 transition-colors hover:bg-graphite/5 hover:text-ink"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="rounded-full bg-graphite px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink"
+                className="rounded-md bg-cta px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-cta-hover"
               >
                 Create account
               </Link>

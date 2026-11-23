@@ -1,4 +1,5 @@
-import { allUsers } from "@/features/admin/queries";
+import { allUsers, usersCount } from "@/features/admin/queries";
+import { Pagination } from "@/components/vehicles/pagination";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserStatusButton } from "@/components/admin/user-status-button";
@@ -7,8 +8,16 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Users · Admin" };
 
-export default function UsersPage() {
-  const rows = allUsers();
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const perPage = 25;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = usersCount();
+  const rows = allUsers(perPage, (page - 1) * perPage);
   return (
     <div>
       <h1 className="font-display text-2xl font-extrabold">Users</h1>
@@ -30,7 +39,7 @@ export default function UsersPage() {
               <tr key={r.user.id} className="border-b border-line/60 last:border-0">
                 <td className="px-5 py-3 font-bold">{r.user.email}</td>
                 <td className="px-5 py-3 text-muted">
-                  {[r.profile?.firstName, r.profile?.lastName].filter(Boolean).join(" ") || "—"}
+                  {[r.profile?.firstName, r.profile?.lastName].filter(Boolean).join(" ") || "N/A"}
                 </td>
                 <td className="px-5 py-3">
                   <Badge tone={r.user.role === "admin" ? "primary" : "neutral"}>{r.user.role}</Badge>
@@ -50,6 +59,7 @@ export default function UsersPage() {
           </tbody>
         </table>
       </Card>
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/admin/users" />
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { formatMoney, type Currency } from "@/lib/currency";
 import { getSessionUser } from "@/lib/auth/session";
 import { db, schema } from "@/lib/db";
 import { and, desc, eq } from "drizzle-orm";
-import { Gauge, Cog, Fuel, MapPin, FileText, Hash, Calendar } from "lucide-react";
+import { MapPin, Page as FileText, Hashtag as Hash } from "iconoir-react";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,7 @@ export async function generateMetadata({
   const v = data.vehicle;
   return {
     title: `${v.make} ${v.model} ${v.trim ?? ""} ${v.year}`.replace(/\s+/g, " "),
-    description: `Lot ${v.lotNumber} — ${v.make} ${v.model} ${v.year}, ${v.mileage?.toLocaleString("en-GB")} km. ${data.auction ? "Live auction" : "Buy Now"} at AutoAuction.`,
+    description: `Lot ${v.lotNumber} · ${v.make} ${v.model} ${v.year}, ${v.mileage?.toLocaleString("en-GB")} km. ${data.auction ? "Live auction" : "Buy Now"} at AutoAuction.`,
   };
 }
 
@@ -71,7 +71,7 @@ export default async function VehiclePage({
 
   const vinShown =
     v.vinVisibility === "full"
-      ? (v.vin ?? "—")
+      ? (v.vin ?? "N/A")
       : v.vinVisibility === "last4" && v.vin
         ? `•••••••••••••${v.vin.slice(-4)}`
         : "Hidden";
@@ -85,28 +85,24 @@ export default async function VehiclePage({
       auction.status,
     );
 
-  const facts: { icon: React.ReactNode; label: string; value: string }[] = [
+  const facts: { label: string; value: string }[] = [
     v.mileage != null && {
-      icon: <Gauge className="h-4 w-4" />,
       label: "Mileage",
       value: `${v.mileage.toLocaleString("en-GB")} km`,
     },
     v.transmission && {
-      icon: <Cog className="h-4 w-4" />,
       label: "Transmission",
       value: v.transmission,
     },
     v.fuelType && {
-      icon: <Fuel className="h-4 w-4" />,
       label: "Fuel",
       value: v.fuelType,
     },
     v.year && {
-      icon: <Calendar className="h-4 w-4" />,
       label: "Year",
       value: String(v.year),
     },
-  ].filter(Boolean) as { icon: React.ReactNode; label: string; value: string }[];
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <>
@@ -128,11 +124,11 @@ export default async function VehiclePage({
 
             {/* key facts strip */}
             {facts.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[14px] border border-line bg-line sm:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4">
                 {facts.map((f) => (
                   <div key={f.label} className="bg-white px-4 py-3.5">
-                    <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
-                      {f.icon} {f.label}
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                      {f.label}
                     </p>
                     <p className="mt-1 text-sm font-bold">{f.value}</p>
                   </div>
@@ -194,7 +190,7 @@ export default async function VehiclePage({
               )}
 
               {v.status === "RESERVED" && (
-                <p className="rounded-[14px] border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-semibold text-[#92600a]">
+                <p className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-semibold text-[#92600a]">
                   This vehicle is currently reserved pending a purchase review.
                 </p>
               )}
@@ -248,7 +244,7 @@ export default async function VehiclePage({
                     <li key={b.bid.id} className="flex items-center justify-between px-6 py-3">
                       <div className="flex items-center gap-2.5">
                         <span
-                          className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
+                          className={`flex h-8 w-8 items-center justify-center rounded text-[11px] font-bold ${
                             i === 0 ? "bg-success/10 text-success" : "bg-graphite/5 text-muted"
                           }`}
                         >
@@ -257,7 +253,7 @@ export default async function VehiclePage({
                         <span className="text-sm font-semibold">
                           {maskEmail(b.email)}
                           {i === 0 && (
-                            <span className="ml-2 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">
+                            <span className="ml-2 rounded bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">
                               Leading
                             </span>
                           )}
@@ -309,7 +305,7 @@ function SpecSections({ v, vinShown }: { v: Record<string, unknown>; vinShown: s
       rows: [
         ["VIN", vinShown],
         ["Body type", v.bodyType as string],
-        ["Doors / Seats", v.doors || v.seats ? `${v.doors ?? "—"} / ${v.seats ?? "—"}` : null],
+        ["Doors / Seats", v.doors || v.seats ? `${v.doors ?? "N/A"} / ${v.seats ?? "N/A"}` : null],
         ["Location", v.locationCity ? `${v.locationCity}, ${v.locationCountry ?? ""}` : (v.locationCountry as string)],
       ],
     },
@@ -319,7 +315,7 @@ function SpecSections({ v, vinShown }: { v: Record<string, unknown>; vinShown: s
         [
           "Engine",
           v.engineCapacityCc
-            ? `${v.engineCapacityCc} cc · ${v.enginePowerHp ?? "—"} hp`
+            ? `${v.engineCapacityCc} cc · ${v.enginePowerHp ?? "N/A"} hp`
             : v.enginePowerHp
               ? `${v.enginePowerHp} hp`
               : null,
@@ -370,14 +366,14 @@ function SpecSections({ v, vinShown }: { v: Record<string, unknown>; vinShown: s
 }
 
 function ConditionCard({ v }: { v: Record<string, unknown> }) {
-  const yn = (b: unknown) => (b == null ? "—" : b ? "Yes" : "No");
+  const yn = (b: unknown) => (b == null ? "N/A" : b ? "Yes" : "No");
   const rows: [string, string][] = [
-    ["Overall condition", (v.conditionOverall as string) ?? "—"],
-    ["Accident history", (v.accidentHistory as string) ?? "—"],
-    ["Engine", (v.engineCondition as string) ?? "—"],
-    ["Transmission", (v.transmissionCondition as string) ?? "—"],
-    ["Chassis", (v.chassisCondition as string) ?? "—"],
-    ["Airbags", (v.airbagStatus as string) ?? "—"],
+    ["Overall condition", (v.conditionOverall as string) ?? "N/A"],
+    ["Accident history", (v.accidentHistory as string) ?? "N/A"],
+    ["Engine", (v.engineCondition as string) ?? "N/A"],
+    ["Transmission", (v.transmissionCondition as string) ?? "N/A"],
+    ["Chassis", (v.chassisCondition as string) ?? "N/A"],
+    ["Airbags", (v.airbagStatus as string) ?? "N/A"],
     ["Starts", yn(v.starts)],
     ["Drives", yn(v.drives)],
     ["Keys available", yn(v.keysAvailable)],

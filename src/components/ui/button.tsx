@@ -5,11 +5,10 @@ type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "dark"
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-primary text-white hover:bg-primary-dark shadow-sm shadow-primary/25",
+  primary: "bg-cta text-white hover:bg-cta-hover",
   secondary: "bg-graphite text-white hover:bg-ink",
   outline:
-    "border border-line bg-white text-graphite hover:border-graphite/30 hover:bg-bg",
+    "border border-line bg-white text-graphite hover:border-graphite/40 hover:bg-bg",
   ghost: "text-graphite hover:bg-graphite/5",
   danger: "bg-error text-white hover:bg-error/90",
   dark: "bg-ink text-white hover:bg-graphite",
@@ -18,7 +17,7 @@ const variants: Record<Variant, string> = {
 const sizes: Record<Size, string> = {
   sm: "h-9 px-3.5 text-[13px]",
   md: "h-11 px-5 text-sm",
-  lg: "h-13 px-7 text-[15px]",
+  lg: "h-12 px-7 text-[15px]",
 };
 
 export interface ButtonProps
@@ -35,10 +34,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full font-semibold",
-        "transition-all duration-150 active:scale-[0.98]",
+        "inline-flex items-center justify-center gap-2 rounded-md font-semibold",
+        "transition-colors duration-150 active:scale-[0.99]",
         "disabled:pointer-events-none disabled:opacity-50",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
         variants[variant],
         sizes[size],
         className,
@@ -64,8 +63,8 @@ export const IconButton = forwardRef<
   <button
     ref={ref}
     className={cn(
-      "inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors",
-      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+      "inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors",
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
       "disabled:pointer-events-none disabled:opacity-50",
       tone === "light" && "bg-white text-graphite shadow-sm hover:bg-bg",
       tone === "dark" && "bg-graphite/10 text-graphite hover:bg-graphite/15",

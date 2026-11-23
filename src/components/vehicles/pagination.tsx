@@ -28,7 +28,7 @@ export function Pagination({
   return (
     <nav className="mt-10 flex items-center justify-center gap-2">
       {page > 1 && (
-        <Link href={href(page - 1)} className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold hover:bg-bg">
+        <Link href={href(page - 1)} className="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold hover:bg-bg">
           ← Prev
         </Link>
       )}
@@ -36,7 +36,7 @@ export function Pagination({
         Page {page} of {pages}
       </span>
       {page < pages && (
-        <Link href={href(page + 1)} className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold hover:bg-bg">
+        <Link href={href(page + 1)} className="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold hover:bg-bg">
           Next →
         </Link>
       )}

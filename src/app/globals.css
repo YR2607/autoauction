@@ -2,18 +2,21 @@
 
 @theme {
   /* palette */
-  --color-graphite: #111827;
-  --color-ink: #0b1220;
+  --color-graphite: #17181c;
+  --color-ink: #0b0c0f;
   --color-surface: #ffffff;
-  --color-bg: #f3f5f8;
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
+  --color-bg: #fafaf9;
+  --color-bg-alt: #f4f4f2;
+  --color-cta: #141519;
+  --color-cta-hover: #000000;
+  --color-primary: #1d4ed8;
+  --color-primary-dark: #1e40af;
   --color-primary-soft: #eff4ff;
   --color-muted: #6b7280;
-  --color-line: #e5e8ef;
-  --color-success: #16a34a;
-  --color-warning: #f59e0b;
-  --color-error: #dc2626;
+  --color-line: #e7e7e4;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-error: #b91c1c;
   --color-gold: #b78a2e;
 
   /* typography */
@@ -21,14 +24,14 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   /* radii */
-  --radius-card: 14px;
+  --radius-card: 8px;
 
   /* elevation */
-  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.03);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
   --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-lift: 0 12px 32px -12px rgba(16, 24, 40, 0.18);
-  --shadow-pop: 0 16px 48px -12px rgba(11, 18, 32, 0.28);
+  --shadow-lift: 0 16px 40px -16px rgba(16, 24, 40, 0.22);
+  --shadow-pop: 0 20px 56px -16px rgba(11, 18, 32, 0.30);
 
   /* motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -51,14 +54,19 @@ h1, h2, h3, h4, .font-display {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--color-graphite) 15%, transparent);
 }
 
 /* universal visible focus (WCAG 2.2) */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-graphite);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* opt-out for elements that provide their own focus affordance */
+:focus-visible.focus-ring-none {
+  outline: none;
 }
 
 /* thin scrollbars for horizontal strips */

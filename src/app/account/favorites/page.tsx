@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
-import { myFavorites } from "@/features/account/queries";
+import { myFavorites, myFavoritesCount } from "@/features/account/queries";
+import { Pagination } from "@/components/vehicles/pagination";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import { EmptyState } from "@/components/ui/empty";
 import { eq } from "drizzle-orm";
@@ -12,10 +13,18 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Favorites" };
 
-export default async function FavoritesPage() {
+export default async function FavoritesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const rows = myFavorites(user.id);
+  const sp = await searchParams;
+  const perPage = 12;
+  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const total = myFavoritesCount(user.id);
+  const rows = myFavorites(user.id, perPage, (page - 1) * perPage);
 
   const items = rows.map((r) => {
     const auction = db
@@ -45,7 +54,7 @@ export default async function FavoritesPage() {
           className="mt-6"
           title="No favorites yet"
           body="Tap the heart on any vehicle to keep it here."
-          action={<Link href="/vehicles" className="rounded-full bg-graphite px-5 py-2.5 text-sm font-semibold text-white">Browse vehicles</Link>}
+          action={<Link href="/vehicles" className="rounded-md bg-cta px-5 py-2.5 text-sm font-semibold text-white">Browse vehicles</Link>}
         />
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -54,6 +63,7 @@ export default async function FavoritesPage() {
           ))}
         </div>
       )}
+      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/account/favorites" />
     </div>
   );
 }

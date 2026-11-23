@@ -36,7 +36,7 @@ export default async function AccountPage() {
             <Link href="/account/bids" className="text-xs font-bold text-primary">View all →</Link>
           </div>
           {d.bidEntries.filter((e) => e.auction.status === "LIVE").length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-muted">No active bids — <Link href="/auctions" className="font-semibold text-primary">browse auctions</Link>.</p>
+            <p className="px-5 py-8 text-center text-sm text-muted">No active bids. <Link href="/auctions" className="font-semibold text-primary">Browse auctions</Link>.</p>
           ) : (
             <ul className="divide-y divide-line/60">
               {d.bidEntries
@@ -88,17 +88,14 @@ export default async function AccountPage() {
 }
 
 function Stat({ label, value, href, tone }: { label: string; value: number; href: string; tone?: "success" | "error" | "warning" }) {
-  const color = tone === "success" ? "text-success" : tone === "error" ? "text-error" : tone === "warning" ? "text-warning" : "text-graphite";
-  const ring = tone === "success" ? "bg-success/10" : tone === "error" ? "bg-error/10" : tone === "warning" ? "bg-warning/15" : "bg-graphite/5";
+  const color = tone === "success" ? "text-success" : tone === "error" ? "text-error" : tone === "warning" ? "text-warning" : "text-ink";
+  const edge = tone === "success" ? "border-l-success" : tone === "error" ? "border-l-error" : tone === "warning" ? "border-l-warning" : "border-l-line";
   return (
     <Link
       href={href}
-      className="group rounded-[14px] border border-line bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-card"
+      className={`group rounded-lg border border-line border-l-2 ${edge} bg-white p-4 transition-shadow hover:shadow-card`}
     >
-      <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${ring}`}>
-        <span className={`h-2 w-2 rounded-full ${color.replace("text-", "bg-")}`} />
-      </span>
-      <p className={`mt-2 font-display text-2xl font-extrabold ${color}`}>{value}</p>
+      <p className={`font-display text-2xl font-extrabold ${color}`}>{value}</p>
       <p className="mt-0.5 text-xs font-semibold text-muted">{label}</p>
     </Link>
   );

@@ -9,7 +9,7 @@ export default function LoginPage() {
     <>
       <SiteHeader />
       <main className="mx-auto flex max-w-md flex-col px-4 py-16">
-        <h1 className="font-display text-3xl font-extrabold">Welcome back</h1>
+        <h1 className="font-display text-3xl font-extrabold text-ink">Welcome back</h1>
         <p className="mt-2 text-sm text-muted">Sign in to bid, buy and track your vehicles.</p>
         <AuthForm mode="login" />
       </main>

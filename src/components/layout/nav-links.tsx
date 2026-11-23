@@ -15,8 +15,10 @@ export function NavLinks({ links }: { links: { href: string; label: string }[] }
             href={l.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-              active ? "bg-graphite/[0.06] text-graphite" : "text-graphite/70 hover:bg-graphite/5 hover:text-graphite",
+              "relative px-4 py-2 text-[13.5px] font-medium transition-colors",
+              active
+                ? "text-ink after:absolute after:inset-x-4 after:-bottom-[13px] after:h-[2px] after:bg-ink"
+                : "text-graphite/60 hover:text-ink",
             )}
           >
             {l.label}

@@ -24,7 +24,7 @@ export function ProfileForm({ initial }: { initial: Fields }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    setMsg(r.ok ? "Profile saved." : "Save failed — try again.");
+    setMsg(r.ok ? "Profile saved." : "Save failed. Try again.");
     setBusy(false);
   }
 
@@ -48,7 +48,7 @@ export function ProfileForm({ initial }: { initial: Fields }) {
 
   return (
     <div className="space-y-8">
-      <form onSubmit={submit} className="space-y-4 rounded-[14px] border border-line bg-white p-6">
+      <form onSubmit={submit} className="space-y-4 rounded-lg border border-line bg-white p-6">
         <h2 className="font-display text-base font-bold">Personal information</h2>
         <div className="grid grid-cols-2 gap-4">
           <div><Label>First name</Label><Input name="firstName" defaultValue={initial.firstName} /></div>
@@ -63,7 +63,7 @@ export function ProfileForm({ initial }: { initial: Fields }) {
         <Button type="submit" loading={busy}>Save profile</Button>
       </form>
 
-      <form onSubmit={changePassword} className="space-y-4 rounded-[14px] border border-line bg-white p-6">
+      <form onSubmit={changePassword} className="space-y-4 rounded-lg border border-line bg-white p-6">
         <h2 className="font-display text-base font-bold">Change password</h2>
         <div><Label>Current password</Label><Input name="currentPassword" type="password" required /></div>
         <div><Label>New password (8+ chars)</Label><Input name="newPassword" type="password" required minLength={8} /></div>

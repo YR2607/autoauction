@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Xmark as X } from "iconoir-react";
 
 export function MobileNav({
   user,
@@ -17,7 +17,7 @@ export function MobileNav({
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         aria-controls="mobile-nav-panel"
-        className="rounded-lg p-2 transition-colors hover:bg-graphite/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="rounded-md border border-line p-2 transition-colors hover:bg-graphite/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta"
         onClick={() => setOpen(!open)}
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -34,7 +34,7 @@ export function MobileNav({
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-4 py-3 text-sm font-semibold hover:bg-graphite/5"
+                className="rounded-md px-4 py-3 text-sm font-semibold hover:bg-graphite/5"
               >
                 {l.label}
               </Link>
@@ -43,15 +43,15 @@ export function MobileNav({
             {user ? (
               <>
                 {user.role === "admin" && (
-                  <Link href="/admin" onClick={() => setOpen(false)} className="rounded-lg px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10">
+                  <Link href="/admin" onClick={() => setOpen(false)} className="rounded-md px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10">
                     Admin panel
                   </Link>
                 )}
-                <Link href="/account" onClick={() => setOpen(false)} className="rounded-lg px-4 py-3 text-sm font-semibold hover:bg-graphite/5">
+                <Link href="/account" onClick={() => setOpen(false)} className="rounded-md px-4 py-3 text-sm font-semibold hover:bg-graphite/5">
                   Account
                 </Link>
                 <button
-                  className="rounded-lg px-4 py-3 text-left text-sm font-semibold text-error hover:bg-error/5"
+                  className="rounded-md px-4 py-3 text-left text-sm font-semibold text-error hover:bg-error/5"
                   onClick={async () => {
                     await fetch("/api/auth/logout", { method: "POST" });
                     location.href = "/";
@@ -62,10 +62,10 @@ export function MobileNav({
               </>
             ) : (
               <>
-                <Link href="/login" onClick={() => setOpen(false)} className="rounded-lg px-4 py-3 text-sm font-semibold hover:bg-graphite/5">
+                <Link href="/login" onClick={() => setOpen(false)} className="rounded-md px-4 py-3 text-sm font-semibold hover:bg-graphite/5">
                   Sign in
                 </Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="rounded-lg bg-graphite px-4 py-3 text-center text-sm font-semibold text-white">
+                <Link href="/register" onClick={() => setOpen(false)} className="rounded-md bg-cta px-4 py-3 text-center text-sm font-semibold text-white">
                   Create account
                 </Link>
               </>

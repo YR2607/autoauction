@@ -4,7 +4,8 @@ import { Countdown } from "./countdown";
 import { formatMoney, type Currency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { ConfirmModal } from "@/components/ui/dialog";
-import { Gavel, TrendingUp, AlertTriangle } from "lucide-react";
+import { GraphUp as TrendingUp, WarningTriangle as AlertTriangle } from "iconoir-react";
+import { Gavel } from "@phosphor-icons/react/ssr";
 
 type State = {
   id: string;
@@ -79,7 +80,7 @@ export function BidPanel({
       });
       const data = await r.json();
       if (data.ok) {
-        setMsg({ ok: true, text: "Bid accepted — you're in the lead." });
+        setMsg({ ok: true, text: "Bid accepted. You're in the lead." });
         keyRef.current = "";
         setSt(data.auction);
       } else {
@@ -87,7 +88,7 @@ export function BidPanel({
         if (data.auction) setSt(data.auction);
       }
     } catch {
-      setMsg({ ok: false, text: "Network error — your bid was not confirmed. Try again." });
+      setMsg({ ok: false, text: "Network error. Your bid was not confirmed. Try again." });
     } finally {
       setBusy(false);
       setConfirm(false);
@@ -101,7 +102,7 @@ export function BidPanel({
   );
 
   return (
-    <div className="overflow-hidden rounded-[14px] bg-graphite text-white shadow-card">
+    <div className="overflow-hidden rounded-lg bg-ink text-white shadow-card">
       {/* header strip */}
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
         <span className="flex items-center gap-2">
@@ -199,7 +200,7 @@ export function BidPanel({
                   value={Math.floor(amount / 100)}
                   onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))}
                   aria-label={`Bid amount in ${st.currency}`}
-                  className="tnum h-11 w-full rounded-lg border border-white/15 bg-white/5 px-4 pr-14 text-sm font-bold text-white outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  className="tnum h-11 w-full rounded-lg border border-white/15 bg-white/5 px-4 pr-14 text-sm font-bold text-white outline-none transition-colors focus:border-white/40 focus:ring-2 focus:ring-white/20"
                 />
                 <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-white/40">
                   {st.currency}
@@ -208,11 +209,11 @@ export function BidPanel({
               <Button
                 size="lg"
                 loading={busy}
+                className="bg-white text-ink hover:bg-white/85"
                 onClick={() =>
                   isAuthed ? setConfirm(true) : (location.href = "/login")
                 }
               >
-                <Gavel className="h-4 w-4" />
                 {isAuthed ? "Place bid" : "Sign in to bid"}
               </Button>
             </div>

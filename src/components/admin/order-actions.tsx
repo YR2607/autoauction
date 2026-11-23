@@ -94,7 +94,7 @@ export function OrderActions({
         <p className="mt-2 text-xs">The vehicle will return to published status.</p>
         {endedByBuyNow && (
           <div className="mt-3 rounded-lg border border-line bg-surface p-3">
-            <Label>This Buy Now request ended an auction — choose recovery</Label>
+            <Label>This Buy Now request ended an auction. Choose recovery</Label>
             <div className="mt-2 space-y-1.5 text-sm">
               <label className="flex items-start gap-2">
                 <input
@@ -104,7 +104,7 @@ export function OrderActions({
                   onChange={() => setAuctionAction("REOPEN")}
                 />
                 <span>
-                  <b>Reopen auction</b> — resumes LIVE for 24h with all previous bids kept.
+                  <b>Reopen auction</b>: resumes LIVE for 24h with all previous bids kept.
                 </span>
               </label>
               <label className="flex items-start gap-2">
@@ -115,7 +115,7 @@ export function OrderActions({
                   onChange={() => setAuctionAction("UNSOLD")}
                 />
                 <span>
-                  <b>Mark unsold</b> — closes the auction permanently; vehicle goes back on sale.
+                  <b>Mark unsold</b>: closes the auction permanently; vehicle goes back on sale.
                 </span>
               </label>
             </div>

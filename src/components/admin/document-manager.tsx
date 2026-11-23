@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Trash2, Upload, Lock, Globe } from "lucide-react";
+import { Page as FileText, Trash as Trash2, Upload, Lock, Globe } from "iconoir-react";
 
 export type DocItem = {
   id: string;

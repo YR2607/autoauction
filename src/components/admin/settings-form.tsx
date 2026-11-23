@@ -33,7 +33,7 @@ export function SettingsForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-[14px] border border-line bg-white p-6">
+    <form onSubmit={submit} className="space-y-4 rounded-lg border border-line bg-white p-6">
       {fields.map((f) => (
         <div key={f.key}>
           <Label>{f.label}</Label>

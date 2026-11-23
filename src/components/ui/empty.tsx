@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { TriangleAlert } from "lucide-react";
+import { WarningTriangle as TriangleAlert } from "iconoir-react";
 
 export function ErrorState({
   title = "Something went wrong",
@@ -16,7 +16,7 @@ export function ErrorState({
     <div
       role="alert"
       className={cn(
-        "flex flex-col items-center justify-center rounded-[14px] border border-error/25 bg-error/5 px-6 py-12 text-center",
+        "flex flex-col items-center justify-center rounded-lg border border-error/25 bg-error/5 px-6 py-12 text-center",
         className,
       )}
     >
@@ -42,7 +42,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-[14px] border border-dashed border-line bg-white px-6 py-16 text-center",
+        "flex flex-col items-center justify-center rounded-lg border border-dashed border-line bg-white px-6 py-16 text-center",
         className,
       )}
     >

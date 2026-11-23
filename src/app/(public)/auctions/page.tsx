@@ -1,73 +1,85 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { VehicleCard } from "@/components/vehicles/vehicle-card";
-import {
-  liveAuctionCards,
-  upcomingAuctionCards,
-  completedAuctionCards,
-} from "@/features/vehicles/queries";
+import { VehicleRow } from "@/components/vehicles/vehicle-row";
+import { CatalogLayout } from "@/components/vehicles/catalog-filters";
+import { Pagination } from "@/components/vehicles/pagination";
+import { EmptyState } from "@/components/ui/empty";
+import { listVehicles, filterOptions } from "@/features/vehicles/queries";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Auctions" };
 
-export default function AuctionsPage() {
-  const live = liveAuctionCards();
-  const upcoming = upcomingAuctionCards(8);
-  const completed = completedAuctionCards(8);
+export default async function AuctionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const s = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : undefined);
+  const n = (k: string) => {
+    const v = s(k);
+    const num = v ? Number(v) : NaN;
+    return Number.isFinite(num) ? num : undefined;
+  };
+
+  const { items, total, page, perPage } = listVehicles({
+    q: s("q"),
+    make: s("make"),
+    model: s("model"),
+    yearFrom: n("yearFrom"),
+    yearTo: n("yearTo"),
+    priceMin: n("priceMin") ? n("priceMin")! * 100 : undefined,
+    priceMax: n("priceMax") ? n("priceMax")! * 100 : undefined,
+    mileageMax: n("mileageMax"),
+    fuelType: s("fuelType"),
+    transmission: s("transmission"),
+    bodyType: s("bodyType"),
+    currency: s("currency"),
+    saleType: "AUCTION", // this page lists auction inventory only
+    auctionStatus: s("auctionStatus"),
+    sort: s("sort") ?? "ending_soon",
+    page: n("page") ?? 1,
+    perPage: 12,
+  });
+  const opts = filterOptions();
 
   return (
     <>
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <h1 className="font-display text-3xl font-extrabold">Auctions</h1>
-        <p className="mt-1 text-sm text-muted">
-          Bid manually in live auctions. Every result is reviewed by our team.
-        </p>
+        <div className="mb-7">
+          <h1 className="font-display text-3xl font-extrabold text-ink">Auctions</h1>
+          <p className="mt-1 text-sm text-muted">
+            Live timed auctions. Bid in real time. Every result is reviewed by our team.
+          </p>
+        </div>
 
-        <Block title="Live now" pulse items={live} empty="No live auctions at the moment." />
-        <Block title="Upcoming" items={upcoming} empty="No scheduled auctions." />
-        <Block title="Recently completed" items={completed} empty="No completed auctions yet." />
+        <CatalogLayout options={opts} current={sp} total={total} basePath="/auctions" filters="drawer">
+          {items.length === 0 ? (
+            <EmptyState
+              title="No auctions match your filters"
+              body="Try widening the price range or clearing some filters."
+            />
+          ) : (
+            <>
+              <div className="overflow-hidden rounded-lg border border-line bg-white">
+                {items.map((v) => (
+                  <VehicleRow key={v.id} v={v} />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                perPage={perPage}
+                total={total}
+                params={sp}
+                basePath="/auctions"
+              />
+            </>
+          )}
+        </CatalogLayout>
       </main>
       <SiteFooter />
     </>
-  );
-}
-
-function Block({
-  title,
-  items,
-  empty,
-  pulse,
-}: {
-  title: string;
-  items: Parameters<typeof VehicleCard>[0]["v"][];
-  empty: string;
-  pulse?: boolean;
-}) {
-  return (
-    <section className="mt-12">
-      <h2 className="mb-6 flex items-center gap-2.5 font-display text-2xl font-extrabold">
-        {pulse && items.length > 0 && (
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-error opacity-60" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-error" />
-          </span>
-        )}
-        {title}
-        <span className="text-base font-semibold text-muted">({items.length})</span>
-      </h2>
-      {items.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-line bg-white px-6 py-10 text-center text-sm text-muted">
-          {empty}
-        </p>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {items.map((v) => (
-            <VehicleCard key={v.id} v={v} />
-          ))}
-        </div>
-      )}
-    </section>
   );
 }

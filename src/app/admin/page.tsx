@@ -30,7 +30,7 @@ export default function AdminDashboard() {
 
       {/* activity chart */}
       <Card className="mt-6 p-6">
-        <h2 className="font-display text-base font-bold">Bid activity — last 14 days</h2>
+        <h2 className="font-display text-base font-bold">Bid activity (last 14 days)</h2>
         <div className="mt-5 flex h-32 items-end gap-1.5">
           {d.bidRows.length === 0 ? (
             <p className="text-sm text-muted">No bids yet.</p>
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
               return (
                 <div key={r.day} className="group relative flex-1">
                   <div
-                    className="w-full rounded-t-md bg-primary/80 transition-colors group-hover:bg-primary"
+                    className="w-full rounded-t-md bg-cta/80 transition-colors group-hover:bg-primary"
                     style={{ height: `${Math.max(4, (r.c / max) * 120)}px` }}
                   />
                   <span className="absolute -top-7 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-0.5 text-[10px] font-bold text-white group-hover:block">
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
 
 function Stat({ label, value, href, tone }: { label: string; value: number; href: string; tone?: string }) {
   return (
-    <Link href={href} className="rounded-[14px] border border-line bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-card">
+    <Link href={href} className="rounded-lg border border-line bg-white p-4 transition-all hover:shadow-card">
       <p className={`font-display text-2xl font-extrabold ${tone ?? "text-graphite"}`}>{value}</p>
       <p className="mt-0.5 text-xs font-semibold text-muted">{label}</p>
     </Link>

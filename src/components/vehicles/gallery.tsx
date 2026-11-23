@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
+import { NavArrowLeft as ChevronLeft, NavArrowRight as ChevronRight, Expand, Xmark as X } from "iconoir-react";
 
 export function Gallery({ images, alt }: { images: string[]; alt: string }) {
   const [i, setI] = useState(0);
@@ -27,14 +27,14 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
 
   if (!images.length)
     return (
-      <div className="flex aspect-[16/10] items-center justify-center rounded-[14px] bg-graphite/5 text-sm text-muted">
+      <div className="flex aspect-[16/10] items-center justify-center rounded-lg bg-graphite/5 text-sm text-muted">
         No photos
       </div>
     );
 
   return (
     <div>
-      <div className="group/g relative aspect-[16/10] overflow-hidden rounded-[14px] bg-ink">
+      <div className="group/g relative aspect-[16/10] overflow-hidden rounded-lg bg-ink">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={images[i]}

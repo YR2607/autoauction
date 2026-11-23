@@ -24,12 +24,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/admin" className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-black">A</span>
               <span className="font-display text-base font-extrabold">AutoAuction <span className="text-white/40">Admin</span></span>
             </Link>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <Link href="/" className="rounded-full px-3 py-1.5 font-semibold text-white/70 hover:bg-white/10">← Site</Link>
+            <Link href="/" className="rounded-md px-3 py-1.5 font-semibold text-white/70 hover:bg-white/10">← Site</Link>
             <span className="hidden text-white/50 sm:inline">{user.email}</span>
           </div>
         </div>

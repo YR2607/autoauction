@@ -1,18 +1,14 @@
 import Link from "next/link";
-import { Mail, Globe } from "lucide-react";
+import { Mail, Globe } from "iconoir-react";
 import { siteConfig } from "@/lib/site";
+import { Logo } from "./logo";
 
-export function SiteFooter() {
+export function SiteFooter({ flush = false }: { flush?: boolean }) {
   return (
-    <footer className="mt-20 border-t border-white/10 bg-ink text-white">
+    <footer className={`${flush ? "" : "mt-20 "}border-t border-white/10 bg-ink text-white`}>
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-sm font-black text-ink">
-              A
-            </span>
-            <span className="font-display text-lg font-extrabold">AutoAuction</span>
-          </div>
+          <Logo inverted />
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/60">
             Premium vehicles. Transparent auctions. Every sale reviewed by our team.
           </p>
@@ -67,7 +63,7 @@ export function SiteFooter() {
 function FooterCol({ title, items }: { title: string; items: [string, string][] }) {
   return (
     <div>
-      <h4 className="text-[13px] font-bold uppercase tracking-wider text-white/80">
+      <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">
         {title}
       </h4>
       <ul className="mt-4 space-y-2.5">
