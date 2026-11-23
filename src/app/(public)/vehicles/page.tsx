@@ -63,7 +63,7 @@ export default async function VehiclesPage({
             />
           ) : (
             <>
-              <div className="overflow-hidden rounded-lg border border-line bg-white">
+              <div className="space-y-3 sm:space-y-0 sm:overflow-hidden sm:rounded-lg sm:border sm:border-line sm:bg-white">
                 {items.map((v) => (
                   <VehicleRow key={v.id} v={v} />
                 ))}

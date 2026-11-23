@@ -69,7 +69,7 @@ export function VehicleRow({ v }: { v: VehicleCard }) {
   return (
     <Link
       href={`/vehicles/${v.slug}`}
-      className="group grid grid-cols-[104px_1fr] gap-x-4 gap-y-3 border-b border-line bg-white px-4 py-4 transition-colors hover:bg-bg-alt sm:grid-cols-[180px_1fr_auto_190px] sm:px-5 sm:py-5"
+      className="group grid grid-cols-[104px_1fr] gap-x-4 gap-y-3 rounded-lg border border-line bg-white px-4 py-4 shadow-xs transition-colors hover:bg-bg-alt sm:grid-cols-[180px_1fr_auto_190px] sm:rounded-none sm:border-x-0 sm:border-t-0 sm:shadow-none sm:px-5 sm:py-5"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
