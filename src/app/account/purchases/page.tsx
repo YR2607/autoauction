@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { myOrders, myOrdersCount } from "@/features/account/queries";
 import { Pagination } from "@/components/vehicles/pagination";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty";
 import { formatMoney, type Currency } from "@/lib/currency";
 import Link from "next/link";
@@ -12,12 +10,18 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "My Purchases" };
 
-const tone: Record<string, "success" | "live" | "warning" | "neutral"> = {
-  PENDING_APPROVAL: "warning",
-  APPROVED: "success",
-  COMPLETED: "success",
-  REJECTED: "live",
-  CANCELLED: "neutral",
+const statusLabel: Record<string, { text: string; cls: string }> = {
+  PENDING_APPROVAL: { text: "● Awaiting approval", cls: "text-amber-700" },
+  APPROVED: { text: "● Approved", cls: "text-success" },
+  COMPLETED: { text: "● Completed", cls: "text-success" },
+  REJECTED: { text: "● Rejected", cls: "text-primary" },
+  CANCELLED: { text: "○ Cancelled", cls: "text-muted" },
+};
+
+const paymentLabel: Record<string, { text: string; cls: string }> = {
+  unpaid: { text: "Unpaid", cls: "text-muted" },
+  paid: { text: "Paid", cls: "text-success" },
+  refunded: { text: "Refunded", cls: "text-muted" },
 };
 
 export default async function PurchasesPage({
@@ -35,7 +39,13 @@ export default async function PurchasesPage({
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold">My Purchases</h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-ink pb-4">
+        <h1 className="font-display text-[28px] font-medium text-ink">Purchases</h1>
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-tech">
+          Transaction ledger · {total} record{total === 1 ? "" : "s"}
+        </p>
+      </div>
+
       {rows.length === 0 ? (
         <EmptyState
           className="mt-6"
@@ -44,44 +54,72 @@ export default async function PurchasesPage({
           action={<Link href="/buy-now" className="rounded-md bg-cta px-5 py-2.5 text-sm font-semibold text-white">Browse Buy Now</Link>}
         />
       ) : (
-        <Card className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px]">
             <thead>
-              <tr className="border-b border-line bg-bg/60 text-left text-xs uppercase tracking-wide text-muted">
-                <th className="px-5 py-3 font-semibold">Vehicle</th>
-                <th className="px-5 py-3 font-semibold">Type</th>
-                <th className="px-5 py-3 font-semibold">Amount</th>
-                <th className="px-5 py-3 font-semibold">Status</th>
-                <th className="px-5 py-3 font-semibold">Date</th>
+              <tr className="border-b border-line/70 text-left">
+                <th className="py-2.5 pr-4">Lot / vehicle</th>
+                <th className="py-2.5 pr-4">Type</th>
+                <th className="py-2.5 pr-4">Amount</th>
+                <th className="py-2.5 pr-4">Status</th>
+                <th className="py-2.5 pr-4">Payment</th>
+                <th className="py-2.5 pr-4">Date</th>
+                <th className="py-2.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.order.id} className="border-b border-line/60 last:border-0">
-                  <td className="px-5 py-3.5">
-                    <Link href={`/vehicles/${r.vehicle.slug}`} className="flex items-center gap-3">
-                      {r.coverUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={r.coverUrl} alt="" className="h-11 w-16 shrink-0 rounded-md object-cover" />
-                      ) : (
-                        <span className="h-11 w-16 shrink-0 rounded-md bg-graphite/5" />
-                      )}
-                      <span className="font-bold hover:text-primary">
-                        {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5">{r.order.type === "BUY_NOW" ? "Buy Now" : "Auction win"}</td>
-                  <td className="px-5 py-3.5 font-bold">{formatMoney(r.order.amount, r.order.currency as Currency)}</td>
-                  <td className="px-5 py-3.5">
-                    <Badge tone={tone[r.order.status] ?? "neutral"}>{r.order.status.replace(/_/g, " ")}</Badge>
-                  </td>
-                  <td className="px-5 py-3.5 text-muted">{new Date(r.order.createdAt).toLocaleDateString("en-GB")}</td>
-                </tr>
-              ))}
+              {rows.map((r) => {
+                const st = statusLabel[r.order.status] ?? statusLabel.CANCELLED;
+                const pay = paymentLabel[r.order.paymentStatus] ?? paymentLabel.unpaid;
+                return (
+                  <tr key={r.order.id} className="group border-b border-line/70">
+                    <td className="py-3.5 pr-4">
+                      <Link href={`/vehicles/${r.vehicle.slug}`} className="flex items-center gap-3">
+                        {r.coverUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={r.coverUrl} alt="" className="aspect-[3/2] w-[84px] shrink-0 object-cover" />
+                        ) : (
+                          <span className="aspect-[3/2] w-[84px] shrink-0 bg-graphite/5" />
+                        )}
+                        <span>
+                          <span className="tnum block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-tech">
+                            Lot {r.vehicle.lotNumber}
+                          </span>
+                          <span className="mt-0.5 block font-display text-[15.5px] font-medium text-ink group-hover:text-primary">
+                            {r.vehicle.year} {r.vehicle.make} {r.vehicle.model}
+                          </span>
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="py-3.5 pr-4 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
+                      {r.order.type === "BUY_NOW" ? "Buy Now" : "Auction win"}
+                    </td>
+                    <td className="tnum py-3.5 pr-4 font-mono text-[13px] font-semibold text-ink">
+                      {formatMoney(r.order.amount, r.order.currency as Currency)}
+                    </td>
+                    <td className={`py-3.5 pr-4 font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] ${st.cls}`}>
+                      {st.text}
+                    </td>
+                    <td className={`py-3.5 pr-4 font-mono text-[10.5px] uppercase tracking-[0.1em] ${pay.cls}`}>
+                      {pay.text}
+                    </td>
+                    <td className="tnum py-3.5 pr-4 font-mono text-[11.5px] text-muted">
+                      {new Date(r.order.createdAt).toLocaleDateString("en-GB")}
+                    </td>
+                    <td className="py-3.5 text-right">
+                      <Link
+                        href={`/vehicles/${r.vehicle.slug}`}
+                        className="border-b border-ink/40 pb-px font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:border-primary hover:text-primary"
+                      >
+                        View lot
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-        </Card>
+        </div>
       )}
       <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/account/purchases" />
     </div>

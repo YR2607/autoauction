@@ -1,5 +1,4 @@
 import { adminDashboard } from "@/features/admin/queries";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Countdown } from "@/components/auctions/countdown";
 import { formatMoney, type Currency } from "@/lib/currency";
@@ -11,128 +10,266 @@ export const metadata: Metadata = { title: "Admin Dashboard" };
 
 export default function AdminDashboard() {
   const d = adminDashboard();
+  const maxBids = Math.max(...d.bidRows.map((x) => x.c), 1);
 
   return (
-    <div>
-      <h1 className="font-display text-2xl font-extrabold">Dashboard</h1>
+    <div className="space-y-8">
+      {/* OPERATIONS DESK — dark auction-floor bar + thin archival ledger */}
+      <section className="border border-ink bg-white">
+        <div className="bg-ink px-6 py-6 text-white sm:px-8">
+          <div className="flex flex-wrap items-baseline justify-between gap-4">
+            <div>
+              <p className="flex items-center gap-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/50">
+                <span className="h-1.5 w-1.5 bg-primary" aria-hidden />
+                Operations desk
+              </p>
+              <h1 className="mt-2 font-display text-[28px] font-medium leading-tight">
+                Auction house control
+              </h1>
+            </div>
+            <Link
+              href="/admin/vehicles/new"
+              className="border border-white/30 px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:border-primary hover:bg-primary"
+            >
+              + New lot
+            </Link>
+          </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
-        <Stat label="Vehicles" value={d.vehicles} href="/admin/vehicles" />
-        <Stat label="Published" value={d.published} href="/admin/vehicles" />
-        <Stat label="Live auctions" value={d.live} href="/admin/auctions" tone="text-error" />
-        <Stat label="Upcoming" value={d.upcoming} href="/admin/auctions" />
-        <Stat label="Awaiting approval" value={d.awaiting} href="/admin/approvals" tone="text-warning" />
-        <Stat label="Users" value={d.users} href="/admin/users" />
-        <Stat label="Pending orders" value={d.pendingOrders} href="/admin/orders" tone="text-warning" />
-        <Stat label="Accepted bids" value={d.totalBids} href="/admin/bids" />
-        <Stat label="Sold vehicles" value={d.sold} href="/admin/vehicles" tone="text-success" />
-      </div>
+          <div className="mt-6 grid grid-cols-2 gap-6 border-t border-white/15 pt-5 sm:grid-cols-4">
+            <Link href="/admin/auctions" className="group">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                Live auctions
+              </p>
+              <p className="tnum mt-1.5 font-mono text-[30px] font-semibold leading-none text-primary group-hover:underline">
+                {d.live}
+              </p>
+            </Link>
+            <Link href="/admin/auctions" className="group">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                Upcoming
+              </p>
+              <p className="tnum mt-1.5 font-mono text-[30px] font-semibold leading-none text-white group-hover:underline">
+                {d.upcoming}
+              </p>
+            </Link>
+            <Link href="/admin/approvals" className="group">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                Awaiting approval
+              </p>
+              <p
+                className={`tnum mt-1.5 font-mono text-[30px] font-semibold leading-none group-hover:underline ${
+                  d.awaiting > 0 ? "text-amber-400" : "text-white/75"
+                }`}
+              >
+                {d.awaiting}
+              </p>
+            </Link>
+            <Link href="/admin/orders" className="group">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                Pending orders
+              </p>
+              <p
+                className={`tnum mt-1.5 font-mono text-[30px] font-semibold leading-none group-hover:underline ${
+                  d.pendingOrders > 0 ? "text-amber-400" : "text-white/75"
+                }`}
+              >
+                {d.pendingOrders}
+              </p>
+            </Link>
+          </div>
+        </div>
 
-      {/* activity chart */}
-      <Card className="mt-6 p-6">
-        <h2 className="font-display text-base font-bold">Bid activity (last 14 days)</h2>
-        <div className="mt-5 flex h-32 items-end gap-1.5">
+        {/* Thin archival ledger row */}
+        <div className="flex flex-wrap items-center divide-y divide-line border-t border-line sm:divide-x sm:divide-y-0">
+          {[
+            { label: "Total vehicles", value: d.vehicles, href: "/admin/vehicles" },
+            { label: "Published", value: d.published, href: "/admin/vehicles" },
+            { label: "Sold", value: d.sold, href: "/admin/vehicles" },
+            { label: "Accepted bids", value: d.totalBids, href: "/admin/bids" },
+            { label: "Users", value: d.users, href: "/admin/users" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex flex-1 basis-[140px] items-baseline justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-bg"
+            >
+              <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-tech">
+                {item.label}
+              </span>
+              <span className="tnum font-mono text-lg font-semibold text-ink">
+                {item.value}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* BID ACTIVITY */}
+      <section className="border border-line bg-white p-6">
+        <div className="flex items-baseline justify-between border-b border-line pb-3">
+          <h2 className="font-display text-[20px] font-medium text-ink">
+            Bid activity (last 14 days)
+          </h2>
+          <span className="tnum font-mono text-[11px] uppercase tracking-[0.12em] text-tech">
+            Peak {maxBids} / day
+          </span>
+        </div>
+        <div className="mt-6 flex h-32 items-end gap-1.5">
           {d.bidRows.length === 0 ? (
             <p className="text-sm text-muted">No bids yet.</p>
           ) : (
-            d.bidRows.map((r) => {
-              const max = Math.max(...d.bidRows.map((x) => x.c), 1);
-              return (
-                <div key={r.day} className="group relative flex-1">
-                  <div
-                    className="w-full rounded-t-md bg-cta/80 transition-colors group-hover:bg-primary"
-                    style={{ height: `${Math.max(4, (r.c / max) * 120)}px` }}
-                  />
-                  <span className="absolute -top-7 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-0.5 text-[10px] font-bold text-white group-hover:block">
-                    {r.day}: {r.c}
-                  </span>
-                </div>
-              );
-            })
+            d.bidRows.map((r) => (
+              <div key={r.day} className="group relative flex-1">
+                <div
+                  className="w-full bg-ink/80 transition-colors group-hover:bg-primary"
+                  style={{ height: `${Math.max(4, (r.c / maxBids) * 120)}px` }}
+                />
+                <span className="tnum absolute -top-7 left-1/2 hidden -translate-x-1/2 whitespace-nowrap bg-ink px-2 py-0.5 font-mono text-[10px] font-semibold text-white group-hover:block">
+                  {r.day}: {r.c}
+                </span>
+              </div>
+            ))
           )}
         </div>
-      </Card>
+      </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Card>
-          <div className="flex items-center justify-between border-b border-line px-5 py-4">
-            <h2 className="font-display text-base font-bold">Live auctions</h2>
-            <Link href="/admin/auctions" className="text-xs font-bold text-primary">Manage →</Link>
+      {/* LIVE AUCTIONS + PENDING APPROVALS */}
+      <div className="grid gap-8 xl:grid-cols-2">
+        <section>
+          <div className="flex items-baseline justify-between border-b-2 border-ink pb-3">
+            <h2 className="font-display text-[20px] font-medium text-ink">Live auctions</h2>
+            <Link
+              href="/admin/auctions"
+              className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink hover:text-primary"
+            >
+              Manage →
+            </Link>
           </div>
           {d.liveAuctions.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-muted">Nothing live right now.</p>
+            <p className="border-b border-line bg-white px-5 py-8 text-center text-sm text-muted">
+              Nothing live right now.
+            </p>
           ) : (
-            <ul className="divide-y divide-line/60">
+            <ul className="divide-y divide-line border-b border-line bg-white">
               {d.liveAuctions.map((r) => (
-                <li key={r.auction.id} className="flex items-center justify-between px-5 py-3">
-                  <Link href={`/vehicles/${r.vehicle.slug}`} className="text-sm font-bold hover:text-primary">
-                    {r.vehicle.make} {r.vehicle.model} {r.vehicle.year}
+                <li key={r.auction.id} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                  <Link
+                    href={`/vehicles/${r.vehicle.slug}`}
+                    className="min-w-0 truncate text-sm font-semibold text-ink hover:text-primary"
+                  >
+                    {r.vehicle.year} {r.vehicle.make} {r.vehicle.model}
                   </Link>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="font-bold">{formatMoney(r.auction.currentBid ?? r.auction.startingPrice, r.auction.currency as Currency)}</span>
-                    <span className="text-xs text-muted">{r.auction.bidCount} bids</span>
-                    <Countdown endsAt={r.auction.endsAt} className="text-xs font-bold text-error" />
+                  <div className="flex shrink-0 items-center gap-4">
+                    <span className="tnum font-mono text-sm font-semibold text-ink">
+                      {formatMoney(
+                        r.auction.currentBid ?? r.auction.startingPrice,
+                        r.auction.currency as Currency,
+                      )}
+                    </span>
+                    <span className="tnum font-mono text-[11px] text-tech">
+                      {r.auction.bidCount} bids
+                    </span>
+                    <Countdown
+                      endsAt={r.auction.endsAt}
+                      className="tnum font-mono text-xs font-semibold text-primary"
+                    />
                   </div>
                 </li>
               ))}
             </ul>
           )}
-        </Card>
+        </section>
 
-        <Card>
-          <div className="flex items-center justify-between border-b border-line px-5 py-4">
-            <h2 className="font-display text-base font-bold">Pending approvals</h2>
-            <Link href="/admin/approvals" className="text-xs font-bold text-primary">Review →</Link>
+        <section>
+          <div className="flex items-baseline justify-between border-b-2 border-ink pb-3">
+            <h2 className="font-display text-[20px] font-medium text-ink">Pending approvals</h2>
+            <Link
+              href="/admin/approvals"
+              className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink hover:text-primary"
+            >
+              Review →
+            </Link>
           </div>
           {d.pendingApprovals.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-muted">Queue is empty.</p>
+            <p className="border-b border-line bg-white px-5 py-8 text-center text-sm text-muted">
+              Queue is empty.
+            </p>
           ) : (
-            <ul className="divide-y divide-line/60">
+            <ul className="divide-y divide-line border-b border-line bg-white">
               {d.pendingApprovals.map((r) => (
-                <li key={r.auction.id} className="flex items-center justify-between px-5 py-3">
-                  <span className="text-sm font-bold">{r.vehicle.make} {r.vehicle.model} {r.vehicle.year}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold">{formatMoney(r.order.amount, r.order.currency as Currency)}</span>
+                <li key={r.auction.id} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                  <span className="min-w-0 truncate text-sm font-semibold text-ink">
+                    {r.vehicle.year} {r.vehicle.make} {r.vehicle.model}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="tnum font-mono text-sm font-semibold text-ink">
+                      {formatMoney(r.order.amount, r.order.currency as Currency)}
+                    </span>
                     <Badge tone="warning">Review</Badge>
                   </div>
                 </li>
               ))}
             </ul>
           )}
-        </Card>
+        </section>
       </div>
 
-      <Card className="mt-6">
-        <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <h2 className="font-display text-base font-bold">Recent orders</h2>
-          <Link href="/admin/orders" className="text-xs font-bold text-primary">All orders →</Link>
+      {/* RECENT ORDERS */}
+      <section>
+        <div className="flex items-baseline justify-between border-b-2 border-ink pb-3">
+          <h2 className="font-display text-[20px] font-medium text-ink">Recent orders</h2>
+          <Link
+            href="/admin/orders"
+            className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink hover:text-primary"
+          >
+            All orders →
+          </Link>
         </div>
         {d.recentOrders.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-muted">No orders yet.</p>
+          <p className="border-b border-line bg-white px-5 py-8 text-center text-sm text-muted">
+            No orders yet.
+          </p>
         ) : (
-          <table className="w-full text-sm">
-            <tbody>
-              {d.recentOrders.map((r) => (
-                <tr key={r.order.id} className="border-b border-line/60 last:border-0">
-                  <td className="px-5 py-3 font-bold">{r.vehicle.make} {r.vehicle.model}</td>
-                  <td className="px-5 py-3 text-muted">{r.buyer.email}</td>
-                  <td className="px-5 py-3 font-bold">{formatMoney(r.order.amount, r.order.currency as Currency)}</td>
-                  <td className="px-5 py-3"><Badge tone={r.order.status === "PENDING_APPROVAL" ? "warning" : r.order.status === "APPROVED" || r.order.status === "COMPLETED" ? "success" : "neutral"}>{r.order.status.replace(/_/g, " ")}</Badge></td>
+          <div className="overflow-x-auto border-b border-line bg-white">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-bg text-left text-tech">
+                  <th className="px-5 py-3">Vehicle</th>
+                  <th className="px-5 py-3">Buyer</th>
+                  <th className="px-5 py-3">Amount</th>
+                  <th className="px-5 py-3">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {d.recentOrders.map((r) => (
+                  <tr key={r.order.id} className="hover:bg-bg/60">
+                    <td className="px-5 py-3 font-semibold text-ink">
+                      {r.vehicle.make} {r.vehicle.model}
+                    </td>
+                    <td className="px-5 py-3 font-mono text-xs text-muted">{r.buyer.email}</td>
+                    <td className="tnum px-5 py-3 font-mono font-semibold text-ink">
+                      {formatMoney(r.order.amount, r.order.currency as Currency)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge
+                        tone={
+                          r.order.status === "PENDING_APPROVAL"
+                            ? "warning"
+                            : r.order.status === "APPROVED" || r.order.status === "COMPLETED"
+                              ? "success"
+                              : "neutral"
+                        }
+                      >
+                        {r.order.status.replace(/_/g, " ")}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </Card>
+      </section>
     </div>
-  );
-}
-
-function Stat({ label, value, href, tone }: { label: string; value: number; href: string; tone?: string }) {
-  return (
-    <Link href={href} className="rounded-lg border border-line bg-white p-4 transition-all hover:shadow-card">
-      <p className={`font-display text-2xl font-extrabold ${tone ?? "text-graphite"}`}>{value}</p>
-      <p className="mt-0.5 text-xs font-semibold text-muted">{label}</p>
-    </Link>
   );
 }

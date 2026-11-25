@@ -49,13 +49,17 @@ export default async function AuctionsPage({
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-7">
-          <h1 className="font-display text-3xl font-extrabold text-ink">Auctions</h1>
+          <h1 className="font-display text-3xl font-extrabold text-ink">
+            {s("auctionStatus") === "ended" ? "Auction results" : "Auctions"}
+          </h1>
           <p className="mt-1 text-sm text-muted">
-            Live timed auctions. Bid in real time. Every result is reviewed by our team.
+            {s("auctionStatus") === "ended"
+              ? "Archive of completed auctions — final bids and outcomes."
+              : "Live timed auctions. Bid in real time. Every result is reviewed by our team."}
           </p>
         </div>
 
-        <CatalogLayout options={opts} current={sp} total={total} basePath="/auctions" filters="drawer">
+        <CatalogLayout options={opts} current={sp} total={total} basePath="/auctions">
           {items.length === 0 ? (
             <EmptyState
               title="No auctions match your filters"

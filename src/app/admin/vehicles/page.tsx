@@ -37,7 +37,7 @@ export default async function AdminVehiclesPage({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-extrabold">Vehicles</h1>
+        <h1 className="font-display text-2xl font-medium">Vehicles</h1>
         <Link href="/admin/vehicles/new">
           <Button>+ New vehicle</Button>
         </Link>

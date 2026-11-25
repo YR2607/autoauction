@@ -34,7 +34,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md font-semibold",
+        "inline-flex items-center justify-center gap-2 font-semibold",
         "transition-colors duration-150 active:scale-[0.99]",
         "disabled:pointer-events-none disabled:opacity-50",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
@@ -63,7 +63,7 @@ export const IconButton = forwardRef<
   <button
     ref={ref}
     className={cn(
-      "inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors",
+      "inline-flex h-10 w-10 items-center justify-center transition-colors",
       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
       "disabled:pointer-events-none disabled:opacity-50",
       tone === "light" && "bg-white text-graphite shadow-sm hover:bg-bg",

@@ -1,37 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  /* palette */
-  --color-graphite: #17181c;
-  --color-ink: #0b0c0f;
+  /* palette — Auction House × Collector's Archive */
+  --color-ink: #181b1d;
+  --color-graphite: #292d30;
+  --color-graphite2: #555b60;
+  --color-tech: #858a8d;
   --color-surface: #ffffff;
-  --color-bg: #fafaf9;
-  --color-bg-alt: #f4f4f2;
-  --color-cta: #141519;
+  --color-bg: #f1f0eb;
+  --color-bg-alt: #eae8e1;
+  --color-cta: #181b1d;
   --color-cta-hover: #000000;
-  --color-primary: #1d4ed8;
-  --color-primary-dark: #1e40af;
-  --color-primary-soft: #eff4ff;
-  --color-muted: #6b7280;
-  --color-line: #e7e7e4;
+  --color-primary: #a9342d;
+  --color-primary-dark: #872820;
+  --color-primary-soft: #f0e2de;
+  --color-muted: #555b60;
+  --color-line: #cbcdcb;
   --color-success: #15803d;
+  --color-success-soft: #3f9d63;
   --color-warning: #b45309;
-  --color-error: #b91c1c;
-  --color-gold: #b78a2e;
+  --color-error: #a9342d;
+  --color-gold: #a8874f;
+  --color-gold-soft: #e8dcc4;
+
+  /* garage palette — dense auction house (dark) */
+  --color-coal: #161412;
+  --color-garage: #211e1a;
+  --color-garage-2: #2b2723;
+  --color-garage-line: #403b33;
+  --color-bone: #ece8df;
+  --color-ash: #9c968b;
+  --color-ember: #d0583a;
 
   /* typography */
-  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 
-  /* radii */
-  --radius-card: 8px;
+  /* radii — soft premium */
+  --radius-card: 14px;
 
-  /* elevation */
-  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.03);
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-lift: 0 16px 40px -16px rgba(16, 24, 40, 0.22);
-  --shadow-pop: 0 20px 56px -16px rgba(11, 18, 32, 0.30);
+  /* elevation — soft luxury */
+  --shadow-xs: 0 1px 2px rgba(24, 27, 29, 0.04);
+  --shadow-sm: 0 2px 6px rgba(24, 27, 29, 0.05);
+  --shadow-card: 0 10px 30px -14px rgba(24, 27, 29, 0.14);
+  --shadow-lift: 0 24px 48px -20px rgba(24, 27, 29, 0.28);
+  --shadow-pop: 0 20px 56px -16px rgba(24, 27, 29, 0.32);
 
   /* motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -39,6 +53,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -46,6 +61,24 @@ body {
   color: var(--color-graphite);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* sticky footer: page fills the viewport, footer sits at the bottom */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+/* auction-terminal table headers */
+th {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 }
 
 h1, h2, h3, h4, .font-display {
@@ -71,7 +104,7 @@ h1, h2, h3, h4, .font-display {
 
 /* thin scrollbars for horizontal strips */
 .scroll-thin::-webkit-scrollbar { height: 6px; width: 6px; }
-.scroll-thin::-webkit-scrollbar-thumb { background: #d3d9e3; border-radius: 3px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #d6d0c4; border-radius: 3px; }
 
 /* drawer + modal motion */
 @keyframes slide-in-right {

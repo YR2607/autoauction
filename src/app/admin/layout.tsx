@@ -21,19 +21,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-bg">
       <header className="sticky top-0 z-40 border-b border-line bg-ink text-white">
-        <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-2">
-              <span className="font-display text-base font-extrabold">AutoAuction <span className="text-white/40">Admin</span></span>
+            <Link href="/admin" className="flex items-baseline gap-2.5">
+              <span className="font-display text-lg font-medium">AutoAuction</span>
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Admin</span>
             </Link>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Link href="/" className="rounded-md px-3 py-1.5 font-semibold text-white/70 hover:bg-white/10">← Site</Link>
+          <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.12em]">
+            <Link href="/" className="px-3 py-1.5 font-semibold text-white/70 transition-colors hover:bg-white/10 hover:text-white">← Site</Link>
             <span className="hidden text-white/50 sm:inline">{user.email}</span>
           </div>
         </div>
       </header>
-      <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[232px_1fr]">
+      <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[232px_1fr]">
         <AdminNav counts={{ approvals: pendingApprovals, orders: pendingOrders }} />
         <div className="min-w-0">
           <AdminBreadcrumb />

@@ -23,8 +23,8 @@ export function AdminNav({
 }) {
   const path = usePathname();
   return (
-    <aside className="h-fit rounded-lg border border-line bg-white p-2 shadow-xs lg:sticky lg:top-[72px]">
-      <nav aria-label="Admin" className="scroll-thin flex gap-1 overflow-x-auto lg:flex-col">
+    <aside className="h-fit border border-line bg-white p-2 lg:sticky lg:top-[72px]">
+      <nav aria-label="Admin" className="scroll-thin flex gap-0.5 overflow-x-auto lg:flex-col">
         {items.map((i) => {
           const active = i.href === "/admin" ? path === "/admin" : path.startsWith(i.href);
           const n = i.key ? counts[i.key as "approvals" | "orders"] ?? 0 : 0;
@@ -34,8 +34,10 @@ export function AdminNav({
               href={i.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex shrink-0 items-center gap-2.5 rounded-md px-3.5 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors",
-                active ? "bg-ink text-white" : "text-graphite/70 hover:bg-graphite/5",
+                "flex shrink-0 items-center gap-2.5 border-l-2 px-3.5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] whitespace-nowrap transition-colors",
+                active
+                  ? "border-primary bg-bg text-ink"
+                  : "border-transparent text-graphite2 hover:bg-bg hover:text-ink",
               )}
             >
               <i.icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -43,8 +45,8 @@ export function AdminNav({
               {n > 0 && (
                 <span
                   className={cn(
-                    "ml-auto rounded px-1.5 py-0.5 text-[10px] font-bold",
-                    active ? "bg-white/20 text-white" : "bg-warning/20 text-[#92600a]",
+                    "ml-auto px-1.5 py-0.5 font-mono text-[10px] font-semibold",
+                    active ? "bg-primary text-white" : "bg-warning/20 text-[#92600a]",
                   )}
                 >
                   {n}

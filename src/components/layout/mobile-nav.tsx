@@ -17,7 +17,7 @@ export function MobileNav({
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         aria-controls="mobile-nav-panel"
-        className="rounded-md border border-line p-2 transition-colors hover:bg-graphite/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta"
+        className="border border-line p-2 text-ink transition-colors hover:bg-graphite/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta"
         onClick={() => setOpen(!open)}
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -39,6 +39,13 @@ export function MobileNav({
                 {l.label}
               </Link>
             ))}
+            <Link
+              href="/sell"
+              onClick={() => setOpen(false)}
+              className="rounded-md px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5"
+            >
+              Sell your car
+            </Link>
             <div className="my-2 h-px bg-line" />
             {user ? (
               <>

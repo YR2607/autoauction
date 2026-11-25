@@ -47,9 +47,11 @@ export function ProfileForm({ initial }: { initial: Fields }) {
   }
 
   return (
-    <div className="space-y-8">
-      <form onSubmit={submit} className="space-y-4 rounded-lg border border-line bg-white p-6">
-        <h2 className="font-display text-base font-bold">Personal information</h2>
+    <div className="grid items-start gap-x-10 gap-y-8 lg:grid-cols-2">
+      <form onSubmit={submit} className="space-y-4">
+        <h2 className="border-b border-ink/80 pb-2 font-display text-[18px] font-medium text-ink">
+          Personal information
+        </h2>
         <div className="grid grid-cols-2 gap-4">
           <div><Label>First name</Label><Input name="firstName" defaultValue={initial.firstName} /></div>
           <div><Label>Last name</Label><Input name="lastName" defaultValue={initial.lastName} /></div>
@@ -63,14 +65,16 @@ export function ProfileForm({ initial }: { initial: Fields }) {
         <Button type="submit" loading={busy}>Save profile</Button>
       </form>
 
-      <form onSubmit={changePassword} className="space-y-4 rounded-lg border border-line bg-white p-6">
-        <h2 className="font-display text-base font-bold">Change password</h2>
+      <form onSubmit={changePassword} className="space-y-4">
+        <h2 className="border-b border-ink/80 pb-2 font-display text-[18px] font-medium text-ink">
+          Security
+        </h2>
         <div><Label>Current password</Label><Input name="currentPassword" type="password" required /></div>
         <div><Label>New password (8+ chars)</Label><Input name="newPassword" type="password" required minLength={8} /></div>
         <Button type="submit" variant="outline" loading={busy}>Change password</Button>
       </form>
 
-      {msg && <p role="status" className={`rounded-lg px-3 py-2 text-sm font-semibold ${msg.includes("fail") || msg.includes("Fail") ? "bg-error/10 text-error" : "bg-success/10 text-success"}`}>{msg}</p>}
+      {msg && <p role="status" className={`px-3 py-2 text-sm font-semibold lg:col-span-2 ${msg.includes("fail") || msg.includes("Fail") ? "bg-error/10 text-error" : "bg-success/10 text-success"}`}>{msg}</p>}
     </div>
   );
 }

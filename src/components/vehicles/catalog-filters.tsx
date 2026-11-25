@@ -42,7 +42,8 @@ const FILTER_LABELS: Record<string, (v: string) => string> = {
   bodyType: (v) => v,
   saleType: (v) => (v === "BUY_NOW" ? "Buy Now" : v === "AUCTION" ? "Auction" : v),
   currency: (v) => v,
-  auctionStatus: (v) => (v === "LIVE" ? "Live auctions" : v === "SCHEDULED" ? "Upcoming" : v),
+  auctionStatus: (v) =>
+    v === "LIVE" ? "Live auctions" : v === "SCHEDULED" ? "Upcoming" : v === "ended" ? "Results" : v,
 };
 
 /** Collapsible filter section — module-level so re-renders don't remount inputs. */
@@ -426,6 +427,7 @@ export function FiltersPanel({
         <FilterOptList activeValue={g("auctionStatus")} onPick={pick("auctionStatus")} items={[
             ["LIVE", "Live now"],
             ["SCHEDULED", "Upcoming"],
+            ["ended", "Results"],
           ]}
         />
       </FilterSection>
@@ -567,7 +569,7 @@ export function CatalogLayout({
   return (
     <div className={cn(filters === "sidebar" && "grid gap-8 lg:grid-cols-[264px_1fr]")}>
       {filters === "sidebar" && (
-        <aside className="hidden h-fit rounded-lg border border-line bg-white px-5 pt-4 pb-5 lg:sticky lg:top-20 lg:block">
+        <aside className="hidden h-fit border border-line bg-white px-5 pt-4 pb-5 lg:sticky lg:top-20 lg:block">
           <FiltersPanel options={options} current={current} total={total} basePath={basePath} />
         </aside>
       )}

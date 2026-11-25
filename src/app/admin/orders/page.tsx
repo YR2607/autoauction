@@ -29,7 +29,7 @@ export default async function OrdersPage({
   const rows = allOrders(perPage, (page - 1) * perPage);
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold">Orders</h1>
+      <h1 className="font-display text-2xl font-medium">Orders</h1>
       <p className="mt-1 text-sm text-muted">All purchase requests: auction wins and Buy Now.</p>
       <div className="mt-6 space-y-4">
         {rows.map((r) => (

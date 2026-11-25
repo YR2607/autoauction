@@ -31,6 +31,7 @@ export type VehicleCard = {
     bidCount: number;
     endsAt: number;
     startsAt: number;
+    finalizedAt?: number | null;
   } | null;
 };
 
@@ -75,6 +76,7 @@ function mapCard(r: {
           bidCount: r.auction.bidCount,
           endsAt: r.auction.endsAt,
           startsAt: r.auction.startsAt,
+          finalizedAt: r.auction.finalizedAt,
         }
       : null,
   };
@@ -104,7 +106,11 @@ export type CatalogFilters = {
 };
 
 export function listVehicles(f: CatalogFilters) {
-  const conds: SQL[] = [eq(schema.vehicles.status, "PUBLISHED")];
+  const conds: SQL[] = [
+    f.auctionStatus === "ended"
+      ? inArray(schema.vehicles.status, ["PUBLISHED", "RESERVED", "SOLD"])
+      : eq(schema.vehicles.status, "PUBLISHED"),
+  ];
 
   if (f.q) {
     const like_ = `%${f.q}%`;
@@ -133,6 +139,16 @@ export function listVehicles(f: CatalogFilters) {
     );
   if (f.auctionStatus === "LIVE") conds.push(eq(schema.auctions.status, "LIVE"));
   if (f.auctionStatus === "SCHEDULED") conds.push(eq(schema.auctions.status, "SCHEDULED"));
+  if (f.auctionStatus === "ended")
+    conds.push(
+      inArray(schema.auctions.status, [
+        "ENDED",
+        "AWAITING_ADMIN_APPROVAL",
+        "APPROVED",
+        "SOLD",
+        "UNSOLD",
+      ]),
+    );
 
   // Display-price semantics — must match VehicleCard:
   // live/upcoming auction → auction price; else eligible Buy Now → fixed

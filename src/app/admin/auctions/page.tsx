@@ -44,7 +44,7 @@ export default async function AdminAuctionsPage({
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold">Auctions</h1>
+      <h1 className="font-display text-2xl font-medium">Auctions</h1>
       <p className="mt-1 text-sm text-muted">Manage on the vehicle page: create, schedule, cancel, approve.</p>
       <Card className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[820px] text-sm">

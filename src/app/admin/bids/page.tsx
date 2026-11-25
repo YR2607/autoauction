@@ -20,7 +20,7 @@ export default async function BidsPage({
   const rows = allBids(perPage, (page - 1) * perPage);
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold">Bid history</h1>
+      <h1 className="font-display text-2xl font-medium">Bid history</h1>
       <p className="mt-1 text-sm text-muted">Accepted and rejected bid events across all auctions.</p>
       <Card className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[760px] text-sm">

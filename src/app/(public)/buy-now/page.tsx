@@ -56,7 +56,7 @@ export default async function BuyNowPage({
           </p>
         </div>
 
-        <CatalogLayout options={opts} current={sp} total={total} basePath="/buy-now" filters="drawer">
+        <CatalogLayout options={opts} current={sp} total={total} basePath="/buy-now">
           {items.length === 0 ? (
             <EmptyState
               title="No Buy Now vehicles match your filters"

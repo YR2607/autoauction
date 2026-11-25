@@ -20,7 +20,7 @@ export default async function UsersPage({
   const rows = allUsers(perPage, (page - 1) * perPage);
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold">Users</h1>
+      <h1 className="font-display text-2xl font-medium">Users</h1>
       <Card className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <thead>

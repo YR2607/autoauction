@@ -24,9 +24,9 @@ export default function SettingsPage() {
   const values = Object.fromEntries(KEYS.map((k) => [k.key, getSetting(k.key)]));
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold">Settings</h1>
+      <h1 className="font-display text-2xl font-medium">Settings</h1>
       <p className="mt-1 text-sm text-muted">Configurable business rules. Changes apply within ~10 seconds.</p>
-      <div className="mt-6 max-w-xl">
+      <div className="mt-6">
         <SettingsForm fields={KEYS} values={values} />
       </div>
     </div>
