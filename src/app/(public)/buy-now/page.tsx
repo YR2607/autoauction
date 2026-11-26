@@ -1,6 +1,6 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { VehicleCard } from "@/components/vehicles/vehicle-card";
+import { CatalogRow } from "@/components/vehicles/catalog-row";
 import { CatalogLayout } from "@/components/vehicles/catalog-filters";
 import { Pagination } from "@/components/vehicles/pagination";
 import { listVehicles, filterOptions } from "@/features/vehicles/queries";
@@ -83,9 +83,9 @@ export default async function BuyNowPage({
             </div>
           ) : (
             <>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="border border-[#cbd5e1] bg-white">
                 {items.map((v) => (
-                  <VehicleCard key={v.id} v={v} />
+                  <CatalogRow key={v.id} v={v} />
                 ))}
               </div>
               <Pagination
