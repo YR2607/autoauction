@@ -4,7 +4,7 @@ import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
 import { SearchBar } from "@/components/vehicles/search-bar";
-import { Phone, Shield, User, Globe, HelpCircle } from "lucide-react";
+import { Shield, User, Globe, HelpCircle } from "lucide-react";
 
 const mainLinks = [
   { href: "/vehicles", label: "Find Vehicles" },
@@ -22,9 +22,6 @@ export async function SiteHeader() {
         <div className="mx-auto flex h-7 max-w-7xl items-center justify-between px-3 text-[11px] sm:px-6">
           <div className="flex items-center gap-4">
             <span className="font-semibold text-white/80">Online Vehicle Auctions</span>
-            <span className="hidden sm:inline-flex items-center gap-1 text-[#94a3b8]">
-              <Phone className="h-3 w-3 text-[#ffb81c]" /> 1 (800) 555-3535
-            </span>
           </div>
 
           <div className="flex items-center gap-3">

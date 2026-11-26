@@ -13,8 +13,6 @@ export function SiteFooter() {
             <span>24/7 Online Bidding</span>
             <span className="text-white/20">|</span>
             <span>Verified Condition Reports and Titles</span>
-            <span className="text-white/20">|</span>
-            <span className="text-white font-semibold">1 (800) 555-3535</span>
           </div>
         </div>
       </div>

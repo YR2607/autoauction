@@ -16,15 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const demoMode = process.env.DEMO_MODE === "1";
   return (
     <html lang="en" className={roboto.variable}>
       <body className="font-sans antialiased text-[#1e293b] bg-[#eaedf1]">
-        {demoMode && (
-          <div className="bg-[#f59e0b] px-4 py-1 text-center text-xs font-bold tracking-wider text-[#0f172a] uppercase border-b border-[#d97706]">
-            STAGING DEMO: synthetic data only, not a production marketplace
-          </div>
-        )}
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
