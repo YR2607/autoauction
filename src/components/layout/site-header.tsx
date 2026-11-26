@@ -4,6 +4,7 @@ import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
 import { SearchBar } from "@/components/vehicles/search-bar";
+import { Logo } from "./logo";
 import { Shield, User, Globe, HelpCircle } from "lucide-react";
 
 const mainLinks = [
@@ -40,15 +41,8 @@ export async function SiteHeader() {
 
       <div className="bg-[#0b3b60] border-b border-[#072a47]">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-3 sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-1.5" aria-label="AutoAuction Home">
-            <div className="flex items-center">
-              <span className="bg-[#ffb81c] px-2 py-0.5 font-black text-[#051a2e] text-base tracking-tighter">
-                AUTO
-              </span>
-              <span className="ml-1 font-black text-white text-xl tracking-tight">
-                AUCTION
-              </span>
-            </div>
+          <Link href="/" className="flex shrink-0 items-center" aria-label="AutoAuction Home">
+            <Logo inverted className="h-10 w-auto" />
           </Link>
 
           <div className="hidden flex-1 max-w-xl md:block mx-4">

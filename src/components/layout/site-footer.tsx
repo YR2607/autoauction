@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./logo";
 import { siteConfig } from "@/lib/site";
 
 export function SiteFooter() {
@@ -19,14 +20,7 @@ export function SiteFooter() {
 
       <div className="mx-auto grid max-w-7xl gap-8 px-3 py-8 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <div className="flex items-center">
-            <span className="bg-[#ffb81c] px-2 py-0.5 font-black text-[#051a2e] text-sm tracking-tighter rounded-none">
-              AUTO
-            </span>
-            <span className="ml-1 font-black text-white text-base tracking-tight">
-              AUCTION
-            </span>
-          </div>
+          <Logo inverted className="h-9 w-auto" />
           <p className="mt-3 max-w-xs text-xs leading-relaxed text-[#94a3b8]">
             Premier automotive auction marketplace. Live bidding on repairable, salvage, and clean title vehicles with transparent inspection details.
           </p>

@@ -1,10 +1,10 @@
-export function Logo({ inverted = false }: { inverted?: boolean }) {
+export function Logo({ inverted = false, className }: { inverted?: boolean; className?: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/logo.png"
+      src={inverted ? "/logo-light.png" : "/logo.png"}
       alt="AutoAuction"
-      className={inverted ? "h-9 w-auto brightness-0 invert" : "h-9 w-auto"}
+      className={className ?? "h-9 w-auto"}
     />
   );
 }

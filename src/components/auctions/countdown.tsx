@@ -31,5 +31,9 @@ export function Countdown({
     );
     return () => clearInterval(i);
   }, [endsAt, serverDriftMs]);
-  return <span className={className}>{fmt(left)}</span>;
+  return (
+    <span className={className} suppressHydrationWarning>
+      {fmt(left)}
+    </span>
+  );
 }
