@@ -318,7 +318,7 @@ export function CatalogToolbar({
   }
 
   return (
-    <div className="mb-4 space-y-2 border border-[#cbd5e1] bg-white p-3 rounded-none">
+    <div className="space-y-2 border border-[#cbd5e1] bg-white p-3 rounded-none">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-bold text-[#0b3b60]">
           Total Lots Found: <span className="text-[#051a2e] font-black">{total}</span>
@@ -384,11 +384,15 @@ export function CatalogLayout({
   const [open, setOpen] = useState(false);
   return (
     <div className="grid gap-4 lg:grid-cols-[250px_1fr]">
-      <aside className="hidden h-fit lg:sticky lg:top-24 lg:block">
-        <FiltersPanel options={options} current={current} total={total} basePath={basePath} hideQuickToggles={hideQuickToggles} />
+      <aside className="hidden lg:block">
+        <div className="sticky top-[118px] max-h-[calc(100vh-136px)] overflow-y-auto">
+          <FiltersPanel options={options} current={current} total={total} basePath={basePath} hideQuickToggles={hideQuickToggles} />
+        </div>
       </aside>
       <div className="min-w-0">
-        <CatalogToolbar total={total} current={current} basePath={basePath} onOpenFilters={() => setOpen(true)} />
+        <div className="sticky top-[118px] z-30 bg-[#eaedf1] pb-4">
+          <CatalogToolbar total={total} current={current} basePath={basePath} onOpenFilters={() => setOpen(true)} />
+        </div>
         {children}
       </div>
       <Drawer
