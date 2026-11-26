@@ -385,12 +385,12 @@ export function CatalogLayout({
   return (
     <div className="grid gap-4 lg:grid-cols-[250px_1fr]">
       <aside className="hidden lg:block">
-        <div className="sticky top-[130px] max-h-[calc(100vh-146px)] overflow-y-auto">
+        <div className="sticky top-[118px] max-h-[calc(100vh-134px)] overflow-y-auto bg-[#eaedf1] pt-3">
           <FiltersPanel options={options} current={current} total={total} basePath={basePath} hideQuickToggles={hideQuickToggles} />
         </div>
       </aside>
       <div className="min-w-0">
-        <div className="sticky top-[130px] z-30 bg-[#eaedf1] pt-3 pb-4 -mt-3">
+        <div className="sticky top-[118px] z-30 bg-[#eaedf1] pt-3 pb-4 -mt-3">
           <CatalogToolbar total={total} current={current} basePath={basePath} onOpenFilters={() => setOpen(true)} />
         </div>
         {children}
