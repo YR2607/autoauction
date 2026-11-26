@@ -5,7 +5,7 @@ import { Input, Label, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { FilterChip } from "@/components/ui/chip";
-import { SlidersHorizontal, Search, RotateCcw, Filter } from "lucide-react";
+import { SlidersHorizontal, Search, RotateCcw, Filter, ChevronRight } from "lucide-react";
 
 export type FilterOptions = {
   makes: string[];
@@ -38,13 +38,54 @@ const FILTER_LABELS: Record<string, (v: string) => string> = {
   auctionStatus: (v) => (v === "LIVE" ? "Live Auction" : v === "SCHEDULED" ? "Upcoming" : v),
 };
 
+function FilterGroup({
+  label,
+  summary,
+  defaultOpen = false,
+  children,
+}: {
+  label: string;
+  summary?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-[#e2e8f0] last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center justify-between px-3.5 py-3 text-left text-[13px] font-semibold text-[#1e293b] transition-colors hover:bg-[#f8fafc]"
+      >
+        <span className="flex min-w-0 items-baseline gap-2">
+          {label}
+          {summary && !open && (
+            <span className="truncate text-[11px] font-medium text-[#0b3b60]">{summary}</span>
+          )}
+        </span>
+        <ChevronRight
+          className={`h-3.5 w-3.5 shrink-0 text-[#94a3b8] transition-transform ${open ? "rotate-90" : ""}`}
+        />
+      </button>
+      {open && <div className="px-3.5 pb-3.5">{children}</div>}
+    </div>
+  );
+}
+
 export function FiltersPanel({
   options,
   current,
+  total,
+  basePath = "/vehicles",
+  hideQuickToggles = false,
   onApply,
 }: {
   options: FilterOptions;
   current: Record<string, string | string[] | undefined>;
+  total?: number;
+  basePath?: string;
+  hideQuickToggles?: boolean;
   onApply?: () => void;
 }) {
   const router = useRouter();
@@ -59,12 +100,15 @@ export function FiltersPanel({
       else params.delete(k);
     }
     params.delete("page");
-    router.push(`/vehicles?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
     onApply?.();
   }
 
   const sel = (key: string) => (e: React.ChangeEvent<HTMLSelectElement>) =>
     apply({ [key]: e.target.value });
+
+  const buyNowOnly = g("saleType") === "BUY_NOW";
+  const liveOnly = g("auctionStatus") === "LIVE";
 
   return (
     <div className="overflow-hidden rounded-none border border-[#cbd5e1] bg-white">
@@ -75,137 +119,167 @@ export function FiltersPanel({
         </div>
         <button
           type="button"
-          onClick={() => router.push("/vehicles")}
+          onClick={() => router.push(basePath)}
           className="text-[11px] text-[#cbd5e1] hover:text-[#ffb81c] flex items-center gap-1 cursor-pointer"
         >
           <RotateCcw className="h-3 w-3" /> Reset
         </button>
       </div>
 
-      <div className="p-3.5 space-y-4 text-xs">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            apply({ q });
-          }}
-        >
-          <Label>Keyword or Lot Number</Label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#94a3b8]" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Make, model, VIN, lot..."
-              className="pl-8 text-xs"
-            />
-          </div>
-        </form>
+      {total != null && (
+        <p className="border-b border-[#e2e8f0] px-3.5 py-2.5 text-[11.5px] font-semibold text-[#64748b]">
+          Found <span className="font-black text-[#0b3b60]">{total}</span> lot{total === 1 ? "" : "s"}
+        </p>
+      )}
 
-        <div className="border-t border-[#e2e8f0] pt-3">
-          <Label>Sale or Auction Type</Label>
-          <Select value={g("saleType")} onChange={sel("saleType")}>
-            <option value="">All Sale Types</option>
-            <option value="AUCTION">Live Online Auction</option>
-            <option value="BUY_NOW">Buy Now (Fixed Price)</option>
-            <option value="AUCTION_BUY_NOW">Auction + Buy Now</option>
-          </Select>
+      {/* keyword */}
+      <form
+        className="border-b border-[#e2e8f0] px-3.5 py-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          apply({ q });
+        }}
+      >
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#94a3b8]" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Make, model, VIN, lot..."
+            className="pl-8 text-xs"
+          />
         </div>
+      </form>
 
-        <div>
-          <Label>Auction Status</Label>
-          <Select value={g("auctionStatus")} onChange={sel("auctionStatus")}>
-            <option value="">All Statuses</option>
-            <option value="LIVE">Live Now</option>
-            <option value="SCHEDULED">Upcoming</option>
-          </Select>
-        </div>
-
-        <div>
-          <Label>Vehicle Make</Label>
+      {/* accordion groups */}
+      <div className="text-xs">
+        <FilterGroup label="Make" summary={g("make")} defaultOpen={!!g("make")}>
           <Select value={g("make")} onChange={sel("make")}>
             <option value="">All Makes</option>
             {options.makes.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
           </Select>
-        </div>
+        </FilterGroup>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label>Year From</Label>
-            <Input
-              type="number"
-              defaultValue={g("yearFrom")}
-              placeholder="2015"
-              onBlur={(e) => apply({ yearFrom: e.target.value })}
-            />
+        <FilterGroup
+          label="Year"
+          summary={[g("yearFrom") || "…", g("yearTo") || "…"].join(" – ")}
+          defaultOpen={!!(g("yearFrom") || g("yearTo"))}
+        >
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label>From</Label>
+              <Input
+                type="number"
+                defaultValue={g("yearFrom")}
+                placeholder="2015"
+                onBlur={(e) => apply({ yearFrom: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>To</Label>
+              <Input
+                type="number"
+                defaultValue={g("yearTo")}
+                placeholder="2024"
+                onBlur={(e) => apply({ yearTo: e.target.value })}
+              />
+            </div>
           </div>
-          <div>
-            <Label>Year To</Label>
-            <Input
-              type="number"
-              defaultValue={g("yearTo")}
-              placeholder="2024"
-              onBlur={(e) => apply({ yearTo: e.target.value })}
-            />
-          </div>
-        </div>
+        </FilterGroup>
 
-        <div>
-          <Label>Max Price (€ / $)</Label>
+        <FilterGroup label="Price" summary={g("priceMax") ? `≤ ${Number(g("priceMax")).toLocaleString("en-US")}` : undefined} defaultOpen={!!g("priceMax")}>
+          <Label>Max price (€ / $)</Label>
           <Input
             type="number"
             defaultValue={g("priceMax")}
             placeholder="50000"
             onBlur={(e) => apply({ priceMax: e.target.value })}
           />
-        </div>
+        </FilterGroup>
 
-        <div>
-          <Label>Max Mileage (mi / km)</Label>
+        <FilterGroup label="Mileage" summary={g("mileageMax") ? `≤ ${Number(g("mileageMax")).toLocaleString("en-US")}` : undefined} defaultOpen={!!g("mileageMax")}>
+          <Label>Max mileage (mi / km)</Label>
           <Input
             type="number"
             defaultValue={g("mileageMax")}
             placeholder="150000"
             onBlur={(e) => apply({ mileageMax: e.target.value })}
           />
-        </div>
+        </FilterGroup>
 
-        <div>
-          <Label>Fuel Type</Label>
+        <FilterGroup label="Fuel type" summary={g("fuelType")} defaultOpen={!!g("fuelType")}>
           <Select value={g("fuelType")} onChange={sel("fuelType")}>
             <option value="">All Fuels</option>
             {options.fuelTypes.map((f) => (
               <option key={f} value={f}>{f}</option>
             ))}
           </Select>
-        </div>
+        </FilterGroup>
 
-        <div>
-          <Label>Transmission</Label>
+        <FilterGroup label="Transmission" summary={g("transmission")} defaultOpen={!!g("transmission")}>
           <Select value={g("transmission")} onChange={sel("transmission")}>
             <option value="">All Transmissions</option>
             {options.transmissions.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </Select>
-        </div>
+        </FilterGroup>
 
-        <div>
-          <Label>Body Type</Label>
+        <FilterGroup label="Body type" summary={g("bodyType")} defaultOpen={!!g("bodyType")}>
           <Select value={g("bodyType")} onChange={sel("bodyType")}>
             <option value="">All Body Types</option>
             {options.bodyTypes.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
           </Select>
-        </div>
+        </FilterGroup>
 
+        <FilterGroup
+          label="Auction status"
+          summary={g("auctionStatus") === "ended" ? "Results" : g("auctionStatus") === "LIVE" ? "Live" : g("auctionStatus") === "SCHEDULED" ? "Upcoming" : undefined}
+          defaultOpen={!!g("auctionStatus")}
+        >
+          <Select value={g("auctionStatus")} onChange={sel("auctionStatus")}>
+            <option value="">All Statuses</option>
+            <option value="LIVE">Live Now</option>
+            <option value="SCHEDULED">Upcoming</option>
+            <option value="ended">Results (Ended)</option>
+          </Select>
+        </FilterGroup>
+      </div>
+
+      {/* checkbox toggles */}
+      {!hideQuickToggles && (
+      <div className="border-t border-[#e2e8f0]">
+        <label className="flex cursor-pointer items-center justify-between px-3.5 py-3 text-[13px] font-semibold text-[#1e293b] transition-colors hover:bg-[#f8fafc]">
+          Buy Now only
+          <input
+            type="checkbox"
+            checked={buyNowOnly}
+            onChange={(e) => apply({ saleType: e.target.checked ? "BUY_NOW" : "" })}
+            className="h-4 w-4 cursor-pointer accent-[#0b3b60]"
+          />
+        </label>
+        <label className="flex cursor-pointer items-center justify-between border-t border-[#e2e8f0] px-3.5 py-3 text-[13px] font-semibold text-[#1e293b] transition-colors hover:bg-[#f8fafc]">
+          Live auctions only
+          <input
+            type="checkbox"
+            checked={liveOnly}
+            onChange={(e) => apply({ auctionStatus: e.target.checked ? "LIVE" : "" })}
+            className="h-4 w-4 cursor-pointer accent-[#0b3b60]"
+          />
+        </label>
+      </div>
+      )}
+
+      <div className="border-t border-[#e2e8f0] p-3">
         <Button
           variant="outline"
           className="w-full text-xs font-bold uppercase"
           type="button"
-          onClick={() => router.push("/vehicles")}
+          onClick={() => router.push(basePath)}
         >
           Clear All Filters
         </Button>
@@ -217,10 +291,12 @@ export function FiltersPanel({
 export function CatalogToolbar({
   total,
   current,
+  basePath = "/vehicles",
   onOpenFilters,
 }: {
   total: number;
   current: Record<string, string | string[] | undefined>;
+  basePath?: string;
   onOpenFilters: () => void;
 }) {
   const router = useRouter();
@@ -232,13 +308,13 @@ export function CatalogToolbar({
     const params = new URLSearchParams(sp.toString());
     params.delete(k);
     params.delete("page");
-    router.push(`/vehicles?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
   function sort(v: string) {
     const params = new URLSearchParams(sp.toString());
     params.set("sort", v);
     params.delete("page");
-    router.push(`/vehicles?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
 
   return (
@@ -279,7 +355,7 @@ export function CatalogToolbar({
             <FilterChip key={k} label={FILTER_LABELS[k](g(k))} onRemove={() => remove(k)} />
           ))}
           <button
-            onClick={() => router.push("/vehicles")}
+            onClick={() => router.push(basePath)}
             className="text-[11px] font-bold text-[#0b3b60] hover:underline ml-1 cursor-pointer"
           >
             Clear all
@@ -294,21 +370,25 @@ export function CatalogLayout({
   options,
   current,
   total,
+  basePath = "/vehicles",
+  hideQuickToggles = false,
   children,
 }: {
   options: FilterOptions;
   current: Record<string, string | string[] | undefined>;
   total: number;
+  basePath?: string;
+  hideQuickToggles?: boolean;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="grid gap-4 lg:grid-cols-[250px_1fr]">
-      <aside className="hidden h-fit lg:block">
-        <FiltersPanel options={options} current={current} />
+      <aside className="hidden h-fit lg:sticky lg:top-24 lg:block">
+        <FiltersPanel options={options} current={current} total={total} basePath={basePath} hideQuickToggles={hideQuickToggles} />
       </aside>
       <div className="min-w-0">
-        <CatalogToolbar total={total} current={current} onOpenFilters={() => setOpen(true)} />
+        <CatalogToolbar total={total} current={current} basePath={basePath} onOpenFilters={() => setOpen(true)} />
         {children}
       </div>
       <Drawer
@@ -321,7 +401,7 @@ export function CatalogLayout({
           </Button>
         }
       >
-        <FiltersPanel options={options} current={current} onApply={() => setOpen(false)} />
+        <FiltersPanel options={options} current={current} total={total} basePath={basePath} hideQuickToggles={hideQuickToggles} onApply={() => setOpen(false)} />
       </Drawer>
     </div>
   );
