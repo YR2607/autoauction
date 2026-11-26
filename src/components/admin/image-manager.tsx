@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash as Trash2, Upload, Star, NavArrowLeft as ChevronLeft, NavArrowRight as ChevronRight } from "iconoir-react";
+import { Trash2, Upload, Star, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function ImageManager({
   vehicleId,
@@ -61,17 +61,17 @@ export function ImageManager({
       {err && <p className="mt-2 text-xs font-semibold text-error">{err}</p>}
       <div className="mt-4 grid grid-cols-3 gap-2">
         {images.map((img, idx) => (
-          <div key={img.id} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-graphite/5">
+          <div key={img.id} className="group relative aspect-[4/3] overflow-hidden rounded-none border border-[#cbd5e1] bg-[#f8fafc]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={img.url} alt="" className="h-full w-full object-cover" />
             {img.isCover && (
-              <span className="absolute left-1 top-1 rounded bg-ink/80 px-1.5 py-0.5 text-[9px] font-bold text-white">COVER</span>
+              <span className="absolute left-1 top-1 rounded-none bg-[#051a2e]/90 px-1.5 py-0.5 text-[9px] font-bold text-white">COVER</span>
             )}
-            <div className="absolute inset-x-0 bottom-0 hidden justify-center gap-1 bg-ink/60 p-1 group-hover:flex">
+            <div className="absolute inset-x-0 bottom-0 hidden justify-center gap-1 bg-[#051a2e]/80 p-1 group-hover:flex">
               <button
                 onClick={() => move(idx, -1)}
                 disabled={idx === 0}
-                className="rounded bg-white/90 p-1 text-ink disabled:opacity-40"
+                className="rounded-none bg-white p-1 text-[#051a2e] disabled:opacity-40"
                 aria-label="Move left"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
@@ -79,7 +79,7 @@ export function ImageManager({
               {!img.isCover && (
                 <button
                   onClick={() => call({ coverId: img.id })}
-                  className="rounded bg-white/90 p-1 text-ink"
+                  className="rounded-none bg-white p-1 text-[#051a2e]"
                   aria-label="Set as cover"
                   title="Set as cover"
                 >
@@ -89,14 +89,14 @@ export function ImageManager({
               <button
                 onClick={() => move(idx, 1)}
                 disabled={idx === images.length - 1}
-                className="rounded bg-white/90 p-1 text-ink disabled:opacity-40"
+                className="rounded-none bg-white p-1 text-[#051a2e] disabled:opacity-40"
                 aria-label="Move right"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={() => call({ imageId: img.id })}
-                className="rounded bg-error p-1 text-white"
+                className="rounded-none bg-[#cc0000] p-1 text-white"
                 aria-label="Delete image"
               >
                 <Trash2 className="h-3.5 w-3.5" />

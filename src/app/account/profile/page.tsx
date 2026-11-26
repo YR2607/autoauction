@@ -19,13 +19,9 @@ export default async function ProfilePage() {
 
   return (
     <div>
-      <div className="border-b-2 border-ink pb-4">
-        <h1 className="font-display text-[28px] font-medium text-ink">Profile</h1>
-        <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-tech">
-          Member record · {user.email}
-        </p>
-      </div>
-      <div className="mt-6">
+      <h1 className="font-display text-2xl font-extrabold">Profile</h1>
+      <p className="mt-1 text-sm text-muted">{user.email}</p>
+      <div className="mt-6 max-w-lg">
         <ProfileForm
           initial={{
             firstName: profile?.firstName ?? "",

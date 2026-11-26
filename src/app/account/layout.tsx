@@ -20,14 +20,12 @@ export default async function AccountLayout({ children }: { children: React.Reac
   return (
     <>
       <SiteHeader />
-      <div className="bg-white">
-        <main className="mx-auto w-full max-w-[1380px] px-4 py-8 sm:px-6">
-          <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-            <AccountNav isAdmin={user.role === "admin"} unread={unread} />
-            <div className="min-w-0">{children}</div>
-          </div>
-        </main>
-      </div>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="grid gap-6 lg:grid-cols-[232px_1fr]">
+          <AccountNav isAdmin={user.role === "admin"} unread={unread} />
+          <div className="min-w-0">{children}</div>
+        </div>
+      </main>
       <SiteFooter />
     </>
   );

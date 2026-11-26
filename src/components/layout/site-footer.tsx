@@ -1,92 +1,116 @@
 import Link from "next/link";
-import { Mail, Globe } from "iconoir-react";
 import { siteConfig } from "@/lib/site";
-import { Logo } from "./logo";
 
-export function SiteFooter({ flush = false }: { flush?: boolean }) {
+export function SiteFooter() {
   return (
-    <footer className={`${flush ? "" : "mt-20 "}bg-ink text-white`}>
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
-          <div>
-            <Logo inverted />
-            <p className="mt-4 max-w-xs font-display text-[19px] font-medium leading-snug text-white/85">
-              Independent automotive auction house.
-            </p>
-            <p className="mt-3 max-w-xs text-[13.5px] leading-relaxed text-white/55">
-              Timed auctions and fixed-price listings. Every sale reviewed by
-              our team.
-            </p>
-            <p className="mt-5 flex items-center gap-2 font-mono text-[11.5px] uppercase tracking-[0.12em] text-white/45">
-              <Globe className="h-3.5 w-3.5" /> {siteConfig.currencies.join(" · ")}
+    <footer className="mt-14 border-t-2 border-[#ffb81c] bg-[#051a2e] text-[#cbd5e1] text-xs">
+      <div className="border-b border-white/10 bg-[#072a47]/60 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 sm:px-6">
+          <span className="font-bold uppercase tracking-wider text-white">
+            Licensed Online Vehicle Auction Platform
+          </span>
+          <div className="flex flex-wrap items-center gap-4 text-[#94a3b8]">
+            <span>24/7 Online Bidding</span>
+            <span className="text-white/20">|</span>
+            <span>Verified Condition Reports and Titles</span>
+            <span className="text-white/20">|</span>
+            <span className="text-white font-semibold">1 (800) 555-3535</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto grid max-w-7xl gap-8 px-3 py-8 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div>
+          <div className="flex items-center">
+            <span className="bg-[#ffb81c] px-2 py-0.5 font-black text-[#051a2e] text-sm tracking-tighter rounded-none">
+              AUTO
+            </span>
+            <span className="ml-1 font-black text-white text-base tracking-tight">
+              AUCTION
+            </span>
+          </div>
+          <p className="mt-3 max-w-xs text-xs leading-relaxed text-[#94a3b8]">
+            Premier automotive auction marketplace. Live bidding on repairable, salvage, and clean title vehicles with transparent inspection details.
+          </p>
+          <div className="mt-4 space-y-1 text-[#cbd5e1]">
+            <p>
+              Accepted Currencies: {siteConfig.currencies.join(" / ")}
             </p>
             {siteConfig.contactEmail && (
-              <p className="mt-1.5 flex items-center gap-2 font-mono text-[11.5px] tracking-[0.06em] text-white/55">
-                <Mail className="h-3.5 w-3.5" />{" "}
-                <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-white">
+              <p>
+                Email:{" "}
+                <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-white underline">
                   {siteConfig.contactEmail}
                 </a>
               </p>
             )}
           </div>
-          <FooterCol
-            title="Auctions"
-            items={[
-              ["Live auctions", "/auctions"],
-              ["Results archive", "/auctions?auctionStatus=ended"],
-              ["Buy Now", "/buy-now"],
-              ["Sell your car", "/sell"],
-            ]}
-          />
-          <FooterCol
-            title="Catalog"
-            items={[
-              ["All vehicles", "/vehicles"],
-              ["How it works", "/#how-it-works"],
-              ["About", "/#about"],
-            ]}
-          />
-          <FooterCol
-            title="Account"
-            items={[
-              ["Dashboard", "/account"],
-              ["My bids", "/account/bids"],
-              ["Purchases", "/account/purchases"],
-              ["Favorites", "/account/favorites"],
-              ["Notifications", "/account/notifications"],
-            ]}
-          />
-          <FooterCol
-            title="Legal"
-            items={[
-              ["Terms of use", "/legal/terms"],
-              ["Privacy policy", "/legal/privacy"],
-              ["Sign in", "/login"],
-              ["Create account", "/register"],
-            ]}
-          />
         </div>
+
+        <FooterCol
+          title="Search and Bid"
+          items={[
+            ["Vehicle Inventory", "/vehicles"],
+            ["Live Online Auctions", "/auctions"],
+            ["Buy It Now", "/buy-now"],
+            ["Auction Calendar", "/auctions"],
+            ["Popular Makes", "/vehicles"],
+          ]}
+        />
+
+        <FooterCol
+          title="Member Portal"
+          items={[
+            ["Member Dashboard", "/account"],
+            ["My Bids and Offers", "/account/bids"],
+            ["Won Vehicles", "/account/purchases"],
+            ["Watchlist", "/account/favorites"],
+            ["Notifications", "/account/notifications"],
+          ]}
+        />
+
+        <FooterCol
+          title="Support and Rules"
+          items={[
+            ["How to Buy at Auction", "/#how-it-works"],
+            ["Member Sign In", "/login"],
+            ["Register Account", "/register"],
+            ["Terms of Service", "/legal/terms"],
+            ["Privacy Policy", "/legal/privacy"],
+          ]}
+        />
       </div>
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-white/35 sm:px-6">
-          <span>© {new Date().getFullYear()} AutoAuction</span>
-          <span>Timed auctions · Fixed-price listings</span>
+
+      <div className="border-t border-white/10 bg-[#031120] py-3 text-[#64748b]">
+        <div className="mx-auto flex max-w-7xl flex-col sm:flex-row items-center justify-between gap-2 px-3 sm:px-6 text-[11px]">
+          <p>
+            © {new Date().getFullYear()} AutoAuction Inc. All rights reserved. Bidding conducted under official auction rules.
+          </p>
+          <p className="text-[10px] text-[#475569]">
+            All vehicles sold &ldquo;As-Is, Where-Is&rdquo; without warranty.
+          </p>
         </div>
       </div>
     </footer>
   );
 }
 
-function FooterCol({ title, items }: { title: string; items: [string, string][] }) {
+function FooterCol({
+  title,
+  items,
+}: {
+  title: string;
+  items: [label: string, href: string][];
+}) {
   return (
     <div>
-      <h4 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/40">
+      <h3 className="font-bold uppercase tracking-wider text-white text-xs border-b border-white/10 pb-1.5 mb-2.5">
         {title}
-      </h4>
-      <ul className="mt-4 space-y-2.5">
+      </h3>
+      <ul className="space-y-1.5 text-xs text-[#94a3b8]">
         {items.map(([label, href]) => (
-          <li key={href}>
-            <Link href={href} className="text-[13.5px] text-white/55 transition-colors hover:text-white">
+          <li key={label}>
+            <Link href={href} className="hover:text-white hover:underline transition-colors">
               {label}
             </Link>
           </li>

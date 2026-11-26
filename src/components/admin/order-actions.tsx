@@ -93,9 +93,9 @@ export function OrderActions({
         <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason…" />
         <p className="mt-2 text-xs">The vehicle will return to published status.</p>
         {endedByBuyNow && (
-          <div className="mt-3 rounded-lg border border-line bg-surface p-3">
-            <Label>This Buy Now request ended an auction. Choose recovery</Label>
-            <div className="mt-2 space-y-1.5 text-sm">
+          <div className="mt-3 rounded-none border border-[#cbd5e1] bg-[#f8fafc] p-3 text-xs">
+            <Label>This Buy Now request ended an auction. Choose recovery path:</Label>
+            <div className="mt-2 space-y-1.5 text-xs">
               <label className="flex items-start gap-2">
                 <input
                   type="radio"

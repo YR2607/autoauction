@@ -26,7 +26,7 @@ export default function ApprovalsPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-medium">Approvals</h1>
+      <h1 className="font-display text-2xl font-extrabold">Approvals</h1>
       <p className="mt-1 text-sm text-muted">Auction results and purchase requests awaiting review.</p>
 
       <h2 className="mt-8 font-display text-lg font-bold">Auction results ({auctionResults.length})</h2>

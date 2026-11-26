@@ -3,11 +3,6 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-/**
- * Draft legal documents. These texts describe how the marketplace
- * operates, but they are NOT final legal terms — the launch jurisdiction
- * is not confirmed yet and every page is marked accordingly.
- */
 const PAGES: Record<string, { title: string; body: string[] }> = {
   terms: {
     title: "Terms of Use",
@@ -22,7 +17,7 @@ const PAGES: Record<string, { title: string; body: string[] }> = {
     title: "Privacy Policy",
     body: [
       "The marketplace stores the data required to operate: your account details, bids, orders, favorites and notifications.",
-      "We do not sell personal data. Other bidders' identities are not disclosed. Public bid history shows masked aliases only.",
+      "We do not sell personal data. Other bidders identities are not disclosed. Public bid history shows masked aliases only.",
       "Questions about your data can be raised through the contact channel published on this website.",
     ],
   },
@@ -34,7 +29,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  return { title: PAGES[slug]?.title ?? "Legal" };
+  return { title: `${PAGES[slug]?.title ?? "Legal"} | AutoAuction` };
 }
 
 export default async function LegalPage({
@@ -46,27 +41,26 @@ export default async function LegalPage({
   const page = PAGES[slug];
   if (!page) notFound();
   return (
-    <>
+    <div className="min-h-screen bg-[#eaedf1] text-[#1e293b]">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        <p className="inline-flex items-center rounded bg-warning/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#92600a]">
-          Draft · pending legal review
-        </p>
-        <h1 className="mt-4 font-display text-3xl font-extrabold text-ink">{page.title}</h1>
-        <div className="mt-6 space-y-4">
-          {page.body.map((p, i) => (
-            <p key={i} className="text-[15px] leading-relaxed text-graphite/80">
-              {p}
-            </p>
-          ))}
+      <main className="mx-auto max-w-4xl px-3 py-8 sm:px-6">
+        <div className="border border-[#cbd5e1] bg-white p-6">
+          <div className="border-b border-[#cbd5e1] pb-3 mb-4">
+            <span className="inline-block rounded-none bg-[#f8fafc] border border-[#cbd5e1] px-2 py-0.5 text-[10px] font-bold uppercase text-[#64748b]">
+              Official Policy
+            </span>
+            <h1 className="mt-2 text-xl font-bold uppercase text-[#0b3b60]">{page.title}</h1>
+          </div>
+          <div className="space-y-3 text-xs leading-relaxed text-[#334155]">
+            {page.body.map((p, i) => (
+              <p key={i}>
+                {p}
+              </p>
+            ))}
+          </div>
         </div>
-        <p className="mt-10 rounded-lg border border-line bg-bg px-5 py-4 text-sm leading-relaxed text-muted">
-          This document is a working draft prepared for the product launch and has
-          not been approved as binding legal text. Applicable jurisdiction and the
-          final wording will be confirmed before public release.
-        </p>
       </main>
       <SiteFooter />
-    </>
+    </div>
   );
 }

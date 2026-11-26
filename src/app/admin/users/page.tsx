@@ -1,5 +1,4 @@
-import { allUsers, usersCount } from "@/features/admin/queries";
-import { Pagination } from "@/components/vehicles/pagination";
+import { allUsers } from "@/features/admin/queries";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserStatusButton } from "@/components/admin/user-status-button";
@@ -8,19 +7,11 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Users · Admin" };
 
-export default async function UsersPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await searchParams;
-  const perPage = 25;
-  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
-  const total = usersCount();
-  const rows = allUsers(perPage, (page - 1) * perPage);
+export default function UsersPage() {
+  const rows = allUsers();
   return (
     <div>
-      <h1 className="font-display text-2xl font-medium">Users</h1>
+      <h1 className="font-display text-2xl font-extrabold">Users</h1>
       <Card className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
@@ -59,7 +50,6 @@ export default async function UsersPage({
           </tbody>
         </table>
       </Card>
-      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/admin/users" />
     </div>
   );
 }

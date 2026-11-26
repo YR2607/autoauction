@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/dialog";
 import { formatMoney, type Currency } from "@/lib/currency";
+import { CheckCircle2 } from "lucide-react";
 
 export function BuyNowButton({
   vehicleId,
@@ -27,7 +28,7 @@ export function BuyNowButton({
       const d = await r.json();
       setDone(r.ok && d.ok ? "ok" : d.error ?? "Purchase request failed.");
     } catch {
-      setDone("Network error. Try again.");
+      setDone("Network error. Please try again.");
     } finally {
       setBusy(false);
       setConfirm(false);
@@ -36,38 +37,41 @@ export function BuyNowButton({
 
   if (done === "ok")
     return (
-      <div className="rounded-lg border border-success/30 bg-success/5 p-5 text-center">
-        <p className="font-display text-lg font-bold text-success">Request received</p>
-        <p className="mt-1 text-sm text-muted">
-          Your purchase request is pending administrator approval.
+      <div className="rounded-none border border-[#86efac] bg-[#f0fdf4] p-4 text-center">
+        <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-[#15803d]">
+          <CheckCircle2 className="h-4 w-4" /> Purchase Request Submitted
+        </div>
+        <p className="mt-1 text-xs text-[#475569]">
+          The vehicle is reserved for you. An auction administrator will confirm the sale shortly.
         </p>
       </div>
     );
 
   return (
-    <div className="rounded-lg border border-line bg-white p-5">
-      <div className="flex items-baseline justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          Buy Now price
-        </p>
-        <Badge tone="dark">Fixed price</Badge>
+    <div className="rounded-none border border-[#cbd5e1] bg-white p-4">
+      <div className="flex items-baseline justify-between border-b border-[#f1f5f9] pb-2">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+          Instant Purchase Price:
+        </span>
+        <Badge tone="dark">DIRECT SALE</Badge>
       </div>
-      <p className="tnum font-display text-[26px] font-extrabold leading-tight">
+      <p className="tnum mt-1 font-mono text-2xl font-black text-[#0b3b60]">
         {formatMoney(price, currency)}
       </p>
       <Button
-        className="mt-4 w-full"
-        size="lg"
+        className="mt-3 w-full"
+        variant="secondary"
+        size="md"
         loading={busy}
         onClick={() => (isAuthed ? setConfirm(true) : (location.href = "/login"))}
       >
-        Buy Now — request purchase
+        Buy It Now
       </Button>
-      <p className="mt-2.5 text-center text-xs text-muted">
-        Submits a purchase request — an administrator confirms the sale.
+      <p className="mt-2 text-center text-[11px] text-[#64748b]">
+        Instantly reserves the vehicle and locks the purchase price.
       </p>
       {done && done !== "ok" && (
-        <p className="mt-3 rounded-lg bg-error/20 px-3 py-2 text-sm font-semibold text-red-200">
+        <p className="mt-2 rounded-none border border-[#fca5a5] bg-[#fef2f2] px-3 py-1.5 text-xs font-bold text-[#b91c1c]">
           {done}
         </p>
       )}
@@ -75,13 +79,12 @@ export function BuyNowButton({
         open={confirm}
         onClose={() => setConfirm(false)}
         onConfirm={submit}
-        title="Confirm purchase"
-        confirmLabel="Submit purchase request"
+        title="Confirm Fixed-Price Purchase"
+        confirmLabel="Reserve & Purchase"
         busy={busy}
       >
         You are requesting to buy this vehicle for{" "}
-        <b>{formatMoney(price, currency)}</b>. The vehicle will be reserved and our team
-        will review your request.
+        <b className="text-[#0b3b60]">{formatMoney(price, currency)}</b>. The lot will be reserved and assigned to your account.
       </ConfirmModal>
     </div>
   );

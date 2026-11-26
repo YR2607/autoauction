@@ -5,19 +5,24 @@ type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "dark"
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-cta text-white hover:bg-cta-hover",
-  secondary: "bg-graphite text-white hover:bg-ink",
+  primary:
+    "bg-[#0b3b60] text-white hover:bg-[#072a47] border border-[#072a47] active:bg-[#051a2e]",
+  secondary:
+    "bg-[#ffb81c] text-[#051a2e] hover:bg-[#e5a519] border border-[#d4960d] font-bold active:bg-[#c98e0c]",
   outline:
-    "border border-line bg-white text-graphite hover:border-graphite/40 hover:bg-bg",
-  ghost: "text-graphite hover:bg-graphite/5",
-  danger: "bg-error text-white hover:bg-error/90",
-  dark: "bg-ink text-white hover:bg-graphite",
+    "border border-[#cbd5e1] bg-white text-[#1e293b] hover:bg-[#f1f5f9] hover:border-[#94a3b8] active:bg-[#e2e8f0]",
+  ghost:
+    "text-[#0b3b60] hover:bg-[#e2eaf2] active:bg-[#cbd5e1]",
+  danger:
+    "bg-[#cc0000] text-white hover:bg-[#990000] border border-[#990000] active:bg-[#770000]",
+  dark:
+    "bg-[#07223d] text-white hover:bg-[#051a2e] border border-[#051a2e] active:bg-[#030f1c]",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-9 px-3.5 text-[13px]",
-  md: "h-11 px-5 text-sm",
-  lg: "h-12 px-7 text-[15px]",
+  sm: "h-7 px-2.5 text-xs uppercase tracking-wider font-bold",
+  md: "h-9 px-4 text-xs uppercase tracking-wider font-bold",
+  lg: "h-10 px-5 text-sm uppercase tracking-wider font-bold",
 };
 
 export interface ButtonProps
@@ -34,10 +39,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-semibold",
-        "transition-colors duration-150 active:scale-[0.99]",
-        "disabled:pointer-events-none disabled:opacity-50",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
+        "inline-flex items-center justify-center gap-1.5 rounded-none select-none text-center cursor-pointer transition-colors duration-100",
+        "disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed",
+        "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0b3b60]",
         variants[variant],
         sizes[size],
         className,
@@ -47,7 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       {loading && (
         <span
           aria-hidden
-          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
         />
       )}
       {children}
@@ -63,12 +67,12 @@ export const IconButton = forwardRef<
   <button
     ref={ref}
     className={cn(
-      "inline-flex h-10 w-10 items-center justify-center transition-colors",
-      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta",
+      "inline-flex h-8 w-8 items-center justify-center rounded-none transition-colors border",
+      "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0b3b60]",
       "disabled:pointer-events-none disabled:opacity-50",
-      tone === "light" && "bg-white text-graphite shadow-sm hover:bg-bg",
-      tone === "dark" && "bg-graphite/10 text-graphite hover:bg-graphite/15",
-      tone === "glass" && "bg-ink/60 text-white backdrop-blur-sm hover:bg-ink/80",
+      tone === "light" && "bg-white text-[#1e293b] border-[#cbd5e1] hover:bg-[#f1f5f9]",
+      tone === "dark" && "bg-[#0b3b60] text-white border-[#072a47] hover:bg-[#072a47]",
+      tone === "glass" && "bg-[#051a2e]/80 text-white border-white/20 hover:bg-[#051a2e]",
       className,
     )}
     {...props}

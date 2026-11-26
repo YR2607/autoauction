@@ -2,18 +2,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { DashboardDots as LayoutDashboard, ShoppingBag, Heart, Bell, User, ShieldCheck } from "iconoir-react";
-import { Gavel } from "@phosphor-icons/react/ssr";
 
-const accountItems = [
-  { href: "/account", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/account/bids", label: "My Bids", icon: Gavel },
-  { href: "/account/purchases", label: "Purchases", icon: ShoppingBag },
-  { href: "/account/favorites", label: "Favorites", icon: Heart },
-  { href: "/account/notifications", label: "Notifications", icon: Bell },
+const items = [
+  { href: "/account", label: "Dashboard" },
+  { href: "/account/bids", label: "My Bids" },
+  { href: "/account/purchases", label: "Purchases" },
+  { href: "/account/favorites", label: "Watchlist" },
+  { href: "/account/notifications", label: "Notifications" },
+  { href: "/account/profile", label: "Profile" },
 ];
-
-const settingsItems = [{ href: "/account/profile", label: "Profile", icon: User }];
 
 export function AccountNav({
   isAdmin,
@@ -23,86 +20,42 @@ export function AccountNav({
   unread?: number;
 }) {
   const path = usePathname();
-
-  const renderItem = (i: (typeof accountItems)[0]) => {
-    const active = path === i.href;
-    return (
-      <Link
-        key={i.href}
-        href={i.href}
-        aria-current={active ? "page" : undefined}
-        className={cn(
-          "relative flex min-w-0 shrink-0 items-center gap-3 px-4 py-2.5 text-[13.5px] font-medium transition-colors lg:px-4",
-          active
-            ? "bg-white text-ink before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-primary"
-            : "text-graphite2 hover:bg-white/60 hover:text-ink",
-        )}
-      >
-        <i.icon className={cn("h-[17px] w-[17px] shrink-0", active ? "text-primary" : "text-tech")} aria-hidden />
-        <span className="truncate">{i.label}</span>
-        {i.href === "/account/notifications" && unread > 0 && (
-          <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center bg-primary px-1 font-mono text-[9.5px] font-semibold text-white">
-            {unread}
-          </span>
-        )}
-      </Link>
-    );
-  };
-
-  const section = (label: string, items: typeof accountItems) => (
-    <div>
-      <p className="px-4 pb-1.5 pt-4 font-mono text-[9.5px] font-semibold uppercase tracking-[0.22em] text-tech first:pt-3">
-        {label}
-      </p>
-      <div className="flex flex-col">{items.map(renderItem)}</div>
-    </div>
-  );
-
   return (
-    <aside className="h-fit w-full lg:sticky lg:top-20">
-      <nav
-        aria-label="Account"
-        className="scroll-thin flex overflow-x-auto border-y border-line/70 lg:block lg:overflow-visible lg:border"
-      >
-        <div className="hidden lg:block">
-          {section("Account", accountItems)}
-          {section("Settings", settingsItems)}
-          {isAdmin && (
-            <div className="border-t border-line/70">
-              <Link
-                href="/admin"
-                className="flex items-center gap-3 px-4 py-3 text-[13.5px] font-semibold text-primary transition-colors hover:bg-white/60"
-              >
-                <ShieldCheck className="h-[17px] w-[17px] shrink-0" aria-hidden />
-                Admin panel
-              </Link>
-            </div>
-          )}
-        </div>
-        {/* mobile: flat strip */}
-        <div className="flex lg:hidden">
-          {[...accountItems, ...settingsItems].map((i) => {
-            const active = path === i.href;
-            return (
-              <Link
-                key={i.href}
-                href={i.href}
-                aria-current={active ? "page" : undefined}
+    <aside className="h-fit rounded-none border border-[#cbd5e1] bg-white p-2 lg:sticky lg:top-20">
+      <nav aria-label="Account" className="flex gap-1 overflow-x-auto lg:flex-col">
+        {items.map((i) => (
+          <Link
+            key={i.href}
+            href={i.href}
+            aria-current={path === i.href ? "page" : undefined}
+            className={cn(
+              "flex shrink-0 items-center justify-between rounded-none px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors",
+              path === i.href
+                ? "bg-[#0b3b60] text-white"
+                : "text-[#334155] hover:bg-[#f1f5f9] hover:text-[#0b3b60]",
+            )}
+          >
+            <span>{i.label}</span>
+            {i.href === "/account/notifications" && unread > 0 && (
+              <span
                 className={cn(
-                  "relative flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.1em]",
-                  active ? "border-primary text-ink" : "border-transparent text-muted",
+                  "rounded-none px-1.5 py-0.2 text-[10px] font-bold",
+                  path === i.href ? "bg-[#ffb81c] text-[#051a2e]" : "bg-[#cc0000] text-white",
                 )}
               >
-                {i.label}
-                {i.href === "/account/notifications" && unread > 0 && (
-                  <span className="flex h-[16px] min-w-[16px] items-center justify-center bg-primary px-1 font-mono text-[9px] font-semibold text-white">
-                    {unread}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+                {unread}
+              </span>
+            )}
+          </Link>
+        ))}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="mt-2 flex shrink-0 items-center rounded-none border-t border-[#cbd5e1] pt-2 px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#b45309] hover:bg-[#fefce8]"
+          >
+            Admin Panel
+          </Link>
+        )}
       </nav>
     </aside>
   );

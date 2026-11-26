@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NavArrowRight as ChevronRight } from "iconoir-react";
+import { ChevronRight } from "lucide-react";
 
 export function Breadcrumb({
   items,
@@ -10,16 +10,16 @@ export function Breadcrumb({
 }) {
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <ol className="flex flex-wrap items-center gap-1.5 text-sm">
+      <ol className="flex flex-wrap items-center gap-1.5 text-xs text-[#64748b]">
         {items.map((it, i) => (
           <li key={i} className="flex items-center gap-1.5">
-            {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted/50" aria-hidden />}
+            {i > 0 && <ChevronRight className="h-3 w-3 text-[#94a3b8]" aria-hidden />}
             {it.href ? (
-              <Link href={it.href} className="text-muted transition-colors hover:text-graphite">
+              <Link href={it.href} className="hover:text-[#0b3b60] hover:underline">
                 {it.label}
               </Link>
             ) : (
-              <span className="font-semibold text-graphite" aria-current="page">
+              <span className="font-bold text-[#0b3b60]" aria-current="page">
                 {it.label}
               </span>
             )}

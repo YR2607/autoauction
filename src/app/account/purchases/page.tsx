@@ -1,127 +1,88 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
-import { myOrders, myOrdersCount } from "@/features/account/queries";
-import { Pagination } from "@/components/vehicles/pagination";
+import { myOrders } from "@/features/account/queries";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty";
 import { formatMoney, type Currency } from "@/lib/currency";
 import Link from "next/link";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "My Purchases" };
+export const metadata: Metadata = { title: "Purchases | AutoAuction" };
 
-const statusLabel: Record<string, { text: string; cls: string }> = {
-  PENDING_APPROVAL: { text: "● Awaiting approval", cls: "text-amber-700" },
-  APPROVED: { text: "● Approved", cls: "text-success" },
-  COMPLETED: { text: "● Completed", cls: "text-success" },
-  REJECTED: { text: "● Rejected", cls: "text-primary" },
-  CANCELLED: { text: "○ Cancelled", cls: "text-muted" },
+const STATUS_LABELS: Record<string, { label: string; tone: "warning" | "success" | "live" | "neutral" }> = {
+  PENDING_APPROVAL: { label: "Pending Approval", tone: "warning" },
+  APPROVED: { label: "Approved", tone: "success" },
+  REJECTED: { label: "Rejected", tone: "live" },
+  CANCELLED: { label: "Cancelled", tone: "neutral" },
 };
 
-const paymentLabel: Record<string, { text: string; cls: string }> = {
-  unpaid: { text: "Unpaid", cls: "text-muted" },
-  paid: { text: "Paid", cls: "text-success" },
-  refunded: { text: "Refunded", cls: "text-muted" },
-};
-
-export default async function PurchasesPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function PurchasesPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const sp = await searchParams;
-  const perPage = 20;
-  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
-  const total = myOrdersCount(user.id);
-  const rows = myOrders(user.id, perPage, (page - 1) * perPage);
+  const orders = myOrders(user.id);
 
   return (
     <div>
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-ink pb-4">
-        <h1 className="font-display text-[28px] font-medium text-ink">Purchases</h1>
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-tech">
-          Transaction ledger · {total} record{total === 1 ? "" : "s"}
-        </p>
-      </div>
-
-      {rows.length === 0 ? (
+      <h1 className="text-xl font-bold uppercase tracking-wider text-[#0b3b60]">Purchases and Orders</h1>
+      {orders.length === 0 ? (
         <EmptyState
-          className="mt-6"
+          className="mt-4"
           title="No purchases yet"
-          body="Won auctions and Buy Now requests will appear here."
-          action={<Link href="/buy-now" className="rounded-md bg-cta px-5 py-2.5 text-sm font-semibold text-white">Browse Buy Now</Link>}
+          body="Vehicles won at auction or bought via Buy It Now will appear here."
+          action={<Link href="/buy-now" className="rounded-none bg-[#0b3b60] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47]">Browse Buy It Now</Link>}
         />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px]">
+        <Card className="mt-4 overflow-x-auto rounded-none">
+          <table className="w-full min-w-[640px] text-xs">
             <thead>
-              <tr className="border-b border-line/70 text-left">
-                <th className="py-2.5 pr-4">Lot / vehicle</th>
-                <th className="py-2.5 pr-4">Type</th>
-                <th className="py-2.5 pr-4">Amount</th>
-                <th className="py-2.5 pr-4">Status</th>
-                <th className="py-2.5 pr-4">Payment</th>
-                <th className="py-2.5 pr-4">Date</th>
-                <th className="py-2.5 text-right">Action</th>
+              <tr className="border-b border-[#cbd5e1] bg-[#f8fafc] text-left uppercase tracking-wider text-[#64748b]">
+                <th className="px-4 py-2.5 font-bold">Vehicle</th>
+                <th className="px-4 py-2.5 font-bold">Type</th>
+                <th className="px-4 py-2.5 font-bold">Price</th>
+                <th className="px-4 py-2.5 font-bold">Status</th>
+                <th className="px-4 py-2.5 font-bold">Date</th>
               </tr>
             </thead>
-            <tbody>
-              {rows.map((r) => {
-                const st = statusLabel[r.order.status] ?? statusLabel.CANCELLED;
-                const pay = paymentLabel[r.order.paymentStatus] ?? paymentLabel.unpaid;
+            <tbody className="divide-y divide-[#f1f5f9]">
+              {orders.map((r) => {
+                const s = STATUS_LABELS[r.order.status] ?? { label: r.order.status, tone: "neutral" as const };
                 return (
-                  <tr key={r.order.id} className="group border-b border-line/70">
-                    <td className="py-3.5 pr-4">
-                      <Link href={`/vehicles/${r.vehicle.slug}`} className="flex items-center gap-3">
+                  <tr key={r.order.id} className="hover:bg-[#f8fafc]">
+                    <td className="px-4 py-3">
+                      <Link href={`/vehicles/${r.vehicle.slug}`} className="flex items-center gap-3 hover:underline">
                         {r.coverUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={r.coverUrl} alt="" className="aspect-[3/2] w-[84px] shrink-0 object-cover" />
+                          <img src={r.coverUrl} alt="" className="h-10 w-16 shrink-0 rounded-none object-cover" />
                         ) : (
-                          <span className="aspect-[3/2] w-[84px] shrink-0 bg-graphite/5" />
+                          <span className="h-10 w-16 shrink-0 rounded-none bg-[#e2e8f0]" />
                         )}
-                        <span>
-                          <span className="tnum block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-tech">
-                            Lot {r.vehicle.lotNumber}
-                          </span>
-                          <span className="mt-0.5 block font-display text-[15.5px] font-medium text-ink group-hover:text-primary">
-                            {r.vehicle.year} {r.vehicle.make} {r.vehicle.model}
-                          </span>
-                        </span>
+                        <div>
+                          <p className="font-bold text-[#0b3b60]">{r.vehicle.year} {r.vehicle.make} {r.vehicle.model}</p>
+                          <p className="text-[11px] text-[#64748b]">Lot {r.vehicle.lotNumber}</p>
+                        </div>
                       </Link>
                     </td>
-                    <td className="py-3.5 pr-4 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
-                      {r.order.type === "BUY_NOW" ? "Buy Now" : "Auction win"}
+                    <td className="px-4 py-3 font-semibold uppercase text-[#64748b]">
+                      {r.order.type === "BUY_NOW" ? "Buy It Now" : "Auction Win"}
                     </td>
-                    <td className="tnum py-3.5 pr-4 font-mono text-[13px] font-semibold text-ink">
+                    <td className="px-4 py-3 font-mono font-bold text-[#0b3b60]">
                       {formatMoney(r.order.amount, r.order.currency as Currency)}
                     </td>
-                    <td className={`py-3.5 pr-4 font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] ${st.cls}`}>
-                      {st.text}
+                    <td className="px-4 py-3">
+                      <Badge tone={s.tone}>{s.label}</Badge>
                     </td>
-                    <td className={`py-3.5 pr-4 font-mono text-[10.5px] uppercase tracking-[0.1em] ${pay.cls}`}>
-                      {pay.text}
-                    </td>
-                    <td className="tnum py-3.5 pr-4 font-mono text-[11.5px] text-muted">
-                      {new Date(r.order.createdAt).toLocaleDateString("en-GB")}
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        href={`/vehicles/${r.vehicle.slug}`}
-                        className="border-b border-ink/40 pb-px font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:border-primary hover:text-primary"
-                      >
-                        View lot
-                      </Link>
+                    <td className="px-4 py-3 text-[#64748b]">
+                      {new Date(r.order.createdAt).toLocaleDateString("en-US")}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
-      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/account/purchases" />
     </div>
   );
 }

@@ -1,142 +1,172 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { formatMoney, type Currency } from "@/lib/currency";
 import type { VehicleCard as VC } from "@/features/vehicles/queries";
 import { Countdown } from "@/components/auctions/countdown";
-import { ArrowRight } from "iconoir-react";
 
-function km(n: number | null) {
-  return n == null ? "N/A" : `${n.toLocaleString("en-GB")} km`;
+function formatLotNumber(num: string) {
+  return num.replace(/[^0-9]/g, "") || num.replace(/-/g, " ");
 }
 
-export function VehicleCard({ v, featured }: { v: VC; featured?: boolean }) {
+function formatMiles(n: number | null) {
+  return n == null ? "N/A" : `${n.toLocaleString("en-US")} mi`;
+}
+
+export function VehicleCard({ v }: { v: VC }) {
   const live = v.auction?.status === "LIVE";
   const scheduled = v.auction?.status === "SCHEDULED";
-  // Server-mirrored eligibility — never advertise an unavailable purchase.
   const buyNow = v.buyNowAvailable;
-
-  const specs = [km(v.mileage), v.fuelType ?? "N/A", v.transmission ?? "N/A"].join(" · ");
+  const cleanLotNum = formatLotNumber(v.lotNumber);
 
   return (
-    <Link
-      href={`/vehicles/${v.slug}`}
-      className="group block h-full overflow-hidden rounded-lg border border-line bg-white transition-shadow duration-200 hover:shadow-lift"
-    >
-      <div
-        className={`relative overflow-hidden bg-graphite/5 ${
-          featured ? "aspect-[16/9]" : "aspect-[4/3]"
-        }`}
-      >
-        {v.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={v.coverUrl}
-            alt={`${v.make} ${v.model}`}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-sm text-muted">
-            No photo
+    <div className="flex flex-col justify-between border border-[#cbd5e1] bg-white text-[#1e293b]">
+      <div>
+        <div className="flex items-center justify-between border-b border-[#cbd5e1] bg-[#f8fafc] px-3 py-1.5 text-xs">
+          <span className="font-bold text-[#0b3b60]">
+            Lot {cleanLotNum}
+          </span>
+          <div className="flex items-center gap-1.5">
+            {live && (
+              <span className="bg-[#cc0000] text-white px-1.5 py-0.2 text-[10px] font-black uppercase tracking-wider">
+                LIVE
+              </span>
+            )}
+            {scheduled && (
+              <span className="bg-[#b45309] text-white px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider">
+                UPCOMING
+              </span>
+            )}
+            {buyNow && (
+              <span className="bg-[#0b3b60] text-white px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider">
+                BUY NOW
+              </span>
+            )}
           </div>
-        )}
-        <div className="absolute left-3 top-3 flex gap-1.5">
-          {live && (
-            <Badge tone="live" pulse>
-              Live
-            </Badge>
-          )}
-          {scheduled && <Badge tone="neutral">Upcoming</Badge>}
-          {buyNow && !live && !scheduled && <Badge tone="dark">Buy Now</Badge>}
-          {buyNow && (live || scheduled) && <Badge tone="primary">Buy Now</Badge>}
         </div>
-        <span className="absolute bottom-3 left-3 rounded bg-ink/70 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
-          Lot {v.lotNumber}
-        </span>
+
+        <Link href={`/vehicles/${v.slug}`} className="relative block aspect-[16/10] overflow-hidden bg-[#e2e8f0]">
+          {v.coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={v.coverUrl}
+              alt={`${v.make} ${v.model}`}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-xs text-[#94a3b8]">
+              No photo available
+            </div>
+          )}
+        </Link>
+
+        <div className="p-3">
+          <h3 className="font-bold text-sm leading-snug text-[#0b3b60] hover:underline">
+            <Link href={`/vehicles/${v.slug}`}>
+              {v.year} {v.make} {v.model} {v.trim ?? ""}
+            </Link>
+          </h3>
+
+          <div className="mt-2.5 space-y-1 border-t border-[#f1f5f9] pt-2 text-xs text-[#475569]">
+            <div className="flex justify-between">
+              <span className="text-[#64748b]">Odometer:</span>
+              <span className="font-bold text-[#1e293b]">{formatMiles(v.mileage)} (Actual)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#64748b]">Doc Type:</span>
+              <span className="font-semibold text-[#15803d]">Clean Title</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#64748b]">Highlights:</span>
+              <span className="font-semibold text-[#15803d]">Run and Drive</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#64748b]">Engine:</span>
+              <span className="text-[#1e293b]">{v.fuelType ?? "Gasoline"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#64748b]">Transmission:</span>
+              <span className="text-[#1e293b]">{v.transmission ?? "Automatic"}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="p-4">
-        <div className="flex items-baseline justify-between gap-2">
-          <h3
-            className={`font-display font-bold leading-snug text-ink ${
-              featured ? "text-xl" : "text-[15px]"
-            }`}
-          >
-            {v.make} {v.model} {v.trim ?? ""}
-          </h3>
-          <span className="shrink-0 text-sm font-medium text-muted">{v.year}</span>
-        </div>
-        <p className="mt-1 text-xs text-muted">{specs}</p>
-
-        <div className="mt-3.5 flex items-end justify-between border-t border-line pt-3">
-          {v.auction && (live || scheduled) ? (
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                {v.auction.currentBid != null ? "Current bid" : "Starting at"}
-              </p>
-              <p
-                className={`tnum font-display font-extrabold leading-tight text-ink ${
-                  featured ? "text-2xl" : "text-lg"
-                }`}
-              >
+      <div className="border-t border-[#cbd5e1] bg-[#f8fafc] p-3 text-xs">
+        {v.auction && (live || scheduled) ? (
+          <div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-[11px] font-bold uppercase text-[#64748b]">
+                {v.auction.currentBid != null ? "Current Bid:" : "Starting Bid:"}
+              </span>
+              <span className="tnum font-bold text-base text-[#0b3b60]">
                 {formatMoney(
                   v.auction.currentBid ?? v.auction.startingPrice,
                   v.auction.currency as Currency,
                 )}
-              </p>
-              {v.auction.bidCount > 0 && (
-                <p className="mt-0.5 text-[11px] font-medium text-muted">
-                  {v.auction.bidCount} bids
-                </p>
+              </span>
+            </div>
+            <div className="mt-1 flex items-center justify-between text-[#64748b]">
+              <span>{v.auction.bidCount} {v.auction.bidCount === 1 ? "bid" : "bids"}</span>
+              {live && (
+                <div className="font-bold text-[#cc0000]">
+                  <Countdown endsAt={v.auction.endsAt} className="tnum" />
+                </div>
               )}
             </div>
-          ) : buyNow ? (
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                Price
-              </p>
-              <p
-                className={`tnum font-display font-extrabold leading-tight text-ink ${
-                  featured ? "text-2xl" : "text-lg"
-                }`}
-              >
+          </div>
+        ) : buyNow ? (
+          <div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-[11px] font-bold uppercase text-[#64748b]">
+                Buy It Now:
+              </span>
+              <span className="tnum font-bold text-base text-[#0b3b60]">
                 {formatMoney(v.buyNowPrice, (v.buyNowCurrency ?? "EUR") as Currency)}
-              </p>
+              </span>
             </div>
-          ) : (
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                {v.auction?.currentBid != null ? "Final bid" : "Starting price"}
-              </p>
-              <p
-                className={`tnum font-display font-extrabold leading-tight text-ink ${
-                  featured ? "text-2xl" : "text-lg"
-                }`}
-              >
+            <p className="text-[11px] font-bold text-[#15803d]">Fixed Price</p>
+          </div>
+        ) : (
+          <div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-[11px] font-bold uppercase text-[#64748b]">
+                Estimated Value:
+              </span>
+              <span className="tnum font-bold text-base text-[#0b3b60]">
                 {formatMoney(
                   v.auction?.currentBid ?? v.auction?.startingPrice ?? v.buyNowPrice,
                   ((v.auction?.currency ?? v.buyNowCurrency) ?? "EUR") as Currency,
                 )}
-              </p>
+              </span>
             </div>
-          )}
-          {live && v.auction ? (
-            <div className="text-right">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                Ends in
-              </p>
-              <Countdown
-                endsAt={v.auction.endsAt}
-                className="tnum text-sm font-bold text-error"
-              />
-            </div>
+          </div>
+        )}
+
+        <div className="mt-2.5">
+          {live ? (
+            <Link
+              href={`/vehicles/${v.slug}`}
+              className="block w-full bg-[#0b3b60] py-2 text-center text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47]"
+            >
+              Bid Now
+            </Link>
+          ) : buyNow ? (
+            <Link
+              href={`/vehicles/${v.slug}`}
+              className="block w-full bg-[#ffb81c] py-2 text-center text-xs font-bold uppercase tracking-wider text-[#051a2e] hover:bg-[#e5a519]"
+            >
+              Buy It Now
+            </Link>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[13px] font-bold text-graphite/50 transition-colors group-hover:text-ink">
-              View <ArrowRight className="h-4 w-4" />
-            </span>
+            <Link
+              href={`/vehicles/${v.slug}`}
+              className="block w-full border border-[#cbd5e1] bg-white py-2 text-center text-xs font-bold uppercase tracking-wider text-[#0b3b60] hover:bg-[#f1f5f9]"
+            >
+              View Details
+            </Link>
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

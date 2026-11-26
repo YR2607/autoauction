@@ -43,7 +43,7 @@ export default async function EditVehiclePage({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-medium">
+          <h1 className="font-display text-2xl font-extrabold">
             {vehicle.make} {vehicle.model} {vehicle.year}
           </h1>
           <p className="mt-1 flex items-center gap-2 text-sm text-muted">

@@ -3,27 +3,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export function NavLinks({ links }: { links: { href: string; label: string }[] }) {
+export function NavLinks({ links }: { links: { href: string; label: string; badge?: string }[] }) {
   const path = usePathname();
   return (
-    <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main">
+    <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
       {links.map((l) => {
-        const base = l.href.split("?")[0];
-        const active =
-          path === base || (base !== "/" && path.startsWith(base));
+        const active = path === l.href || (l.href !== "/" && path.startsWith(l.href));
         return (
           <Link
             key={l.href}
             href={l.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative px-3.5 py-2 font-mono text-[11.5px] font-semibold uppercase tracking-[0.12em] transition-colors",
+              "relative px-3 py-2 text-[13px] font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5",
               active
-                ? "text-ink after:absolute after:inset-x-3.5 after:-bottom-[15px] after:h-[2px] after:bg-primary"
-                : "text-graphite2 hover:text-ink",
+                ? "border-[#ffb81c] text-[#ffb81c] bg-[#051a2e]/40"
+                : "border-transparent text-white/90 hover:text-white hover:bg-[#072a47]",
             )}
           >
-            {l.label}
+            <span>{l.label}</span>
+            {l.badge && (
+              <span className="rounded-none bg-[#cc0000] px-1.5 py-0.5 text-[9px] font-black text-white">
+                {l.badge}
+              </span>
+            )}
           </Link>
         );
       })}

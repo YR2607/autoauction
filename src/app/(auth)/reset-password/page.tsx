@@ -14,11 +14,11 @@ export default async function ResetPasswordPage({
     <>
       <SiteHeader />
       <main className="mx-auto flex max-w-md flex-col px-4 py-16">
-        <h1 className="font-display text-3xl font-extrabold text-ink">Set a new password</h1>
+        <h1 className="font-display text-3xl font-extrabold">Set a new password</h1>
         {token ? (
           <ResetPasswordForm token={token} />
         ) : (
-          <p className="mt-4 rounded-lg border border-line bg-surface p-5 text-sm text-muted">
+          <p className="mt-4 rounded-none border border-[#cbd5e1] bg-white p-5 text-xs text-[#64748b]">
             This page needs a valid reset link. Request one on the{" "}
             <a href="/forgot-password" className="font-semibold text-primary hover:underline">
               forgot password

@@ -3,88 +3,121 @@ import { getSessionUser } from "@/lib/auth/session";
 import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
-import { Logo } from "./logo";
-import { Search } from "iconoir-react";
+import { SearchBar } from "@/components/vehicles/search-bar";
+import { Phone, Shield, User, Globe, HelpCircle } from "lucide-react";
 
-const links = [
-  { href: "/auctions", label: "Auctions" },
-  { href: "/vehicles", label: "Vehicles" },
-  { href: "/auctions?auctionStatus=ended", label: "Results" },
+const mainLinks = [
+  { href: "/vehicles", label: "Find Vehicles" },
+  { href: "/auctions", label: "Live Auctions", badge: "LIVE" },
   { href: "/buy-now", label: "Buy Now" },
-  { href: "/#about", label: "About" },
+  { href: "/#how-it-works", label: "How It Works" },
 ];
 
 export async function SiteHeader() {
   const user = await getSessionUser();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:px-6">
-          <Link href="/" aria-label="AutoAuction home" className="shrink-0">
-            <Logo />
-          </Link>
-
-          <NavLinks links={links} />
-
-          <div className="hidden items-center gap-3 xl:flex">
-            {/* Catalog search — GET to /vehicles?q= */}
-            <form action="/vehicles" method="get" className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tech" />
-              <input
-                type="search"
-                name="q"
-                placeholder="Make, model, lot…"
-                className="h-8.5 w-44 border border-line bg-bg pl-8 pr-3 font-mono text-[12px] text-ink placeholder:text-tech focus:border-graphite2"
-                aria-label="Search vehicles"
-              />
-            </form>
-            <Link
-              href="/sell"
-              className="h-8.5 border border-ink px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-white"
-            >
-              Sell your car
-            </Link>
+    <header className="sticky top-0 z-40 w-full shadow-md">
+      <div className="bg-[#051a2e] text-[#cbd5e1] border-b border-[#0f2e4d]">
+        <div className="mx-auto flex h-7 max-w-7xl items-center justify-between px-3 text-[11px] sm:px-6">
+          <div className="flex items-center gap-4">
+            <span className="font-semibold text-white/80">Online Vehicle Auctions</span>
+            <span className="hidden sm:inline-flex items-center gap-1 text-[#94a3b8]">
+              <Phone className="h-3 w-3 text-[#ffb81c]" /> 1 (800) 555-3535
+            </span>
           </div>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          <div className="flex items-center gap-3">
+            <span className="hidden md:inline-flex items-center gap-1">
+              <Globe className="h-3 w-3 text-[#ffb81c]" /> EUR / USD
+            </span>
+            <span className="text-white/40">|</span>
+            <span className="font-bold text-white">EN</span>
+            <span className="text-white/40">|</span>
+            <Link href="/#how-it-works" className="hover:text-white flex items-center gap-1">
+              <HelpCircle className="h-3 w-3" /> Help
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#0b3b60] border-b border-[#072a47]">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-3 sm:px-6">
+          <Link href="/" className="flex shrink-0 items-center gap-1.5" aria-label="AutoAuction Home">
+            <div className="flex items-center">
+              <span className="bg-[#ffb81c] px-2 py-0.5 font-black text-[#051a2e] text-base tracking-tighter">
+                AUTO
+              </span>
+              <span className="ml-1 font-black text-white text-xl tracking-tight">
+                AUCTION
+              </span>
+            </div>
+          </Link>
+
+          <div className="hidden flex-1 max-w-xl md:block mx-4">
+            <SearchBar placeholder="Search make, model, VIN or lot number..." />
+          </div>
+
+          <div className="hidden items-center gap-3 md:flex shrink-0">
             {user ? (
-              <>
+              <div className="flex items-center gap-2">
                 {user.role === "admin" && (
                   <Link
                     href="/admin"
-                    className="px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-graphite2 transition-colors hover:text-ink"
+                    className="inline-flex items-center gap-1 bg-[#072a47] border border-[#ffb81c]/50 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#ffb81c] hover:bg-[#051a2e]"
                   >
-                    Admin
+                    <Shield className="h-3.5 w-3.5" /> Admin
                   </Link>
                 )}
                 <Link
                   href="/account"
-                  className="px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-graphite2 transition-colors hover:text-ink"
+                  className="inline-flex items-center gap-1 bg-white/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/20"
                 >
-                  Account
+                  <User className="h-3.5 w-3.5 text-[#ffb81c]" /> Account
                 </Link>
                 <SignOutButton />
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-graphite2 transition-colors hover:text-ink"
+                  className="border border-white/40 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10"
                 >
-                  Sign in
+                  Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-primary px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary-dark"
+                  className="bg-[#ffb81c] px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#051a2e] transition-colors hover:bg-[#e5a519]"
                 >
                   Register
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
-          <MobileNav user={user} links={links} />
+          <MobileNav user={user} links={mainLinks} />
         </div>
+      </div>
+
+      <div className="bg-[#072a47] border-b border-[#051a2e]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6">
+          <NavLinks links={mainLinks} />
+
+          <div className="hidden lg:flex items-center gap-4 text-xs font-bold uppercase text-[#cbd5e1] py-1">
+            <span className="text-[#86efac]">● Online Bidding 24/7</span>
+            <Link href="/vehicles?saleType=BUY_NOW" className="hover:text-white">
+              Buy It Now
+            </Link>
+            <Link href="/vehicles?auctionStatus=LIVE" className="hover:text-[#ffb81c]">
+              Hot Auctions
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="md:hidden bg-[#072a47] px-3 py-2 border-t border-[#051a2e]">
+        <SearchBar placeholder="Make, model, VIN or lot number..." />
+      </div>
     </header>
   );
 }

@@ -4,8 +4,7 @@ import { Countdown } from "./countdown";
 import { formatMoney, type Currency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { ConfirmModal } from "@/components/ui/dialog";
-import { GraphUp as TrendingUp, WarningTriangle as AlertTriangle } from "iconoir-react";
-import { Gavel } from "@phosphor-icons/react/ssr";
+import { TrendingUp, AlertTriangle } from "lucide-react";
 
 type State = {
   id: string;
@@ -22,10 +21,10 @@ type State = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  SCHEDULED: "Upcoming",
-  LIVE: "Live",
-  ENDED: "Ended",
-  AWAITING_ADMIN_APPROVAL: "Awaiting approval",
+  SCHEDULED: "Upcoming Auction",
+  LIVE: "Live Auction",
+  ENDED: "Auction Ended",
+  AWAITING_ADMIN_APPROVAL: "Awaiting Approval",
   APPROVED: "Approved",
   REJECTED: "Rejected",
   SOLD: "Sold",
@@ -33,6 +32,19 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelled",
   DRAFT: "Draft",
 };
+
+function humanize(r?: string) {
+  switch (r) {
+    case "auction_not_live":
+      return "Auction is not accepting bids right now.";
+    case "bid_too_low":
+      return "Bid must be at least the minimum next bid.";
+    case "outbid":
+      return "A higher bid was placed just before yours.";
+    default:
+      return "Unable to place bid. Please try again.";
+  }
+}
 
 export function BidPanel({
   auctionId,
@@ -52,7 +64,6 @@ export function BidPanel({
   const drift = useRef(0);
   drift.current = Date.now() - st.serverTime;
 
-  // Live updates via SSE; refetch authoritative state on every event/reconnect.
   useEffect(() => {
     const refresh = () =>
       fetch(`/api/auctions/${auctionId}/state`)
@@ -80,7 +91,7 @@ export function BidPanel({
       });
       const data = await r.json();
       if (data.ok) {
-        setMsg({ ok: true, text: "Bid accepted. You're in the lead." });
+        setMsg({ ok: true, text: "Bid accepted. You are currently in the lead." });
         keyRef.current = "";
         setSt(data.auction);
       } else {
@@ -88,7 +99,7 @@ export function BidPanel({
         if (data.auction) setSt(data.auction);
       }
     } catch {
-      setMsg({ ok: false, text: "Network error. Your bid was not confirmed. Try again." });
+      setMsg({ ok: false, text: "Network error. Your bid was not recorded. Please try again." });
     } finally {
       setBusy(false);
       setConfirm(false);
@@ -102,88 +113,81 @@ export function BidPanel({
   );
 
   return (
-    <div className="overflow-hidden rounded-lg bg-ink text-white shadow-card">
-      {/* header strip */}
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+    <div className="overflow-hidden rounded-none border-2 border-[#0b3b60] bg-white">
+      <div className="flex items-center justify-between border-b border-[#0b3b60] bg-[#0b3b60] px-4 py-2 text-white">
         <span className="flex items-center gap-2">
           {live ? (
-            <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-red-400">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-400" />
-              </span>
-              Live auction
+            <span className="bg-[#cc0000] text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
+              LIVE AUCTION
             </span>
           ) : (
-            <span className="text-[11px] font-bold uppercase tracking-wide text-white/50">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#cbd5e1]">
               {STATUS_LABELS[st.status] ?? st.status}
             </span>
           )}
         </span>
-        <span className="text-xs font-semibold text-white/50">
-          {st.bidCount} bid{st.bidCount === 1 ? "" : "s"}
+        <span className="rounded-none bg-[#072a47] px-2 py-0.5 text-xs font-bold text-white">
+          {st.bidCount} {st.bidCount === 1 ? "bid" : "bids"}
         </span>
       </div>
 
-      <div className="p-5">
-        <div className="grid grid-cols-2 items-end gap-4">
+      <div className="p-4 bg-white text-[#1e293b]">
+        <div className="grid grid-cols-2 items-end gap-3 border-b border-[#e2e8f0] pb-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/45">
-              {st.currentBid != null ? "Current bid" : "Starting price"}
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+              {st.currentBid != null ? "Current Bid:" : "Starting Price:"}
             </p>
-            <p className="tnum mt-0.5 font-display text-[28px] font-extrabold leading-none">
+            <p className="tnum mt-0.5 font-mono text-2xl font-black text-[#0b3b60] leading-none">
               {formatMoney(st.currentBid ?? st.startingPrice, st.currency)}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/45">
-              {live ? "Ends in" : scheduled ? "Ended in" : "Ended"}
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+              {live ? "Time Remaining:" : scheduled ? "Starts In:" : "Status:"}
             </p>
             <Countdown
               endsAt={st.endsAt}
               serverDriftMs={drift.current}
-              className={`tnum font-display text-xl font-extrabold ${live ? "text-amber-300" : "text-white/40"}`}
+              className={`tnum text-lg font-black ${live ? "text-[#cc0000]" : "text-[#64748b]"}`}
             />
           </div>
         </div>
 
-        {/* leading / outbid */}
         {isAuthed && st.isLeading != null && (live || st.bidCount > 0) && (
           <p
-            className={`mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-bold ${
+            className={`mt-3 flex items-center gap-1.5 rounded-none border px-3 py-1.5 text-xs font-bold ${
               st.isLeading
-                ? "bg-success/15 text-emerald-300"
-                : "bg-amber-400/15 text-amber-300"
+                ? "border-[#86efac] bg-[#f0fdf4] text-[#15803d]"
+                : "border-[#fde047] bg-[#fefce8] text-[#a16207]"
             }`}
             role="status"
           >
             {st.isLeading ? (
-              <><TrendingUp className="h-4 w-4" /> You're leading this auction</>
+              <><TrendingUp className="h-4 w-4" /> You are leading this auction</>
             ) : (
-              <><AlertTriangle className="h-4 w-4" /> You've been outbid</>
+              <><AlertTriangle className="h-4 w-4" /> You have been outbid</>
             )}
           </p>
         )}
 
         {live && (
-          <div className="mt-5">
-            <p className="text-sm text-white/60">
-              Minimum next bid{" "}
-              <b className="tnum text-white">
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs text-[#475569]">
+              <span>Minimum next bid:</span>
+              <b className="tnum font-mono text-sm font-black text-[#0b3b60]">
                 {formatMoney(st.minNextBid, st.currency)}
               </b>
-            </p>
+            </div>
 
-            {/* quick amounts */}
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-2.5 grid grid-cols-3 gap-2">
               {quick.map((v) => (
                 <button
                   key={v}
                   onClick={() => setAmount(v)}
-                  className={`tnum rounded-lg border px-2 py-2 text-[13px] font-bold transition-colors ${
+                  className={`tnum rounded-none border py-1.5 text-xs font-bold transition-colors cursor-pointer ${
                     amount === v
-                      ? "border-primary bg-primary text-white"
-                      : "border-white/15 bg-white/5 text-white/80 hover:border-white/40 hover:text-white"
+                      ? "border-[#0b3b60] bg-[#0b3b60] text-white"
+                      : "border-[#cbd5e1] bg-[#f8fafc] text-[#334155] hover:border-[#0b3b60] hover:bg-white"
                   }`}
                 >
                   {formatMoney(v, st.currency)}
@@ -191,7 +195,7 @@ export function BidPanel({
               ))}
             </div>
 
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex gap-2">
               <div className="relative flex-1">
                 <input
                   type="number"
@@ -200,49 +204,44 @@ export function BidPanel({
                   value={Math.floor(amount / 100)}
                   onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))}
                   aria-label={`Bid amount in ${st.currency}`}
-                  className="tnum h-11 w-full rounded-lg border border-white/15 bg-white/5 px-4 pr-14 text-sm font-bold text-white outline-none transition-colors focus:border-white/40 focus:ring-2 focus:ring-white/20"
+                  className="tnum h-9 w-full rounded-none border border-[#cbd5e1] bg-white px-3 pr-12 text-sm font-bold text-[#1e293b] outline-none focus:border-[#0b3b60]"
                 />
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-white/40">
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#64748b]">
                   {st.currency}
                 </span>
               </div>
               <Button
-                size="lg"
-                loading={busy}
-                className="bg-white text-ink hover:bg-white/85"
-                onClick={() =>
-                  isAuthed ? setConfirm(true) : (location.href = "/login")
-                }
+                variant="primary"
+                size="md"
+                className="px-6"
+                onClick={() => (isAuthed ? setConfirm(true) : (location.href = "/login"))}
               >
-                {isAuthed ? "Place bid" : "Sign in to bid"}
+                Bid Now
               </Button>
             </div>
-            <button
-              className="mt-2 text-xs font-semibold text-white/50 transition-colors hover:text-white"
-              onClick={() => setAmount(st.minNextBid)}
-            >
-              Reset to minimum
-            </button>
           </div>
         )}
 
         {scheduled && (
-          <p className="mt-4 rounded-lg bg-white/5 px-3 py-2.5 text-sm font-semibold text-white/60">
-            Bidding opens when the auction goes live.
-          </p>
+          <div className="mt-4 border border-[#cbd5e1] bg-[#f8fafc] p-3 text-center text-xs text-[#64748b]">
+            Bidding will open when the countdown reaches zero.
+          </div>
         )}
+
         {!live && !scheduled && (
-          <p className="mt-4 rounded-lg bg-white/5 px-3 py-2.5 text-sm font-semibold text-white/60">
-            This auction is no longer accepting bids.
-          </p>
+          <div className="mt-4 border border-[#cbd5e1] bg-[#f8fafc] p-3 text-center text-xs text-[#64748b]">
+            This auction has concluded.
+          </div>
         )}
 
         {msg && (
           <p
-            className={`mt-3 rounded-lg px-3 py-2 text-sm font-semibold ${
-              msg.ok ? "bg-success/15 text-emerald-300" : "bg-error/20 text-red-300"
+            className={`mt-3 rounded-none border p-2 text-xs font-bold ${
+              msg.ok
+                ? "border-[#86efac] bg-[#f0fdf4] text-[#15803d]"
+                : "border-[#fca5a5] bg-[#fef2f2] text-[#b91c1c]"
             }`}
-            role="alert"
+            role="status"
           >
             {msg.text}
           </p>
@@ -253,23 +252,13 @@ export function BidPanel({
         open={confirm}
         onClose={() => setConfirm(false)}
         onConfirm={submitBid}
-        title="Confirm your bid"
-        confirmLabel="Place bid"
+        title="Confirm Live Auction Bid"
+        confirmLabel={`Submit Bid of ${formatMoney(amount, st.currency)}`}
         busy={busy}
       >
-        You are about to bid{" "}
-        <b className="text-graphite">{formatMoney(amount, st.currency)}</b>. This is a
-        firm offer — if you win and the result is approved, you commit to purchase.
+        You are about to place a binding bid of{" "}
+        <b className="text-[#0b3b60]">{formatMoney(amount, st.currency)}</b>. If this bid wins, you will be obligated to complete the purchase according to auction terms.
       </ConfirmModal>
     </div>
   );
-}
-
-function humanize(reason?: string) {
-  if (!reason) return "Bid rejected.";
-  if (reason.startsWith("below_minimum")) return "Bid is below the required minimum.";
-  if (reason === "auction_not_live") return "This auction is not live.";
-  if (reason === "auction_ended") return "This auction has ended.";
-  if (reason === "forbidden_role") return "This account cannot place bids.";
-  return "Bid rejected.";
 }

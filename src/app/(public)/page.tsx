@@ -1,453 +1,442 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { Countdown } from "@/components/auctions/countdown";
+import { VehicleCard } from "@/components/vehicles/vehicle-card";
 import {
   liveAuctionCards,
   upcomingAuctionCards,
-  completedAuctionCards,
+  buyNowCards,
+  listVehicles,
+  distinctMakes,
 } from "@/features/vehicles/queries";
-import { formatMoney, type Currency } from "@/lib/currency";
-import { ArrowRight } from "iconoir-react";
+import { Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const dateFmt = (ms: number) =>
-  new Date(ms).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
-function SectionHead({
-  eyebrow,
-  title,
-  href,
-  linkLabel,
-}: {
-  eyebrow: string;
-  title: string;
-  href?: string;
-  linkLabel?: string;
-}) {
-  return (
-    <div className="mb-5 flex items-end justify-between gap-6 border-b-2 border-ink pb-3">
-      <div className="flex items-baseline gap-4">
-        <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.2em] text-primary">
-          {eyebrow}
-        </p>
-        <h2 className="text-[22px] font-semibold leading-tight tracking-tight text-ink">
-          {title}
-        </h2>
-      </div>
-      {href && linkLabel && (
-        <Link
-          href={href}
-          className="group inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-graphite2 transition-colors hover:text-primary"
-        >
-          {linkLabel}
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      )}
-    </div>
-  );
-}
-
 export default function HomePage() {
-  const live = liveAuctionCards(4);
+  const live = liveAuctionCards(8);
   const upcoming = upcomingAuctionCards(4);
-  const sold = completedAuctionCards(6);
-  const featured = live[0];
+  const buyNow = buyNowCards(4);
+  const featured = listVehicles({ perPage: 8, sort: "newest" }).items;
+  const makes = distinctMakes();
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
 
   return (
-    <>
+    <div className="min-h-screen bg-[#eaedf1] text-[#1e293b]">
       <SiteHeader />
-      <main className="bg-bg text-ink">
-        {/* ── FEATURED LOT — dense light catalog spread ─────────── */}
-        <section className="border-b border-line bg-white">
-          <div className="mx-auto grid max-w-7xl lg:grid-cols-[58fr_42fr]">
-            <div className="relative min-h-[280px] bg-bg-alt sm:min-h-[380px] lg:min-h-[440px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={featured?.coverUrl ?? "/seed-images/car-08.jpg"}
-                alt={
-                  featured
-                    ? `${featured.year} ${featured.make} ${featured.model}`
-                    : ""
-                }
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              <span className="absolute left-4 top-4 bg-primary px-2.5 py-1 font-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-white">
-                ● Live
+
+      <main>
+        <div className="bg-[#07223d] border-b-4 border-[#ffb81c] text-white">
+          <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6">
+            <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr] items-stretch">
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-4">
+                <div className="flex items-center justify-between border-b border-[#0b3b60] pb-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-[#ffb81c]" />
+                    <h1 className="text-sm font-bold uppercase tracking-wider text-white">
+                      Vehicle Finder
+                    </h1>
+                  </div>
+                  <span className="text-[11px] text-[#86efac] font-bold">
+                    Active Catalog
+                  </span>
+                </div>
+
+                <form action="/vehicles" method="GET" className="space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Make
+                      </label>
+                      <select
+                        name="make"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">All Makes</option>
+                        {makes.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Sale Type
+                      </label>
+                      <select
+                        name="saleType"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">All Types</option>
+                        <option value="AUCTION">Live Auction</option>
+                        <option value="BUY_NOW">Buy It Now</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Year From
+                      </label>
+                      <select
+                        name="yearFrom"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">Any</option>
+                        {years.slice(0, 16).map((y) => (
+                          <option key={y} value={y}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Year To
+                      </label>
+                      <select
+                        name="yearTo"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">{currentYear}</option>
+                        {years.slice(0, 16).map((y) => (
+                          <option key={y} value={y}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Keyword or Lot Number
+                      </label>
+                      <input
+                        type="text"
+                        name="q"
+                        placeholder="Model, VIN or Lot"
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs text-white placeholder:text-[#64748b] focus:border-[#ffb81c] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#0b3b60]">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <Link
+                        href="/vehicles?saleType=BUY_NOW"
+                        className="text-[#ffb81c] hover:underline font-bold"
+                      >
+                        Buy It Now
+                      </Link>
+                      <span className="text-[#64748b]">|</span>
+                      <Link
+                        href="/vehicles?auctionStatus=LIVE"
+                        className="text-[#fca5a5] hover:underline font-bold"
+                      >
+                        Live Auctions
+                      </Link>
+                      <span className="text-[#64748b]">|</span>
+                      <Link
+                        href="/vehicles"
+                        className="text-[#cbd5e1] hover:underline"
+                      >
+                        All Vehicles
+                      </Link>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto bg-[#ffb81c] px-6 py-2 text-xs font-bold uppercase tracking-wider text-[#051a2e] hover:bg-[#e5a519] cursor-pointer"
+                    >
+                      Search Vehicles
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="flex flex-col justify-between border border-[#0b3b60] bg-[#051a2e] p-4 text-white">
+                <div>
+                  <div className="flex items-center justify-between border-b border-[#0b3b60] pb-2 mb-3">
+                    <span className="bg-[#cc0000] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      LIVE BIDDING
+                    </span>
+                    <span className="text-xs text-[#cbd5e1]">
+                      Real Time Auctions
+                    </span>
+                  </div>
+
+                  <h2 className="text-base font-bold uppercase text-white">
+                    Live Online Vehicle Auctions
+                  </h2>
+                  <p className="mt-1 text-xs text-[#94a3b8]">
+                    Bid in real time on active vehicle inventory or purchase directly through Buy It Now.
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-[#072a47] p-2 border border-[#0b3b60]">
+                      <span className="block text-[10px] text-[#94a3b8] uppercase">
+                        Live Lots:
+                      </span>
+                      <span className="text-sm font-bold text-[#ffb81c]">
+                        {live.length} Active
+                      </span>
+                    </div>
+                    <div className="bg-[#072a47] p-2 border border-[#0b3b60]">
+                      <span className="block text-[10px] text-[#94a3b8] uppercase">
+                        Scheduled:
+                      </span>
+                      <span className="text-sm font-bold text-white">
+                        {upcoming.length} Upcoming
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Link
+                    href="/auctions"
+                    className="bg-[#0b3b60] py-1.5 text-center text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47] border border-[#0b3b60]"
+                  >
+                    View Auctions
+                  </Link>
+                  <Link
+                    href="/buy-now"
+                    className="bg-[#ffb81c] py-1.5 text-center text-xs font-bold uppercase tracking-wider text-[#051a2e] hover:bg-[#e5a519]"
+                  >
+                    Buy It Now
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-[#cbd5e1] bg-white py-2">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-3 sm:px-6 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-[#0b3b60] uppercase">
+                Categories:
               </span>
+              <div className="flex flex-wrap items-center gap-2 font-semibold text-[#0b3b60]">
+                <Link href="/vehicles?bodyType=Sedan" className="hover:underline">
+                  Sedans
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?bodyType=SUV" className="hover:underline">
+                  SUVs
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?bodyType=Coupe" className="hover:underline">
+                  Coupes
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?fuelType=Electric" className="hover:underline">
+                  Electric
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?saleType=BUY_NOW" className="hover:underline text-[#b45309] font-bold">
+                  Buy It Now
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?auctionStatus=LIVE" className="hover:underline text-[#cc0000] font-bold">
+                  Live Auctions
+                </Link>
+              </div>
+            </div>
+            <Link href="/vehicles" className="font-bold text-[#0b3b60] hover:underline">
+              View All Inventory
+            </Link>
+          </div>
+        </div>
+
+        <section className="mx-auto max-w-7xl px-3 sm:px-6 pt-5 pb-2">
+          <div className="border border-[#cbd5e1] bg-white">
+            <div className="flex items-center justify-between border-b-2 border-[#0b3b60] bg-[#f8fafc] px-4 py-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[#0b3b60]">
+                Live Auctions
+              </h2>
+              <Link
+                href="/auctions"
+                className="text-xs font-bold text-[#0b3b60] hover:underline"
+              >
+                View All ({live.length})
+              </Link>
             </div>
 
-            <div className="flex flex-col border-l border-line bg-white px-6 py-7 sm:px-8">
-              {featured ? (
-                <>
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="tnum font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-tech">
-                      Lot {featured.lotNumber} · Featured
-                    </p>
-                    {featured.auction && (
-                      <p className="tnum font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-                        {featured.auction.bidCount} bid{featured.auction.bidCount === 1 ? "" : "s"}
-                      </p>
-                    )}
-                  </div>
-
-                  <h1 className="mt-3 text-[30px] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[36px]">
-                    {featured.year} {featured.make} {featured.model}
-                    {featured.trim ? ` ${featured.trim}` : ""}
-                  </h1>
-
-                  <p className="mt-2.5 font-mono text-[12px] uppercase tracking-[0.06em] text-muted">
-                    {[
-                      featured.mileage != null
-                        ? `${featured.mileage.toLocaleString("en-GB")} km`
-                        : null,
-                      featured.fuelType,
-                      featured.transmission,
-                      [featured.locationCity, featured.locationCountry]
-                        .filter(Boolean)
-                        .join(", ") || null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-
-                  {featured.auction && (
-                    <div className="mt-6 flex items-end justify-between gap-6 border-t border-line pt-5">
-                      <div>
-                        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-tech">
-                          Current bid
-                        </p>
-                        <p className="tnum mt-1 font-mono text-[36px] font-bold leading-none text-ink">
-                          {formatMoney(
-                            featured.auction.currentBid ??
-                              featured.auction.startingPrice,
-                            featured.auction.currency as Currency,
-                          )}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-tech">
-                          Ends in
-                        </p>
-                        <Countdown
-                          endsAt={featured.auction.endsAt}
-                          className="tnum mt-1 font-mono text-[26px] font-bold leading-none text-primary"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <Link
-                      href={`/vehicles/${featured.slug}`}
-                      className="inline-flex h-11 items-center gap-2 bg-primary px-7 font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary-dark"
-                    >
-                      View lot
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                    <Link
-                      href="/auctions"
-                      className="inline-flex h-11 items-center border border-ink px-5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-white"
-                    >
-                      All auctions
-                    </Link>
-                  </div>
-                </>
+            <div className="p-3">
+              {live.length === 0 ? (
+                <div className="border border-dashed border-[#cbd5e1] p-4 text-center text-xs text-[#64748b]">
+                  No live auctions active right now.
+                </div>
               ) : (
-                <>
-                  <p className="tnum font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-tech">
-                    AutoAuction
-                  </p>
-                  <h1 className="mt-3 text-[30px] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[36px]">
-                    Timed vehicle auctions and fixed-price listings.
-                  </h1>
-                  <p className="mt-3 text-[14px] leading-relaxed text-muted">
-                    Every lot with photos and documentation. Every sale reviewed
-                    by our team.
-                  </p>
-                  <Link
-                    href="/vehicles"
-                    className="mt-6 inline-flex h-11 w-fit items-center gap-2 bg-primary px-7 font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary-dark"
-                  >
-                    Explore vehicles
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {live.map((v) => (
+                    <VehicleCard key={v.id} v={v} />
+                  ))}
+                </div>
               )}
             </div>
           </div>
         </section>
 
-        {/* ── LIVE AUCTIONS — dense catalog rows ────────────────── */}
-        <section>
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-            <SectionHead
-              eyebrow="Live"
-              title="On the block now"
-              href="/auctions"
-              linkLabel="All auctions"
-            />
-            {live.length === 0 ? (
-              <p className="border border-dashed border-line bg-white px-6 py-10 text-center text-sm text-muted">
-                No live auctions right now. Check back soon.
-              </p>
-            ) : (
-              <div className="divide-y divide-line border border-line bg-white">
-                {live.map((v) => (
-                  <Link
-                    key={v.id}
-                    href={`/vehicles/${v.slug}`}
-                    className="group grid grid-cols-[96px_1fr_auto] items-center gap-4 px-4 py-3 transition-colors hover:bg-bg/70 sm:grid-cols-[110px_1fr_auto_auto_auto] sm:gap-6"
-                  >
-                    <div className="relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={v.coverUrl ?? ""}
-                        alt={`${v.make} ${v.model}`}
-                        className="aspect-[3/2] w-[96px] object-cover sm:w-[110px]"
-                        loading="lazy"
-                      />
-                      <span className="absolute left-0 top-0 bg-primary px-1.5 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-[0.12em] text-white">
-                        Live
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="tnum font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-tech">
-                        Lot {v.lotNumber}
-                      </p>
-                      <p className="mt-0.5 truncate text-[16px] font-semibold tracking-tight text-ink transition-colors group-hover:text-primary">
-                        {v.year} {v.make} {v.model}
-                      </p>
-                      <p className="mt-0.5 hidden truncate font-mono text-[10.5px] uppercase tracking-[0.06em] text-muted sm:block">
-                        {[
-                          v.mileage != null ? `${Math.round(v.mileage / 1000)}k km` : null,
-                          v.fuelType,
-                          v.transmission,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                    <div className="hidden text-right sm:block">
-                      <p className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-tech">
-                        Bids
-                      </p>
-                      <p className="tnum font-mono text-[15px] font-bold text-ink">
-                        {v.auction?.bidCount ?? 0}
-                      </p>
-                    </div>
-                    <div className="hidden text-right sm:block">
-                      <p className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-tech">
-                        Current bid
-                      </p>
-                      <p className="tnum font-mono text-[17px] font-bold text-ink">
-                        {v.auction
-                          ? formatMoney(
-                              v.auction.currentBid ?? v.auction.startingPrice,
-                              v.auction.currency as Currency,
-                            )
-                          : "—"}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-tech">
-                        Ends
-                      </p>
-                      <p className="tnum font-mono text-[13px] font-bold text-primary">
-                        {v.auction ? <Countdown endsAt={v.auction.endsAt} /> : "—"}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+        {buyNow.length > 0 && (
+          <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+            <div className="border border-[#cbd5e1] bg-white">
+              <div className="flex items-center justify-between border-b-2 border-[#ffb81c] bg-[#f8fafc] px-4 py-2">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[#051a2e]">
+                  Buy It Now
+                </h2>
+                <Link
+                  href="/buy-now"
+                  className="text-xs font-bold text-[#0b3b60] hover:underline"
+                >
+                  View All ({buyNow.length})
+                </Link>
               </div>
-            )}
-          </div>
-        </section>
 
-        {/* ── UPCOMING — compact announcements ──────────────────── */}
+              <div className="p-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {buyNow.map((v) => (
+                    <VehicleCard key={v.id} v={v} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {upcoming.length > 0 && (
-          <section className="border-t border-line bg-bg-alt">
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-              <SectionHead eyebrow="Upcoming" title="Coming to auction" />
-              <div className="divide-y divide-line border border-line bg-white">
-                {upcoming.map((v) => (
-                  <Link
-                    key={v.id}
-                    href={`/vehicles/${v.slug}`}
-                    className="group grid grid-cols-[88px_1fr_auto] items-center gap-4 px-4 py-2.5 transition-colors hover:bg-bg/70 sm:grid-cols-[110px_1fr_auto_auto] sm:gap-6"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={v.coverUrl ?? ""}
-                      alt={`${v.make} ${v.model}`}
-                      className="aspect-[3/2] w-[88px] object-cover sm:w-[110px]"
-                      loading="lazy"
-                    />
-                    <div className="min-w-0">
-                      <p className="tnum font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-tech">
-                        Lot {v.lotNumber}
-                      </p>
-                      <p className="mt-0.5 truncate text-[15.5px] font-semibold tracking-tight text-ink transition-colors group-hover:text-primary">
-                        {v.year} {v.make} {v.model}
-                      </p>
-                    </div>
-                    <div className="hidden text-right sm:block">
-                      <p className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-tech">
-                        Bidding opens
-                      </p>
-                      <p className="tnum font-mono text-[13px] font-bold text-ink">
-                        {v.auction ? dateFmt(v.auction.startsAt) : "—"}
-                      </p>
-                    </div>
-                    <span className="hidden font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-graphite2 transition-colors group-hover:text-primary sm:block">
-                      View lot →
-                    </span>
-                  </Link>
-                ))}
+          <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+            <div className="border border-[#cbd5e1] bg-white">
+              <div className="flex items-center justify-between border-b-2 border-[#0b3b60] bg-[#f8fafc] px-4 py-2">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[#0b3b60]">
+                  Upcoming Auctions
+                </h2>
+                <Link
+                  href="/auctions"
+                  className="text-xs font-bold text-[#0b3b60] hover:underline"
+                >
+                  Auction Calendar
+                </Link>
+              </div>
+
+              <div className="p-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {upcoming.map((v) => (
+                    <VehicleCard key={v.id} v={v} />
+                  ))}
+                </div>
               </div>
             </div>
           </section>
         )}
 
-        {/* ── RECENTLY SOLD — archive grid ──────────────────────── */}
-        {sold.length > 0 && (
-          <section className="border-t border-line">
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-              <SectionHead
-                eyebrow="Archive"
-                title="Recently sold"
-                href="/auctions?auctionStatus=ended"
-                linkLabel="All results"
-              />
-              <div className="grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
-                {sold.map((v) => (
-                  <Link
-                    key={v.id}
-                    href={`/vehicles/${v.slug}`}
-                    className="group bg-white p-2.5 transition-colors hover:bg-bg"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={v.coverUrl ?? ""}
-                      alt={`${v.make} ${v.model}`}
-                      className="aspect-[4/3] w-full object-cover"
-                      loading="lazy"
-                    />
-                    <p className="tnum mt-2 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-tech">
-                      Lot {v.lotNumber}
-                    </p>
-                    <p className="mt-0.5 truncate text-[13.5px] font-semibold leading-snug tracking-tight text-ink transition-colors group-hover:text-primary">
-                      {v.year} {v.make} {v.model}
-                    </p>
-                    {v.auction?.currentBid != null && (
-                      <p className="tnum mt-1 font-mono text-[13px] font-bold text-ink">
-                        {formatMoney(v.auction.currentBid, v.auction.currency as Currency)}
-                      </p>
-                    )}
-                    {v.auction?.finalizedAt && (
-                      <p className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-tech">
-                        Sold {dateFmt(v.auction.finalizedAt)}
-                      </p>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── HOW IT WORKS — auction house transaction protocol ─── */}
-        <section id="how-it-works" className="border-t border-line bg-bg-alt">
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[260px_1fr] lg:gap-12">
-            <div>
-              <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Protocol
-              </p>
-              <h2 className="mt-1.5 text-[22px] font-semibold leading-tight tracking-tight text-ink">
-                How it works
+        <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+          <div className="border border-[#cbd5e1] bg-white">
+            <div className="flex items-center justify-between border-b-2 border-[#64748b] bg-[#f8fafc] px-4 py-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[#1e293b]">
+                Featured Inventory
               </h2>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-                Four stages from lot inspection to transfer.
-              </p>
-              <Link
-                href="/legal/terms"
-                className="mt-4 inline-block border-b border-ink/40 pb-px font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:border-primary hover:text-primary"
-              >
-                Bidding terms →
-              </Link>
-            </div>
-            <table className="w-full border-t-2 border-ink">
-              <tbody>
-                {[
-                  {
-                    t: "Discover a vehicle",
-                    d: "Browse the catalog, inspect photos, documents and condition reports.",
-                  },
-                  {
-                    t: "Bid or buy",
-                    d: "Place manual bids in live auctions, or request a fixed-price purchase.",
-                  },
-                  {
-                    t: "Wait for confirmation",
-                    d: "Every winning bid and purchase request is reviewed by our team.",
-                  },
-                  {
-                    t: "Complete your purchase",
-                    d: "Once approved, our team contacts you to finalize the deal.",
-                  },
-                ].map((s, i) => (
-                  <tr key={s.t} className="border-b border-line align-baseline">
-                    <td className="w-[64px] py-3 pr-4 font-mono text-[11px] font-bold tracking-[0.14em] text-primary">
-                      0{i + 1}
-                    </td>
-                    <td className="w-[210px] py-3 pr-6 text-[14.5px] font-semibold tracking-tight text-ink">
-                      {s.t}
-                    </td>
-                    <td className="py-3 text-[13px] leading-snug text-muted">
-                      {s.d}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* ── FINAL CTA — compact strip ─────────────────────────── */}
-        <section id="about" className="border-t border-line bg-white">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-8 sm:px-6">
-            <div className="flex items-baseline gap-4">
-              <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.2em] text-primary">
-                AutoAuction
-              </p>
-              <h2 className="text-[20px] font-semibold tracking-tight text-ink">
-                Find your next vehicle.
-              </h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
               <Link
                 href="/vehicles"
-                className="inline-flex h-10 items-center gap-2 bg-primary px-6 font-mono text-[11.5px] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary-dark"
+                className="text-xs font-bold text-[#0b3b60] hover:underline"
               >
-                Browse the catalog
-                <ArrowRight className="h-4 w-4" />
+                All Inventory ({featured.length})
               </Link>
-              <Link
-                href="/sell"
-                className="inline-flex h-10 items-center border border-ink px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-white"
-              >
-                Sell your car
-              </Link>
+            </div>
+
+            <div className="p-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {featured.map((v) => (
+                  <VehicleCard key={v.id} v={v} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {makes.length > 0 && (
+          <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+            <div className="border border-[#cbd5e1] bg-white p-3.5">
+              <div className="flex items-center justify-between border-b border-[#cbd5e1] pb-1.5 mb-2.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0b3b60]">
+                  Popular Makes
+                </h3>
+                <Link href="/vehicles" className="text-xs font-bold text-[#0b3b60] hover:underline">
+                  All Makes
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
+                {makes.map((mk) => (
+                  <Link
+                    key={mk}
+                    href={`/vehicles?make=${encodeURIComponent(mk)}`}
+                    className="font-bold text-[#0b3b60] hover:underline"
+                  >
+                    {mk}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section id="how-it-works" className="border-t border-[#cbd5e1] bg-[#07223d] py-6 text-white mt-5">
+          <div className="mx-auto max-w-7xl px-3 sm:px-6">
+            <div className="border-b border-white/10 pb-2 mb-4">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-white">
+                How to Buy
+              </h2>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 1</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Register</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Create an account to access bidding and vehicle inspection records.
+                </p>
+              </div>
+
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 2</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Find and Inspect</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Review photos, vehicle reports, VIN status, and titles.
+                </p>
+              </div>
+
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 3</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Bid or Buy</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Place live bids during auctions or select Buy It Now.
+                </p>
+              </div>
+
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 4</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Pay and Pickup</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Complete payment and arrange vehicle pickup or delivery.
+                </p>
+              </div>
             </div>
           </div>
         </section>
       </main>
-      <SiteFooter flush />
-    </>
+
+      <SiteFooter />
+    </div>
   );
 }

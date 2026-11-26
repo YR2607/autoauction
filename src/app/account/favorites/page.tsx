@@ -1,132 +1,84 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
-import { myFavorites, myFavoritesCount } from "@/features/account/queries";
-import { Pagination } from "@/components/vehicles/pagination";
+import { myFavorites } from "@/features/account/queries";
 import { EmptyState } from "@/components/ui/empty";
-import { FavoriteButton } from "@/components/vehicles/favorite-button";
-import { Countdown } from "@/components/auctions/countdown";
-import { eq } from "drizzle-orm";
-import { db, schema } from "@/lib/db";
-import { formatMoney, type Currency } from "@/lib/currency";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Favorites" };
+export const metadata: Metadata = { title: "Watchlist | AutoAuction" };
 
-export default async function FavoritesPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function FavoritesPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const sp = await searchParams;
-  const perPage = 12;
-  const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
-  const total = myFavoritesCount(user.id);
-  const rows = myFavorites(user.id, perPage, (page - 1) * perPage);
-
-  const items = rows.map((r) => {
-    const auction = db
-      .select()
-      .from(schema.auctions)
-      .where(eq(schema.auctions.vehicleId, r.vehicle.id))
-      .get();
-    return { v: r.vehicle, coverUrl: r.coverUrl, auction };
-  });
+  const items = myFavorites(user.id);
 
   return (
     <div>
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-ink pb-4">
-        <h1 className="font-display text-[28px] font-medium text-ink">Favorites</h1>
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-tech">
-          Collector watchlist · {total} lot{total === 1 ? "" : "s"}
-        </p>
+      <div className="flex items-center justify-between border-b border-[#cbd5e1] pb-3 mb-4">
+        <div>
+          <h1 className="text-xl font-bold uppercase tracking-wider text-[#0b3b60]">Vehicle Watchlist</h1>
+          <p className="mt-0.5 text-xs text-[#64748b]">Saved vehicles and bookmarked lots for monitoring.</p>
+        </div>
+        <span className="text-xs font-bold text-[#64748b]">Total Lots: {items.length}</span>
       </div>
 
       {items.length === 0 ? (
         <EmptyState
-          className="mt-6"
-          title="No favorites yet"
-          body="Tap the heart on any vehicle to keep it here."
-          action={<Link href="/vehicles" className="rounded-md bg-cta px-5 py-2.5 text-sm font-semibold text-white">Browse vehicles</Link>}
+          className="mt-4"
+          title="Your watchlist is empty"
+          body="Click the Watch button on any vehicle page to keep track of auctions and fixed-price listings."
+          action={<Link href="/vehicles" className="rounded-none bg-[#0b3b60] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47]">Browse Vehicles</Link>}
         />
       ) : (
-        <table className="w-full">
-          <tbody>
-            {items.map(({ v, coverUrl, auction }) => {
-              const live = auction?.status === "LIVE";
-              const scheduled = auction?.status === "SCHEDULED";
-              const price = auction
-                ? (auction.currentBid ?? 0) > 0
-                  ? formatMoney(auction.currentBid!, auction.currency as Currency)
-                  : formatMoney(auction.startingPrice ?? 0, auction.currency as Currency)
-                : v.buyNowPrice
-                  ? formatMoney(v.buyNowPrice, (v.buyNowCurrency ?? "EUR") as Currency)
-                  : null;
-              return (
-                <tr key={v.id} className="group border-b border-line/70 align-middle">
-                  <td className="w-[148px] py-4 pr-5">
-                    <Link href={`/vehicles/${v.slug}`} className="block">
-                      {coverUrl ? (
+        <Card className="mt-4 overflow-x-auto rounded-none">
+          <table className="w-full min-w-[640px] text-xs">
+            <thead>
+              <tr className="border-b border-[#cbd5e1] bg-[#f8fafc] text-left uppercase tracking-wider text-[#64748b]">
+                <th className="px-4 py-2.5 font-bold">Vehicle</th>
+                <th className="px-4 py-2.5 font-bold">Mileage</th>
+                <th className="px-4 py-2.5 font-bold">Fuel / Trans</th>
+                <th className="px-4 py-2.5 font-bold">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#f1f5f9]">
+              {items.map((r) => (
+                <tr key={r.vehicle.id} className="hover:bg-[#f8fafc]">
+                  <td className="px-4 py-3">
+                    <Link href={`/vehicles/${r.vehicle.slug}`} className="flex items-center gap-3 hover:underline">
+                      {r.coverUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={coverUrl} alt={`${v.make} ${v.model}`} className="aspect-[3/2] w-[148px] object-cover" loading="lazy" />
+                        <img src={r.coverUrl} alt="" className="h-10 w-16 shrink-0 rounded-none object-cover" />
                       ) : (
-                        <span className="block aspect-[3/2] w-[148px] bg-graphite/5" />
+                        <span className="h-10 w-16 shrink-0 rounded-none bg-[#e2e8f0]" />
                       )}
+                      <div>
+                        <p className="font-bold text-[#0b3b60]">{r.vehicle.year} {r.vehicle.make} {r.vehicle.model}</p>
+                        <p className="text-[11px] text-[#64748b]">Lot {r.vehicle.lotNumber}</p>
+                      </div>
                     </Link>
                   </td>
-                  <td className="min-w-0 py-4 pr-4">
-                    <p className="tnum font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-tech">
-                      Lot {v.lotNumber}
-                      {auction && (
-                        <>
-                          <span className="mx-2 text-line">·</span>
-                          <span className={live ? "text-primary" : "text-muted"}>
-                            {live ? <Countdown endsAt={auction.endsAt} /> : scheduled ? "Upcoming" : "Ended"}
-                          </span>
-                        </>
-                      )}
-                    </p>
+                  <td className="px-4 py-3 text-[#1e293b]">
+                    {r.vehicle.mileage != null ? `${r.vehicle.mileage.toLocaleString("en-US")} mi` : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-[#64748b]">
+                    {r.vehicle.fuelType ?? "Gasoline"} / {r.vehicle.transmission ?? "Automatic"}
+                  </td>
+                  <td className="px-4 py-3">
                     <Link
-                      href={`/vehicles/${v.slug}`}
-                      className="mt-1 block truncate font-display text-[18px] font-medium text-ink transition-colors group-hover:text-primary"
+                      href={`/vehicles/${r.vehicle.slug}`}
+                      className="inline-block rounded-none bg-[#0b3b60] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-[#072a47]"
                     >
-                      {v.year} {v.make} {v.model}
+                      View Lot
                     </Link>
-                    <p className="mt-1 font-mono text-[11.5px] uppercase tracking-[0.06em] text-muted">
-                      {[v.mileage ? `${Math.round(v.mileage / 1000)}k km` : null, v.fuelType, v.transmission, v.locationCity]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  </td>
-                  <td className="w-[150px] py-4 pr-4 text-right">
-                    {price && (
-                      <p className="tnum font-mono text-[15px] font-semibold text-ink">{price}</p>
-                    )}
-                    <p className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-tech">
-                      {live ? "Current bid" : v.buyNowPrice && !auction ? "Buy Now" : scheduled ? "Opening bid" : ""}
-                    </p>
-                  </td>
-                  <td className="w-[140px] py-4">
-                    <div className="flex items-center justify-end gap-3">
-                      <FavoriteButton vehicleId={v.id} initial isAuthed />
-                      <Link
-                        href={`/vehicles/${v.slug}`}
-                        className="border-b border-ink/40 pb-px font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:border-primary hover:text-primary"
-                      >
-                        View lot
-                      </Link>
-                    </div>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
-      <Pagination page={page} perPage={perPage} total={total} params={sp} basePath="/account/favorites" />
     </div>
   );
 }

@@ -1,44 +1,40 @@
 "use client";
 import { useEffect, useId, useRef } from "react";
-import { Xmark as X } from "iconoir-react";
+import { X } from "lucide-react";
 import { useDialogA11y } from "@/lib/use-dialog-a11y";
-import { cn } from "@/lib/utils";
 
-/** Right slide-over panel (filters / nav). Mobile-only unless `desktop` is set. */
+/** Right slide-over panel (mobile filters / nav). */
 export function Drawer({
   open,
   onClose,
   title,
   children,
   footer,
-  desktop,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  /** Render on desktop too — used by button-triggered filter drawers. */
-  desktop?: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   useDialogA11y(open, onClose, panelRef);
 
-  // When mobile-only (`lg:hidden`), if the viewport grows past the desktop
-  // breakpoint while it is open, close it — otherwise the hidden overlay
-  // would leave body scroll locked and the trap active.
+  // The drawer is mobile-only (`lg:hidden`). If the viewport grows past the
+  // desktop breakpoint while it is open, close it — otherwise the hidden
+  // overlay would leave body scroll locked and the trap active.
   useEffect(() => {
-    if (desktop || !open || typeof window.matchMedia !== "function") return;
+    if (!open || typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia("(min-width: 1024px)");
     const close = () => mq.matches && onClose();
     mq.addEventListener("change", close);
     return () => mq.removeEventListener("change", close);
-  }, [open, onClose, desktop]);
+  }, [open, onClose]);
 
   if (!open) return null;
   return (
-    <div className={cn("fixed inset-0 z-50", !desktop && "lg:hidden")}>
+    <div className="fixed inset-0 z-50 lg:hidden">
       <div className="anim-fade absolute inset-0 bg-ink/50" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
@@ -53,7 +49,7 @@ export function Drawer({
           <button
             onClick={onClose}
             aria-label={`Close ${title.toLowerCase()}`}
-            className="rounded-lg p-2 text-muted transition-colors hover:bg-graphite/5 hover:text-graphite focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta"
+            className="rounded-none p-2 text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0b3b60]"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>

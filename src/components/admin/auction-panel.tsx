@@ -77,7 +77,7 @@ export function AuctionPanel({
   }
 
   if (!needsAuction)
-    return <p className="text-sm text-muted">Sale type is Buy Now. No auction needed.</p>;
+    return <p className="text-xs text-[#64748b]">Sale type is Buy Now. No auction needed.</p>;
 
   if (!auction) {
     return (

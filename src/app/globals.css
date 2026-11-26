@@ -1,132 +1,98 @@
 @import "tailwindcss";
 
 @theme {
-  /* palette — Auction House × Collector's Archive */
-  --color-ink: #181b1d;
-  --color-graphite: #292d30;
-  --color-graphite2: #555b60;
-  --color-tech: #858a8d;
+  --color-graphite: #1e293b;
+  --color-ink: #07223d;
   --color-surface: #ffffff;
-  --color-bg: #f1f0eb;
-  --color-bg-alt: #eae8e1;
-  --color-cta: #181b1d;
-  --color-cta-hover: #000000;
-  --color-primary: #a9342d;
-  --color-primary-dark: #872820;
-  --color-primary-soft: #f0e2de;
-  --color-muted: #555b60;
-  --color-line: #cbcdcb;
+  --color-bg: #eaedf1;
+  --color-primary: #0b3b60;
+  --color-primary-dark: #072a47;
+  --color-primary-soft: #e2eaf2;
+  --color-muted: #64748b;
+  --color-line: #cbd5e1;
   --color-success: #15803d;
-  --color-success-soft: #3f9d63;
-  --color-warning: #b45309;
-  --color-error: #a9342d;
-  --color-gold: #a8874f;
-  --color-gold-soft: #e8dcc4;
+  --color-warning: #f59e0b;
+  --color-error: #dc2626;
+  --color-gold: #ffb81c;
 
-  /* garage palette — dense auction house (dark) */
-  --color-coal: #161412;
-  --color-garage: #211e1a;
-  --color-garage-2: #2b2723;
-  --color-garage-line: #403b33;
-  --color-bone: #ece8df;
-  --color-ash: #9c968b;
-  --color-ember: #d0583a;
+  --color-copart-blue: #0b3b60;
+  --color-copart-dark: #072a47;
+  --color-copart-navy: #051a2e;
+  --color-copart-amber: #ffb81c;
+  --color-copart-amber-dark: #e5a519;
+  --color-copart-border: #cbd5e1;
+  --color-copart-gray: #eaedf1;
 
-  /* typography */
-  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
+  --font-display: var(--font-roboto), Arial, Helvetica, sans-serif;
+  --font-sans: var(--font-roboto), Arial, Helvetica, sans-serif;
 
-  /* radii — soft premium */
-  --radius-card: 14px;
+  --radius-card: 3px;
 
-  /* elevation — soft luxury */
-  --shadow-xs: 0 1px 2px rgba(24, 27, 29, 0.04);
-  --shadow-sm: 0 2px 6px rgba(24, 27, 29, 0.05);
-  --shadow-card: 0 10px 30px -14px rgba(24, 27, 29, 0.14);
-  --shadow-lift: 0 24px 48px -20px rgba(24, 27, 29, 0.28);
-  --shadow-pop: 0 20px 56px -16px rgba(24, 27, 29, 0.32);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.12);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.15);
 
-  /* motion */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: ease-out;
 }
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-graphite);
+  background: #eaedf1;
+  color: #1e293b;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  /* sticky footer: page fills the viewport, footer sits at the bottom */
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-}
-
-body > main {
-  flex: 1 0 auto;
-  width: 100%;
-}
-
-/* auction-terminal table headers */
-th {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
 }
 
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-graphite) 15%, transparent);
+  background: #ffb81c;
+  color: #051a2e;
 }
 
-/* universal visible focus (WCAG 2.2) */
 :focus-visible {
-  outline: 2px solid var(--color-graphite);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 2px solid #0b3b60;
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 
-/* opt-out for elements that provide their own focus affordance */
-:focus-visible.focus-ring-none {
-  outline: none;
+.scroll-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
 }
 
-/* thin scrollbars for horizontal strips */
-.scroll-thin::-webkit-scrollbar { height: 6px; width: 6px; }
-.scroll-thin::-webkit-scrollbar-thumb { background: #d6d0c4; border-radius: 3px; }
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
 
-/* drawer + modal motion */
 @keyframes slide-in-right {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes pop-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.anim-drawer { animation: slide-in-right 0.22s var(--ease-out); }
-.anim-fade { animation: fade-in 0.18s ease-out; }
-.anim-pop { animation: pop-in 0.2s var(--ease-out); }
+
+.anim-drawer { animation: slide-in-right 0.2s ease-out; }
+.anim-fade { animation: fade-in 0.15s ease-out; }
+.anim-pop { animation: fade-in 0.15s ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .anim-drawer, .anim-fade, .anim-pop { animation: none; }
   html { scroll-behavior: auto; }
 }
 
-/* tabular figures for prices / countdowns */
-.tnum { font-variant-numeric: tabular-nums; }
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
