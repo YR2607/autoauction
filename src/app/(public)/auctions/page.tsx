@@ -1,11 +1,9 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
-import {
-  liveAuctionCards,
-  upcomingAuctionCards,
-  completedAuctionCards,
-} from "@/features/vehicles/queries";
+import { CatalogLayout } from "@/components/vehicles/catalog-filters";
+import { Pagination } from "@/components/vehicles/pagination";
+import { listVehicles, filterOptions } from "@/features/vehicles/queries";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -13,10 +11,46 @@ import { ChevronRight } from "lucide-react";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Live Online Auctions | AutoAuction" };
 
-export default function AuctionsPage() {
-  const live = liveAuctionCards();
-  const upcoming = upcomingAuctionCards(8);
-  const completed = completedAuctionCards(8);
+const STATUS_TITLES: Record<string, string> = {
+  LIVE: "Live Auctions",
+  SCHEDULED: "Upcoming Auctions",
+  ended: "Auction Results",
+};
+
+export default async function AuctionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const s = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : undefined);
+  const n = (k: string) => {
+    const v = s(k);
+    const num = v ? Number(v) : NaN;
+    return Number.isFinite(num) ? num : undefined;
+  };
+
+  const auctionStatus = s("auctionStatus");
+  const { items, total, page, perPage } = listVehicles({
+    q: s("q"),
+    make: s("make"),
+    model: s("model"),
+    yearFrom: n("yearFrom"),
+    yearTo: n("yearTo"),
+    priceMax: n("priceMax") ? n("priceMax")! * 100 : undefined,
+    mileageMax: n("mileageMax"),
+    fuelType: s("fuelType"),
+    transmission: s("transmission"),
+    bodyType: s("bodyType"),
+    currency: s("currency"),
+    saleType: "AUCTION",
+    auctionStatus,
+    sort: s("sort") ?? "ending_soon",
+    page: n("page") ?? 1,
+    perPage: 12,
+  });
+  const opts = filterOptions();
+  const title = (auctionStatus && STATUS_TITLES[auctionStatus]) || "Online Vehicle Auctions";
 
   return (
     <div className="min-h-screen bg-[#eaedf1] text-[#1e293b]">
@@ -31,72 +65,51 @@ export default function AuctionsPage() {
       </div>
 
       <main className="mx-auto max-w-7xl px-3 py-6 sm:px-6">
-        <div className="mb-6 border-b border-[#cbd5e1] pb-4">
+        <div className="mb-4 border-b border-[#cbd5e1] pb-3">
           <h1 className="text-2xl font-black uppercase tracking-wider text-[#0b3b60]">
-            Online Vehicle Auctions
+            {title}
           </h1>
           <p className="mt-1 text-xs text-[#64748b]">
             Bid manually in real time during live auctions. Every result is reviewed and confirmed by our team.
           </p>
         </div>
 
-        <Block
-          title="Live Auctions"
-          items={live}
-          empty="No live auctions running right now. Check upcoming scheduled auctions below."
-        />
-        <Block
-          title="Upcoming Auctions"
-          items={upcoming}
-          empty="No scheduled auctions at this time."
-        />
-        <Block
-          title="Closed Auctions"
-          items={completed}
-          empty="No completed auctions yet."
-        />
+        <CatalogLayout options={opts} current={sp} total={total} basePath="/auctions" hideQuickToggles>
+          {items.length === 0 ? (
+            <div className="rounded-none border border-[#cbd5e1] bg-white p-10 text-center">
+              <h3 className="text-base font-bold text-[#0b3b60]">No auctions match your criteria</h3>
+              <p className="mt-1 text-xs text-[#64748b]">
+                Try widening the filters or check upcoming scheduled auctions.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/auctions"
+                  className="inline-flex rounded-none bg-[#0b3b60] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47]"
+                >
+                  Clear all filters
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {items.map((v) => (
+                  <VehicleCard key={v.id} v={v} />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                perPage={perPage}
+                total={total}
+                params={sp}
+                basePath="/auctions"
+              />
+            </>
+          )}
+        </CatalogLayout>
       </main>
 
       <SiteFooter />
     </div>
-  );
-}
-
-function Block({
-  title,
-  items,
-  empty,
-}: {
-  title: string;
-  items: Parameters<typeof VehicleCard>[0]["v"][];
-  empty: string;
-}) {
-  return (
-    <section className="mb-6">
-      <div className="border border-[#cbd5e1] bg-white rounded-none">
-        <div className="flex items-center justify-between border-b-2 border-[#0b3b60] bg-[#f8fafc] px-4 py-2.5">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-[#0b3b60]">
-            {title}
-          </h2>
-          <span className="text-xs font-bold text-[#64748b]">
-            Total Lots: {items.length}
-          </span>
-        </div>
-
-        <div className="p-3">
-          {items.length === 0 ? (
-            <div className="border border-dashed border-[#cbd5e1] p-6 text-center text-xs text-[#64748b]">
-              {empty}
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {items.map((v) => (
-                <VehicleCard key={v.id} v={v} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
   );
 }
