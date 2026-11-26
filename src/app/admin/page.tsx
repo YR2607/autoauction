@@ -16,7 +16,7 @@ export default function AdminDashboard() {
     <div>
       <h1 className="text-xl font-bold uppercase tracking-wider text-[#0b3b60]">Admin Dashboard</h1>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5 text-xs">
+      <div className="mt-4 flex flex-wrap items-stretch gap-y-3 border-b border-[#cbd5e1] pb-4">
         <Stat label="Vehicles" value={d.vehicles} href="/admin/vehicles" />
         <Stat label="Published" value={d.published} href="/admin/vehicles" />
         <Stat label="Live Auctions" value={d.live} href="/admin/auctions" tone="text-[#cc0000]" />
@@ -129,9 +129,16 @@ export default function AdminDashboard() {
 
 function Stat({ label, value, href, tone }: { label: string; value: number; href: string; tone?: string }) {
   return (
-    <Link href={href} className="block rounded-none border border-[#cbd5e1] bg-white p-3 hover:border-[#0b3b60] transition-colors">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748b]">{label}</p>
-      <p className={`mt-1 text-2xl font-black ${tone ?? "text-[#0b3b60]"}`}>{value}</p>
+    <Link
+      href={href}
+      className="flex items-baseline gap-2 border-l border-[#cbd5e1] px-4 first:border-l-0 first:pl-0 group"
+    >
+      <span className={`text-[26px] font-black leading-none ${tone ?? "text-[#0b3b60]"} group-hover:underline`}>
+        {value}
+      </span>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748b] group-hover:text-[#0b3b60]">
+        {label}
+      </span>
     </Link>
   );
 }
