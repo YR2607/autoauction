@@ -21,7 +21,7 @@ export function AccountNav({
 }) {
   const path = usePathname();
   return (
-    <aside className="h-fit rounded-none border border-[#cbd5e1] bg-white p-2 lg:sticky lg:top-20">
+    <aside className="h-fit rounded-none border border-[#cbd5e1] bg-white p-2 lg:sticky lg:top-[130px]">
       <nav aria-label="Account" className="flex gap-1 overflow-x-auto lg:flex-col">
         {items.map((i) => (
           <Link

@@ -255,7 +255,7 @@ export default async function VehiclePage({
           </div>
 
           <div className="lg:col-start-2 lg:row-start-1 lg:row-end-3">
-            <div className="space-y-3 lg:sticky lg:top-24">
+            <div className="space-y-3 lg:sticky lg:top-[130px]">
               {auctionVisible && (
                 <BidPanel
                   auctionId={auction.id}
