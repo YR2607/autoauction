@@ -18,12 +18,12 @@ const STATS: {
   get: (d: ReturnType<typeof accountDashboard>) => number;
   num: string;
 }[] = [
-  { key: "active", label: "Active Bids", href: "/account/bids", get: (d) => d.activeBids, num: "text-white" },
-  { key: "leading", label: "Leading", href: "/account/bids", get: (d) => d.leadingCount, num: "text-[#7fd48f]" },
-  { key: "outbid", label: "Outbid", href: "/account/bids", get: (d) => d.outbidCount, num: "text-[#ff7a66]" },
-  { key: "won", label: "Won", href: "/account/purchases", get: (d) => d.wonCount, num: "text-[#ffb81c]" },
-  { key: "pending", label: "Pending", href: "/account/purchases", get: (d) => d.pendingOrders, num: "text-[#ffb81c]" },
-  { key: "watchlist", label: "Watchlist", href: "/account/favorites", get: (d) => d.favorites, num: "text-white" },
+  { key: "active", label: "Active Bids", href: "/account/bids", get: (d) => d.activeBids, num: "text-[#0b3b60]" },
+  { key: "leading", label: "Leading", href: "/account/bids", get: (d) => d.leadingCount, num: "text-[#15803d]" },
+  { key: "outbid", label: "Outbid", href: "/account/bids", get: (d) => d.outbidCount, num: "text-[#cc0000]" },
+  { key: "won", label: "Won", href: "/account/purchases", get: (d) => d.wonCount, num: "text-[#0b3b60]" },
+  { key: "pending", label: "Pending", href: "/account/purchases", get: (d) => d.pendingOrders, num: "text-[#b45309]" },
+  { key: "watchlist", label: "Watchlist", href: "/account/favorites", get: (d) => d.favorites, num: "text-[#0b3b60]" },
 ];
 
 function notifType(t: string) {
@@ -46,20 +46,19 @@ export default async function AccountPage() {
         <p className="text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">{user.email}</p>
       </div>
 
-      {/* continuous stats strip — navy terminal bar */}
-      <div className="mt-3 grid grid-cols-3 border border-[#072a47] bg-[#0b3b60] sm:grid-cols-6">
-        {STATS.map((s) => {
+      {/* stats — inline data line, no boxes */}
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-7 gap-y-3 border-b border-[#cbd5e1] pb-4">
+        {STATS.map((s, i) => {
           const v = s.get(d);
           return (
-            <Link
-              key={s.key}
-              href={s.href}
-              className="border-[#1e4f79] px-3 py-2.5 transition-colors hover:bg-[#072a47] [&:not(:last-child)]:border-r max-sm:[&:nth-child(-n+3)]:border-b"
-            >
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#94a3b8]">{s.label}</p>
-              <p className={`tnum mt-0.5 text-[22px] font-black leading-none ${v === 0 && s.key === "outbid" ? "text-white/50" : s.num}`}>
+            <Link key={s.key} href={s.href} className="group flex items-baseline gap-2">
+              {i > 0 && <span className="mr-5 hidden h-6 w-px bg-[#cbd5e1] sm:block" aria-hidden />}
+              <span className={`tnum text-[26px] font-black leading-none ${v === 0 && s.key === "outbid" ? "text-[#94a3b8]" : s.num}`}>
                 {v}
-              </p>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#64748b] transition-colors group-hover:text-[#0b3b60] group-hover:underline">
+                {s.label}
+              </span>
             </Link>
           );
         })}
