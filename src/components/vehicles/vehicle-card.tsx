@@ -26,17 +26,17 @@ export function VehicleCard({ v }: { v: VC }) {
           </span>
           <div className="flex items-center gap-1.5">
             {live && (
-              <span className="bg-[#cc0000] text-white px-1.5 py-0.2 text-[10px] font-black uppercase tracking-wider">
+              <span className="bg-[#cc0000] text-white px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
                 LIVE
               </span>
             )}
             {scheduled && (
-              <span className="bg-[#b45309] text-white px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider">
+              <span className="bg-[#b45309] text-white px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                 UPCOMING
               </span>
             )}
             {buyNow && (
-              <span className="bg-[#0b3b60] text-white px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider">
+              <span className="bg-[#0b3b60] text-white px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                 BUY NOW
               </span>
             )}
@@ -69,15 +69,7 @@ export function VehicleCard({ v }: { v: VC }) {
           <div className="mt-2.5 space-y-1 border-t border-[#f1f5f9] pt-2 text-xs text-[#475569]">
             <div className="flex justify-between">
               <span className="text-[#64748b]">Odometer:</span>
-              <span className="font-bold text-[#1e293b]">{formatMiles(v.mileage)} (Actual)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#64748b]">Doc Type:</span>
-              <span className="font-semibold text-[#15803d]">Clean Title</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#64748b]">Highlights:</span>
-              <span className="font-semibold text-[#15803d]">Run and Drive</span>
+              <span className="font-bold text-[#1e293b]">{formatMiles(v.mileage)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#64748b]">Engine:</span>

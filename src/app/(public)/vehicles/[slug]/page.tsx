@@ -129,12 +129,16 @@ export default async function VehiclePage({
                 <span className="rounded-none bg-[#0b3b60] px-2 py-0.5 text-xs font-bold text-white uppercase">
                   Lot {lotFormatted}
                 </span>
-                <span className="rounded-none bg-[#15803d] px-2 py-0.5 text-xs font-bold text-white uppercase">
-                  Run and Drive
-                </span>
-                <span className="rounded-none border border-[#cbd5e1] bg-[#f8fafc] px-2 py-0.5 text-xs font-bold uppercase text-[#334155]">
-                  Clean Title
-                </span>
+                {v.fuelType && (
+                  <span className="rounded-none border border-[#cbd5e1] bg-[#f8fafc] px-2 py-0.5 text-xs font-bold uppercase text-[#334155]">
+                    {v.fuelType}
+                  </span>
+                )}
+                {v.transmission && (
+                  <span className="rounded-none border border-[#cbd5e1] bg-[#f8fafc] px-2 py-0.5 text-xs font-bold uppercase text-[#334155]">
+                    {v.transmission}
+                  </span>
+                )}
               </div>
               <h1 className="mt-2 text-2xl font-black uppercase tracking-tight text-[#0b3b60]">
                 {title}
@@ -233,7 +237,7 @@ export default async function VehiclePage({
                         <span className="font-semibold text-[#1e293b]">
                           {maskEmail(b.email)}
                           {i === 0 && (
-                            <span className="ml-2 rounded-none bg-[#15803d] px-1 py-0.2 text-[9px] font-bold uppercase text-white">
+                            <span className="ml-2 rounded-none bg-[#15803d] px-1 py-0.5 text-[9px] font-bold uppercase text-white">
                               High Bidder
                             </span>
                           )}

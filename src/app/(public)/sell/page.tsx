@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { siteConfig } from "@/lib/site";
-import { ArrowRight } from "iconoir-react";
+import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sell your car",

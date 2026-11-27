@@ -40,7 +40,7 @@ export function AdminNav({
               {n > 0 && (
                 <span
                   className={cn(
-                    "ml-auto rounded-none px-1.5 py-0.2 text-[10px] font-bold",
+                    "ml-auto rounded-none px-1.5 py-0.5 text-[10px] font-bold",
                     active ? "bg-[#ffb81c] text-[#051a2e]" : "bg-[#b45309] text-white",
                   )}
                 >

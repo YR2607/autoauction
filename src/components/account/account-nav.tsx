@@ -39,7 +39,7 @@ export function AccountNav({
             {i.href === "/account/notifications" && unread > 0 && (
               <span
                 className={cn(
-                  "rounded-none px-1.5 py-0.2 text-[10px] font-bold",
+                  "rounded-none px-1.5 py-0.5 text-[10px] font-bold",
                   path === i.href ? "bg-[#ffb81c] text-[#051a2e]" : "bg-[#cc0000] text-white",
                 )}
               >

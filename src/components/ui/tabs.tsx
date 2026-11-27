@@ -62,7 +62,7 @@ export function Tabs({
           {it.count != null && (
             <span
               className={cn(
-                "ml-1.5 px-1 py-0.2 text-[10px] font-bold",
+                "ml-1.5 px-1 py-0.5 text-[10px] font-bold",
                 value === it.value ? "bg-[#072a47] text-white" : "bg-[#f1f5f9] text-[#64748b]",
               )}
             >

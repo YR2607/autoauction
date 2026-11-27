@@ -8,7 +8,7 @@ export function SiteFooter() {
       <div className="border-b border-white/10 bg-[#072a47]/60 py-3">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 sm:px-6">
           <span className="font-bold uppercase tracking-wider text-white">
-            Licensed Online Vehicle Auction Platform
+            Online Vehicle Auction Platform
           </span>
           <div className="flex flex-wrap items-center gap-4 text-[#94a3b8]">
             <span>24/7 Online Bidding</span>
@@ -22,7 +22,7 @@ export function SiteFooter() {
         <div>
           <Logo inverted className="h-9 w-auto" />
           <p className="mt-3 max-w-xs text-xs leading-relaxed text-[#94a3b8]">
-            Premier automotive auction marketplace. Live bidding on repairable, salvage, and clean title vehicles with transparent inspection details.
+            Online vehicle auction marketplace. Live bidding on repairable, salvage, and clean title vehicles with documented inspection details.
           </p>
           <div className="mt-4 space-y-1 text-[#cbd5e1]">
             <p>
