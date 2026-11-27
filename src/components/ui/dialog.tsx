@@ -26,7 +26,7 @@ export function Modal({
   if (!open) return null;
   return (
     <div
-      className="anim-fade fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 backdrop-blur-[2px] sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
       onClick={onClose}
     >
       <div
@@ -36,14 +36,16 @@ export function Modal({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "anim-pop w-full rounded-2xl bg-white p-6 shadow-xl outline-none",
+          "w-full rounded-none border-2 border-[#0b3b60] bg-white p-5 outline-none text-xs",
           width,
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 id={titleId} className="font-display text-lg font-bold">{title}</h3>
-        <div className="mt-3 text-sm text-muted">{children}</div>
-        {footer && <div className="mt-6 flex justify-end gap-2">{footer}</div>}
+        <h3 id={titleId} className="border-b border-[#cbd5e1] pb-2 text-sm font-bold uppercase tracking-wider text-[#0b3b60]">
+          {title}
+        </h3>
+        <div className="mt-3 text-xs leading-relaxed text-[#334155]">{children}</div>
+        {footer && <div className="mt-5 flex justify-end gap-2 border-t border-[#f1f5f9] pt-3">{footer}</div>}
       </div>
     </div>
   );
@@ -75,13 +77,14 @@ export function ConfirmModal({
       title={title}
       footer={
         <>
-          <Button variant="outline" onClick={onClose} loading={busy}>
+          <Button variant="outline" size="sm" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button
             variant={danger ? "danger" : "primary"}
-            onClick={onConfirm}
+            size="sm"
             loading={busy}
+            onClick={onConfirm}
           >
             {confirmLabel}
           </Button>

@@ -16,14 +16,14 @@ export function ErrorState({
     <div
       role="alert"
       className={cn(
-        "flex flex-col items-center justify-center rounded-[14px] border border-error/25 bg-error/5 px-6 py-12 text-center",
+        "flex flex-col items-center justify-center rounded-none border border-[#fca5a5] bg-[#fef2f2] px-6 py-10 text-center",
         className,
       )}
     >
-      <TriangleAlert className="h-8 w-8 text-error" />
-      <h3 className="mt-3 font-display text-base font-bold text-graphite">{title}</h3>
-      {body && <p className="mt-1 max-w-sm text-sm text-muted">{body}</p>}
-      {action && <div className="mt-5">{action}</div>}
+      <TriangleAlert className="h-7 w-7 text-[#dc2626]" />
+      <h3 className="mt-2 text-sm font-bold uppercase tracking-wider text-[#1e293b]">{title}</h3>
+      {body && <p className="mt-1 max-w-sm text-xs text-[#64748b]">{body}</p>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
@@ -42,16 +42,13 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-[14px] border border-dashed border-line bg-white px-6 py-16 text-center",
+        "flex flex-col items-center justify-center rounded-none border border-dashed border-[#cbd5e1] bg-white px-6 py-12 text-center",
         className,
       )}
     >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-graphite/5 text-xl text-muted">
-        ∅
-      </div>
-      <h3 className="font-display text-base font-bold text-graphite">{title}</h3>
-      {body && <p className="mt-1 max-w-sm text-sm text-muted">{body}</p>}
-      {action && <div className="mt-5">{action}</div>}
+      <h3 className="text-sm font-bold uppercase tracking-wider text-[#0b3b60]">{title}</h3>
+      {body && <p className="mt-1 max-w-sm text-xs text-[#64748b]">{body}</p>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }

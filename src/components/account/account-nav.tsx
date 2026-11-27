@@ -2,23 +2,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Gavel,
-  ShoppingBag,
-  Heart,
-  Bell,
-  User,
-  ShieldCheck,
-} from "lucide-react";
 
 const items = [
-  { href: "/account", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/account/bids", label: "My Bids", icon: Gavel },
-  { href: "/account/purchases", label: "Purchases", icon: ShoppingBag },
-  { href: "/account/favorites", label: "Favorites", icon: Heart },
-  { href: "/account/notifications", label: "Notifications", icon: Bell },
-  { href: "/account/profile", label: "Profile", icon: User },
+  { href: "/account", label: "Dashboard" },
+  { href: "/account/bids", label: "My Bids" },
+  { href: "/account/purchases", label: "Purchases" },
+  { href: "/account/favorites", label: "Watchlist" },
+  { href: "/account/notifications", label: "Notifications" },
+  { href: "/account/profile", label: "Profile" },
 ];
 
 export function AccountNav({
@@ -30,27 +21,26 @@ export function AccountNav({
 }) {
   const path = usePathname();
   return (
-    <aside className="h-fit rounded-[14px] border border-line bg-white p-2 shadow-xs lg:sticky lg:top-20">
-      <nav aria-label="Account" className="scroll-thin flex gap-1 overflow-x-auto lg:flex-col">
+    <aside className="h-fit rounded-none border border-[#cbd5e1] bg-white p-2 lg:sticky lg:top-[130px]">
+      <nav aria-label="Account" className="flex gap-1 overflow-x-auto lg:flex-col">
         {items.map((i) => (
           <Link
             key={i.href}
             href={i.href}
             aria-current={path === i.href ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors",
+              "flex shrink-0 items-center justify-between rounded-none px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors",
               path === i.href
-                ? "bg-graphite text-white"
-                : "text-graphite/70 hover:bg-graphite/5",
+                ? "bg-[#0b3b60] text-white"
+                : "text-[#334155] hover:bg-[#f1f5f9] hover:text-[#0b3b60]",
             )}
           >
-            <i.icon className="h-4 w-4 shrink-0" aria-hidden />
-            {i.label}
+            <span>{i.label}</span>
             {i.href === "/account/notifications" && unread > 0 && (
               <span
                 className={cn(
-                  "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                  path === i.href ? "bg-white/20 text-white" : "bg-primary text-white",
+                  "rounded-none px-1.5 py-0.5 text-[10px] font-bold",
+                  path === i.href ? "bg-[#ffb81c] text-[#051a2e]" : "bg-[#cc0000] text-white",
                 )}
               >
                 {unread}
@@ -61,9 +51,9 @@ export function AccountNav({
         {isAdmin && (
           <Link
             href="/admin"
-            className="mt-1 flex shrink-0 items-center gap-2.5 rounded-lg border-t border-line px-3.5 py-2.5 text-sm font-bold text-primary hover:bg-primary/5"
+            className="mt-2 flex shrink-0 items-center rounded-none border-t border-[#cbd5e1] pt-2 px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#b45309] hover:bg-[#fefce8]"
           >
-            <ShieldCheck className="h-4 w-4" aria-hidden /> Admin panel
+            Admin Panel
           </Link>
         )}
       </nav>

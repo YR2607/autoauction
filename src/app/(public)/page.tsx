@@ -2,7 +2,6 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
-import { Badge } from "@/components/ui/badge";
 import {
   liveAuctionCards,
   upcomingAuctionCards,
@@ -10,252 +9,434 @@ import {
   listVehicles,
   distinctMakes,
 } from "@/features/vehicles/queries";
-import { SearchBar } from "@/components/vehicles/search-bar";
-import { Gavel, Zap, ShieldCheck, ArrowRight, Search, BadgeCheck, Handshake } from "lucide-react";
+import { Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
-  const live = liveAuctionCards(6);
+  const live = liveAuctionCards(8);
   const upcoming = upcomingAuctionCards(4);
   const buyNow = buyNowCards(4);
-  const featured = listVehicles({ perPage: 4, sort: "newest" }).items;
+  const featured = listVehicles({ perPage: 8, sort: "newest" }).items;
   const makes = distinctMakes();
 
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
+
   return (
-    <>
+    <div className="min-h-screen bg-[#eaedf1] text-[#1e293b]">
       <SiteHeader />
+
       <main>
-        {/* HERO */}
-        <section className="relative overflow-hidden bg-ink text-white">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/seed-images/car-08.jpg"
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover object-[center_62%] opacity-45"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(100deg, rgba(11,18,32,0.97) 22%, rgba(11,18,32,0.78) 55%, rgba(11,18,32,0.35) 100%)",
-            }}
-          />
-          <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pb-16 sm:pt-20">
-            <Badge tone="primary" className="border border-white/15 bg-white/10 text-blue-200">
-              Online car auctions · Fixed-price sales
-            </Badge>
-            <h1 className="mt-5 max-w-2xl font-display text-4xl font-extrabold leading-[1.06] tracking-tight sm:text-[56px]">
-              Find your next car.
-              <br />
-              <span className="text-blue-400">Make your move.</span>
-            </h1>
-            <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-white/70">
-              Discover exceptional vehicles and compete in live online auctions —
-              or buy instantly at a fixed price.
-            </p>
+        <div className="bg-[#07223d] border-b-4 border-[#ffb81c] text-white">
+          <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6">
+            <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr] items-stretch">
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-4">
+                <div className="flex items-center justify-between border-b border-[#0b3b60] pb-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-[#ffb81c]" />
+                    <h1 className="text-sm font-bold uppercase tracking-wider text-white">
+                      Vehicle Finder
+                    </h1>
+                  </div>
+                  <span className="text-[11px] text-[#86efac] font-bold">
+                    Active Catalog
+                  </span>
+                </div>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href="/auctions"
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-primary px-7 text-[15px] font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary-dark"
-              >
-                <Gavel className="h-4.5 w-4.5" /> Explore auctions
-              </Link>
-              <Link
-                href="/buy-now"
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-[15px] font-bold text-ink transition-colors hover:bg-white/90"
-              >
-                <Zap className="h-4.5 w-4.5" /> Browse Buy Now cars
-              </Link>
-            </div>
+                <form action="/vehicles" method="GET" className="space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Make
+                      </label>
+                      <select
+                        name="make"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">All Makes</option>
+                        {makes.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-            <div className="mt-8 max-w-2xl">
-              <SearchBar />
-            </div>
-          </div>
-        </section>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Sale Type
+                      </label>
+                      <select
+                        name="saleType"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">All Types</option>
+                        <option value="AUCTION">Live Auction</option>
+                        <option value="BUY_NOW">Buy It Now</option>
+                      </select>
+                    </div>
+                  </div>
 
-        {/* TRUST STRIP */}
-        <section className="border-b border-line bg-white">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-7 sm:grid-cols-3 sm:px-6">
-            {[
-              { icon: Search, t: "Curated inventory", d: "Condition details and documents are published with every listing." },
-              { icon: BadgeCheck, t: "Reviewed results", d: "Winning bids and purchases confirmed by our team." },
-              { icon: Handshake, t: "Guided purchase", d: "We contact you to complete the deal after approval." },
-            ].map((f) => (
-              <div key={f.t} className="flex items-start gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                  <f.icon className="h-5 w-5" />
-                </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Year From
+                      </label>
+                      <select
+                        name="yearFrom"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">Any</option>
+                        {years.slice(0, 16).map((y) => (
+                          <option key={y} value={y}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Year To
+                      </label>
+                      <select
+                        name="yearTo"
+                        defaultValue=""
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs font-semibold text-white focus:border-[#ffb81c] focus:outline-none"
+                      >
+                        <option value="">{currentYear}</option>
+                        {years.slice(0, 16).map((y) => (
+                          <option key={y} value={y}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-[11px] font-bold uppercase text-[#cbd5e1] mb-1">
+                        Keyword or Lot Number
+                      </label>
+                      <input
+                        type="text"
+                        name="q"
+                        placeholder="Model, VIN or Lot"
+                        className="h-8 w-full border border-[#0b3b60] bg-[#072a47] px-2 text-xs text-white placeholder:text-[#64748b] focus:border-[#ffb81c] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#0b3b60]">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <Link
+                        href="/vehicles?saleType=BUY_NOW"
+                        className="text-[#ffb81c] hover:underline font-bold"
+                      >
+                        Buy It Now
+                      </Link>
+                      <span className="text-[#64748b]">|</span>
+                      <Link
+                        href="/vehicles?auctionStatus=LIVE"
+                        className="text-[#fca5a5] hover:underline font-bold"
+                      >
+                        Live Auctions
+                      </Link>
+                      <span className="text-[#64748b]">|</span>
+                      <Link
+                        href="/vehicles"
+                        className="text-[#cbd5e1] hover:underline"
+                      >
+                        All Vehicles
+                      </Link>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto bg-[#ffb81c] px-6 py-2 text-xs font-bold uppercase tracking-wider text-[#051a2e] hover:bg-[#e5a519] cursor-pointer"
+                    >
+                      Search Vehicles
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="flex flex-col justify-between border border-[#0b3b60] bg-[#051a2e] p-4 text-white">
                 <div>
-                  <p className="text-sm font-bold">{f.t}</p>
-                  <p className="mt-0.5 text-[13px] leading-snug text-muted">{f.d}</p>
+                  <div className="flex items-center justify-between border-b border-[#0b3b60] pb-2 mb-3">
+                    <span className="bg-[#cc0000] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      LIVE BIDDING
+                    </span>
+                    <span className="text-xs text-[#cbd5e1]">
+                      Real Time Auctions
+                    </span>
+                  </div>
+
+                  <h2 className="text-base font-bold uppercase text-white">
+                    Live Online Vehicle Auctions
+                  </h2>
+                  <p className="mt-1 text-xs text-[#94a3b8]">
+                    Bid in real time on active vehicle inventory or purchase directly through Buy It Now.
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-[#072a47] p-2 border border-[#0b3b60]">
+                      <span className="block text-[10px] text-[#94a3b8] uppercase">
+                        Live Lots:
+                      </span>
+                      <span className="text-sm font-bold text-[#ffb81c]">
+                        {live.length} Active
+                      </span>
+                    </div>
+                    <div className="bg-[#072a47] p-2 border border-[#0b3b60]">
+                      <span className="block text-[10px] text-[#94a3b8] uppercase">
+                        Scheduled:
+                      </span>
+                      <span className="text-sm font-bold text-white">
+                        {upcoming.length} Upcoming
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Link
+                    href="/auctions"
+                    className="bg-[#0b3b60] py-1.5 text-center text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47] border border-[#0b3b60]"
+                  >
+                    View Auctions
+                  </Link>
+                  <Link
+                    href="/buy-now"
+                    className="bg-[#ffb81c] py-1.5 text-center text-xs font-bold uppercase tracking-wider text-[#051a2e] hover:bg-[#e5a519]"
+                  >
+                    Buy It Now
+                  </Link>
                 </div>
               </div>
-            ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-[#cbd5e1] bg-white py-2">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-3 sm:px-6 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-[#0b3b60] uppercase">
+                Categories:
+              </span>
+              <div className="flex flex-wrap items-center gap-2 font-semibold text-[#0b3b60]">
+                <Link href="/vehicles?bodyType=Sedan" className="hover:underline">
+                  Sedans
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?bodyType=SUV" className="hover:underline">
+                  SUVs
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?bodyType=Coupe" className="hover:underline">
+                  Coupes
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?fuelType=Electric" className="hover:underline">
+                  Electric
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?saleType=BUY_NOW" className="hover:underline text-[#b45309] font-bold">
+                  Buy It Now
+                </Link>
+                <span className="text-[#cbd5e1]">|</span>
+                <Link href="/vehicles?auctionStatus=LIVE" className="hover:underline text-[#cc0000] font-bold">
+                  Live Auctions
+                </Link>
+              </div>
+            </div>
+            <Link href="/vehicles" className="font-bold text-[#0b3b60] hover:underline">
+              View All Inventory
+            </Link>
+          </div>
+        </div>
+
+        <section className="mx-auto max-w-7xl px-3 sm:px-6 pt-5 pb-2">
+          <div className="border border-[#cbd5e1] bg-white">
+            <div className="flex items-center justify-between border-b-2 border-[#0b3b60] bg-[#f8fafc] px-4 py-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[#0b3b60]">
+                Live Auctions
+              </h2>
+              <Link
+                href="/auctions"
+                className="text-xs font-bold text-[#0b3b60] hover:underline"
+              >
+                View All ({live.length})
+              </Link>
+            </div>
+
+            <div className="p-3">
+              {live.length === 0 ? (
+                <div className="border border-dashed border-[#cbd5e1] p-4 text-center text-xs text-[#64748b]">
+                  No live auctions active right now.
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {live.map((v) => (
+                    <VehicleCard key={v.id} v={v} />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
-        {/* LIVE AUCTIONS */}
-        <Section
-          eyebrow="Happening now"
-          title="Live auctions"
-          href="/auctions"
-          hrefLabel="View all auctions"
-        >
-          <Grid items={live} empty="No live auctions right now — check upcoming ones below." />
-        </Section>
-
-        {/* UPCOMING */}
-        {upcoming.length > 0 && (
-          <Section eyebrow="Starting soon" title="Upcoming auctions" href="/auctions" hrefLabel="All auctions" muted>
-            <Grid items={upcoming} />
-          </Section>
-        )}
-
-        {/* BUY NOW */}
-        <Section
-          eyebrow="Skip the bidding"
-          title="Buy Now"
-          href="/buy-now"
-          hrefLabel="All fixed-price vehicles"
-        >
-          <Grid items={buyNow} />
-        </Section>
-
-        {/* FEATURED */}
-        <Section eyebrow="Hand-picked" title="Latest arrivals" href="/vehicles" hrefLabel="Browse catalog" muted>
-          <Grid items={featured} />
-        </Section>
-
-        {/* MAKES */}
-        {makes.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-            <h2 className="font-display text-2xl font-extrabold">Popular makes</h2>
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              {makes.map((mk) => (
+        {buyNow.length > 0 && (
+          <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+            <div className="border border-[#cbd5e1] bg-white">
+              <div className="flex items-center justify-between border-b-2 border-[#ffb81c] bg-[#f8fafc] px-4 py-2">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[#051a2e]">
+                  Buy It Now
+                </h2>
                 <Link
-                  key={mk}
-                  href={`/vehicles?make=${encodeURIComponent(mk)}`}
-                  className="rounded-full border border-line bg-white px-5 py-2.5 text-sm font-semibold shadow-xs transition-all hover:border-primary/40 hover:text-primary"
+                  href="/buy-now"
+                  className="text-xs font-bold text-[#0b3b60] hover:underline"
                 >
-                  {mk}
+                  View All ({buyNow.length})
                 </Link>
-              ))}
+              </div>
+
+              <div className="p-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {buyNow.map((v) => (
+                    <VehicleCard key={v.id} v={v} />
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         )}
 
-        {/* HOW IT WORKS */}
-        <section id="how-it-works" className="bg-ink py-20 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <p className="text-[12px] font-bold uppercase tracking-widest text-blue-300">
-              The process
-            </p>
-            <h2 className="mt-1 font-display text-3xl font-extrabold">How it works</h2>
-            <div className="mt-10 grid gap-8 md:grid-cols-4">
-              {[
-                {
-                  icon: Search,
-                  t: "Discover a vehicle",
-                  d: "Browse the catalog, inspect photos, documents and condition reports.",
-                },
-                {
-                  icon: Gavel,
-                  t: "Bid or buy",
-                  d: "Place manual bids in live auctions — or request a fixed-price purchase.",
-                },
-                {
-                  icon: ShieldCheck,
-                  t: "Wait for confirmation",
-                  d: "Every winning bid and purchase request is reviewed by our team.",
-                },
-                {
-                  icon: Handshake,
-                  t: "Complete your purchase",
-                  d: "Once approved, our team contacts you to finalize the deal.",
-                },
-              ].map((s, i) => (
-                <div key={s.t} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 text-blue-300">
-                    <s.icon className="h-5 w-5" />
-                  </div>
-                  <p className="mt-4 text-xs font-bold uppercase tracking-widest text-white/40">
-                    Step {i + 1}
-                  </p>
-                  <h3 className="mt-1 font-display text-lg font-bold">{s.t}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/65">{s.d}</p>
+        {upcoming.length > 0 && (
+          <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+            <div className="border border-[#cbd5e1] bg-white">
+              <div className="flex items-center justify-between border-b-2 border-[#0b3b60] bg-[#f8fafc] px-4 py-2">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[#0b3b60]">
+                  Upcoming Auctions
+                </h2>
+                <Link
+                  href="/auctions"
+                  className="text-xs font-bold text-[#0b3b60] hover:underline"
+                >
+                  Auction Calendar
+                </Link>
+              </div>
+
+              <div className="p-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {upcoming.map((v) => (
+                    <VehicleCard key={v.id} v={v} />
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-            <div className="mt-10">
+          </section>
+        )}
+
+        <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+          <div className="border border-[#cbd5e1] bg-white">
+            <div className="flex items-center justify-between border-b-2 border-[#64748b] bg-[#f8fafc] px-4 py-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[#1e293b]">
+                Featured Inventory
+              </h2>
               <Link
                 href="/vehicles"
-                className="inline-flex items-center gap-2 text-sm font-bold text-blue-300 hover:text-blue-200"
+                className="text-xs font-bold text-[#0b3b60] hover:underline"
               >
-                Browse all vehicles <ArrowRight className="h-4 w-4" />
+                All Inventory ({featured.length})
               </Link>
+            </div>
+
+            <div className="p-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {featured.map((v) => (
+                  <VehicleCard key={v.id} v={v} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {makes.length > 0 && (
+          <section className="mx-auto max-w-7xl px-3 sm:px-6 py-2">
+            <div className="border border-[#cbd5e1] bg-white p-3.5">
+              <div className="flex items-center justify-between border-b border-[#cbd5e1] pb-1.5 mb-2.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0b3b60]">
+                  Popular Makes
+                </h3>
+                <Link href="/vehicles" className="text-xs font-bold text-[#0b3b60] hover:underline">
+                  All Makes
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
+                {makes.map((mk) => (
+                  <Link
+                    key={mk}
+                    href={`/vehicles?make=${encodeURIComponent(mk)}`}
+                    className="font-bold text-[#0b3b60] hover:underline"
+                  >
+                    {mk}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section id="how-it-works" className="border-t border-[#cbd5e1] bg-[#07223d] py-6 text-white mt-5">
+          <div className="mx-auto max-w-7xl px-3 sm:px-6">
+            <div className="border-b border-white/10 pb-2 mb-4">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-white">
+                How to Buy
+              </h2>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 1</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Register</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Create an account to access bidding and vehicle inspection records.
+                </p>
+              </div>
+
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 2</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Find and Inspect</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Review photos, vehicle reports, VIN status, and titles.
+                </p>
+              </div>
+
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 3</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Bid or Buy</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Place live bids during auctions or select Buy It Now.
+                </p>
+              </div>
+
+              <div className="border border-[#0b3b60] bg-[#051a2e] p-3.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#ffb81c]">Step 4</span>
+                <h3 className="mt-1 font-bold uppercase text-white">Pay and Pickup</h3>
+                <p className="mt-1 text-[#94a3b8] text-[11px]">
+                  Complete payment and arrange vehicle pickup or delivery.
+                </p>
+              </div>
             </div>
           </div>
         </section>
       </main>
+
       <SiteFooter />
-    </>
-  );
-}
-
-function Section({
-  eyebrow,
-  title,
-  href,
-  hrefLabel,
-  children,
-  muted,
-}: {
-  eyebrow: string;
-  title: string;
-  href: string;
-  hrefLabel: string;
-  children: React.ReactNode;
-  muted?: boolean;
-}) {
-  return (
-    <section className={`${muted ? "bg-white" : ""} py-14`}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-7 flex items-end justify-between">
-          <div>
-            <p className="text-[12px] font-bold uppercase tracking-widest text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="mt-1 font-display text-3xl font-extrabold">{title}</h2>
-          </div>
-          <Link
-            href={href}
-            className="hidden items-center gap-1.5 text-sm font-bold text-graphite/70 hover:text-primary sm:inline-flex"
-          >
-            {hrefLabel} <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function Grid({ items, empty }: { items: Parameters<typeof VehicleCard>[0]["v"][]; empty?: string }) {
-  if (!items.length)
-    return (
-      <p className="rounded-[14px] border border-dashed border-line bg-white px-6 py-12 text-center text-sm text-muted">
-        {empty ?? "Nothing here yet."}
-      </p>
-    );
-  return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((v) => (
-        <VehicleCard key={v.id} v={v} />
-      ))}
     </div>
   );
 }

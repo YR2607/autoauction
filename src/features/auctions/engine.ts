@@ -370,7 +370,7 @@ export function buyNow(input: BuyNowInput): { orderId: string } {
       `Your Buy Now request for ${vehicle.make} ${vehicle.model} is pending approval.`,
       { orderId, vehicleId: vehicle.id });
     notifyAdmins(tx, "buy_now_admin", "New Buy Now request",
-      `${vehicle.make} ${vehicle.model} ${vehicle.year} — purchase request pending.`,
+      `${vehicle.make} ${vehicle.model} ${vehicle.year}, purchase request pending.`,
       { orderId, vehicleId: vehicle.id });
 
     return { orderId, auctionId: auction?.id ?? null };
@@ -506,7 +506,7 @@ export function finalizeDueAuctions(t = now()): string[] {
         `Your winning bid is awaiting administrator approval.`,
         { auctionId: a.id, orderId });
       notifyAdmins(tx, "approval_needed", "Auction result awaiting approval",
-        `Auction ${a.id} ended — result needs review.`,
+        `Auction ${a.id} ended. Result needs review.`,
         { auctionId: a.id, orderId });
       out.push({ id: a.id, winner: top.userId });
     }

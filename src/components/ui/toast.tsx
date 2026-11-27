@@ -23,7 +23,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              "anim-pop pointer-events-auto flex items-start gap-2.5 rounded-xl border bg-white px-4 py-3 text-sm font-semibold shadow-pop",
+              "anim-pop pointer-events-auto flex items-start gap-2.5 rounded-none border border-[#cbd5e1] bg-white px-4 py-3 text-xs font-semibold shadow-md",
               t.kind === "ok" && "border-success/30 text-success",
               t.kind === "err" && "border-error/30 text-error",
               t.kind === "info" && "border-line text-graphite",

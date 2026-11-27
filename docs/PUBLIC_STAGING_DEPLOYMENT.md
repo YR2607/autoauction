@@ -13,6 +13,29 @@ Owner substitutes real domain/secrets — nothing is invented here.
 | Ports | 22 (SSH), 80 + 443 (HTTP/HTTPS) open; **nothing else needs to be public** |
 | Email provider | webhook endpoint for `EMAIL_WEBHOOK_URL`, or accept outbox (demo only) |
 
+### Preflight checklist (owner inputs)
+
+Every input must be supplied before deployment starts — the app refuses to
+boot on missing/invalid production config (by design). Do not paste private
+keys or passwords into chat or the repo; use an SSH agent or a secret store.
+
+| # | Input | Status |
+|---|---|---|
+| 1 | VPS public IP | ✅ PROVIDED — Tencent `43.156.110.135` |
+| 2 | SSH access (key-based; agent or approved secret store) | ✅ PROVIDED — ed25519 deploy key |
+| 3 | Staging domain | ✅ PROVIDED — `autoauction.claimonetest.online` |
+| 4 | DNS A record → VPS IP | ✅ RESOLVING — `autoauction.claimonetest.online` → `43.156.110.135` |
+| 5 | Email: `EMAIL_WEBHOOK_URL` + `EMAIL_FROM` **or** explicit approval for outbox-only demo (`EMAIL_ALLOW_OUTBOX=1`) | ✅ APPROVED — outbox-only for demo |
+| 6 | Official public contact email → `NEXT_PUBLIC_CONTACT_EMAIL` (build-time, requires image rebuild) | ⬜ MISSING — placeholder for now |
+| 7 | VPS persistent storage ≥10 GB (data, uploads, backups) | ✅ VERIFIED — 69 GB disk |
+| 8 | Firewall: 22/80/443 inbound; **3100 must NOT be public** | ✅ VERIFIED — 3100 loopback-only |
+
+> **Deployed 2026-11-15:** live at https://autoauction.claimonetest.online —
+> see `docs/MILESTONE_7_PUBLIC_STAGING_REPORT.md`. This VPS already ran
+> nginx+Certbot for other sites, so a dedicated nginx server block replaced
+> Caddy — same architecture (edge TLS → loopback app on 127.0.0.1:3100).
+> `deploy/Caddyfile` remains the template for a fresh single-app box.
+
 ## 1. Install Docker + Compose plugin
 
 ```bash

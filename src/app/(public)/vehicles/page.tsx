@@ -1,14 +1,15 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { VehicleCard } from "@/components/vehicles/vehicle-card";
+import { CatalogRow } from "@/components/vehicles/catalog-row";
 import { CatalogLayout } from "@/components/vehicles/catalog-filters";
 import { Pagination } from "@/components/vehicles/pagination";
-import { EmptyState } from "@/components/ui/empty";
 import { listVehicles, filterOptions } from "@/features/vehicles/queries";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Cars for sale" };
+export const metadata: Metadata = { title: "Vehicle Inventory | Online Auctions & Buy Now" };
 
 export default async function VehiclesPage({
   searchParams,
@@ -44,27 +45,61 @@ export default async function VehiclesPage({
   const opts = filterOptions();
 
   return (
-    <>
+    <div className="min-h-screen bg-[#eaedf1] text-[#1e293b]">
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <div className="mb-7">
-          <h1 className="font-display text-3xl font-extrabold">Cars for sale</h1>
-          <p className="mt-1 text-sm text-muted">
-            Fixed-price vehicles and live auction lots — with documented condition details.
-          </p>
+
+      <div className="border-b border-[#cbd5e1] bg-white py-2">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 px-3 sm:px-6 text-xs text-[#64748b]">
+          <Link href="/" className="hover:text-[#0b3b60]">Home</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="font-bold text-[#0b3b60]">Vehicle Inventory</span>
+          {s("make") && (
+            <>
+              <ChevronRight className="h-3 w-3" />
+              <span className="font-bold text-[#0b3b60]">{s("make")}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <main className="mx-auto max-w-7xl px-3 py-6 sm:px-6">
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#cbd5e1] pb-3">
+          <div>
+            <h1 className="text-xl font-black uppercase tracking-wider text-[#0b3b60]">
+              Vehicle Search & Auction Catalog
+            </h1>
+            <p className="mt-0.5 text-xs text-[#64748b]">
+              Live bidding, fixed-price purchases, verified condition reports, and documented history.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-bold text-[#0b3b60]">
+            <span className="rounded-none bg-[#0b3b60] px-2 py-1 text-white">
+              Total Lots: {total}
+            </span>
+          </div>
         </div>
 
         <CatalogLayout options={opts} current={sp} total={total}>
           {items.length === 0 ? (
-            <EmptyState
-              title="No vehicles match your filters"
-              body="Try widening the price range or clearing some filters."
-            />
+            <div className="rounded-none border border-[#cbd5e1] bg-white p-10 text-center">
+              <h3 className="text-base font-bold text-[#0b3b60]">No vehicles match your search criteria</h3>
+              <p className="mt-1 text-xs text-[#64748b]">
+                Try adjusting your filters, widening the price range, or clearing selected options.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/vehicles"
+                  className="inline-flex rounded-none bg-[#0b3b60] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-[#072a47]"
+                >
+                  Clear all filters
+                </Link>
+              </div>
+            </div>
           ) : (
             <>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="border border-[#cbd5e1] bg-white">
                 {items.map((v) => (
-                  <VehicleCard key={v.id} v={v} />
+                  <CatalogRow key={v.id} v={v} />
                 ))}
               </div>
               <Pagination
@@ -78,7 +113,8 @@ export default async function VehiclesPage({
           )}
         </CatalogLayout>
       </main>
+
       <SiteFooter />
-    </>
+    </div>
   );
 }

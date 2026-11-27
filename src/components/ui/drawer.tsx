@@ -49,7 +49,7 @@ export function Drawer({
           <button
             onClick={onClose}
             aria-label={`Close ${title.toLowerCase()}`}
-            className="rounded-lg p-2 text-muted transition-colors hover:bg-graphite/5 hover:text-graphite focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="rounded-none p-2 text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0b3b60]"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>

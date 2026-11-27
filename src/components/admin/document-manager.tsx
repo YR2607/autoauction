@@ -70,16 +70,16 @@ export function DocumentManager({
         <input
           ref={titleInput}
           placeholder="Document title"
-          className="w-full rounded-md border border-line px-3 py-2 text-sm"
+          className="w-full rounded-none border border-[#cbd5e1] px-3 py-1.5 text-xs"
         />
         <div className="flex items-center gap-2">
-          <select ref={kindInput} className="flex-1 rounded-md border border-line px-2 py-2 text-sm">
+          <select ref={kindInput} className="flex-1 rounded-none border border-[#cbd5e1] px-2 py-1.5 text-xs">
             <option value="inspection">Inspection report</option>
             <option value="registration">Registration</option>
             <option value="ownership">Ownership</option>
             <option value="other">Other</option>
           </select>
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-muted">
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-[#64748b]">
             <input ref={publicInput} type="checkbox" /> Public
           </label>
         </div>
@@ -87,21 +87,21 @@ export function DocumentManager({
           <Upload className="h-4 w-4" /> {busy ? "Working…" : "Upload document"}
         </Button>
       </div>
-      {err && <p className="mt-2 text-xs font-semibold text-error">{err}</p>}
+      {err && <p className="mt-2 text-xs font-semibold text-[#cc0000]">{err}</p>}
 
       <ul className="mt-4 space-y-2">
         {documents.map((d) => (
-          <li key={d.id} className="flex items-center gap-2 rounded-lg border border-line px-3 py-2">
-            <FileText className="h-4 w-4 shrink-0 text-muted" />
+          <li key={d.id} className="flex items-center gap-2 rounded-none border border-[#cbd5e1] px-3 py-2 text-xs">
+            <FileText className="h-4 w-4 shrink-0 text-[#64748b]" />
             <div className="min-w-0 flex-1">
-              <a href={`/api/documents/${d.id}`} target="_blank" className="block truncate text-sm font-semibold text-ink hover:underline">
+              <a href={`/api/documents/${d.id}`} target="_blank" className="block truncate font-bold text-[#0b3b60] hover:underline">
                 {d.title}
               </a>
-              <p className="flex items-center gap-1 text-[11px] text-muted">
+              <p className="flex items-center gap-1 text-[10px] text-[#64748b]">
                 {d.kind} · {d.isPublic ? <><Globe className="h-3 w-3" /> public</> : <><Lock className="h-3 w-3" /> admin only</>}
               </p>
             </div>
-            <button onClick={() => remove(d.id)} className="rounded p-1 text-error hover:bg-error/10" aria-label="Delete document">
+            <button onClick={() => remove(d.id)} className="rounded-none p-1 text-[#cc0000] hover:bg-[#fef2f2] cursor-pointer" aria-label="Delete document">
               <Trash2 className="h-4 w-4" />
             </button>
           </li>

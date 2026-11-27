@@ -30,7 +30,7 @@ export default async function NotificationsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-bold">
-                    {!n.readAt && <span className="mr-2 inline-block h-2 w-2 rounded-full bg-primary align-middle" />}
+                    {!n.readAt && <span className="mr-2 inline-block h-2 w-2 rounded-none bg-[#cc0000] align-middle" />}
                     {n.title}
                   </p>
                   {n.body && <p className="mt-0.5 text-sm text-muted">{n.body}</p>}

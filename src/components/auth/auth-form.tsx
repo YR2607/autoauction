@@ -40,21 +40,21 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 space-y-4">
+    <form onSubmit={submit} className="mt-4 space-y-3 rounded-none border border-[#cbd5e1] bg-white p-5 text-xs">
       {isReg && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label htmlFor="firstName">First name</Label>
+            <Label htmlFor="firstName">First Name</Label>
             <Input id="firstName" name="firstName" autoComplete="given-name" />
           </div>
           <div>
-            <Label htmlFor="lastName">Last name</Label>
+            <Label htmlFor="lastName">Last Name</Label>
             <Input id="lastName" name="lastName" autoComplete="family-name" />
           </div>
         </div>
       )}
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email Address</Label>
         <Input id="email" name="email" type="email" required autoComplete="email" />
       </div>
       <div>
@@ -68,28 +68,28 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           autoComplete={isReg ? "new-password" : "current-password"}
         />
         {isReg ? (
-          <p className="mt-1 text-xs text-muted">At least 8 characters.</p>
+          <p className="mt-1 text-[11px] text-[#64748b]">Minimum 8 characters required.</p>
         ) : (
-          <p className="mt-1 text-right text-xs">
-            <Link href="/forgot-password" className="font-semibold text-primary hover:underline">
+          <p className="mt-1 text-right text-[11px]">
+            <Link href="/forgot-password" className="font-bold text-[#0b3b60] hover:underline">
               Forgot password?
             </Link>
           </p>
         )}
       </div>
       {err && (
-        <p className="rounded-lg bg-error/10 px-3 py-2 text-sm font-semibold text-error" role="alert">
+        <p className="rounded-none border border-[#fca5a5] bg-[#fef2f2] px-3 py-2 text-xs font-bold text-[#b91c1c]" role="alert">
           {err}
         </p>
       )}
-      <Button type="submit" className="w-full" size="lg" loading={busy}>
-        {isReg ? "Create account" : "Sign in"}
+      <Button type="submit" variant="primary" className="w-full" size="md" loading={busy}>
+        {isReg ? "Register Account" : "Sign In"}
       </Button>
-      <p className="text-center text-sm text-muted">
+      <p className="text-center text-xs text-[#64748b] pt-1">
         {isReg ? (
-          <>Already have an account? <Link href="/login" className="font-semibold text-primary">Sign in</Link></>
+          <>Already have an account? <Link href="/login" className="font-bold text-[#0b3b60] hover:underline">Sign In</Link></>
         ) : (
-          <>No account? <Link href="/register" className="font-semibold text-primary">Create one</Link></>
+          <>No account yet? <Link href="/register" className="font-bold text-[#0b3b60] hover:underline">Register now</Link></>
         )}
       </p>
     </form>

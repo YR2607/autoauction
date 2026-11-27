@@ -20,7 +20,7 @@ export async function POST(
     return NextResponse.json({ error: "Account suspended." }, { status: 403 });
 
   if (!rateLimit(`bids:${user.id}`, getSetting<number>("rate.bidsPerMin") ?? 30)) {
-    return NextResponse.json({ error: "Too many bids — slow down." }, { status: 429 });
+    return NextResponse.json({ error: "Too many bids. Slow down." }, { status: 429 });
   }
 
   const parsed = body.safeParse(await req.json().catch(() => null));

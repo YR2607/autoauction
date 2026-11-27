@@ -36,7 +36,7 @@ export function Tabs({
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-line bg-white p-1",
+        "inline-flex items-center gap-1 rounded-none border border-[#cbd5e1] bg-white p-1",
         className,
       )}
     >
@@ -51,15 +51,24 @@ export function Tabs({
           tabIndex={value === it.value ? 0 : -1}
           onClick={() => onChange(it.value)}
           className={cn(
-            "rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+            "rounded-none px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b3b60]",
             value === it.value
-              ? "bg-graphite text-white"
-              : "text-muted hover:text-graphite",
+              ? "bg-[#0b3b60] text-white"
+              : "text-[#64748b] hover:text-[#0b3b60] hover:bg-[#f1f5f9]",
           )}
         >
           {it.label}
-          {it.count != null && <span className="ml-1.5 opacity-60">{it.count}</span>}
+          {it.count != null && (
+            <span
+              className={cn(
+                "ml-1.5 px-1 py-0.5 text-[10px] font-bold",
+                value === it.value ? "bg-[#072a47] text-white" : "bg-[#f1f5f9] text-[#64748b]",
+              )}
+            >
+              {it.count}
+            </span>
+          )}
         </button>
       ))}
     </div>

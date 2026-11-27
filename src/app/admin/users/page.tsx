@@ -30,7 +30,7 @@ export default function UsersPage() {
               <tr key={r.user.id} className="border-b border-line/60 last:border-0">
                 <td className="px-5 py-3 font-bold">{r.user.email}</td>
                 <td className="px-5 py-3 text-muted">
-                  {[r.profile?.firstName, r.profile?.lastName].filter(Boolean).join(" ") || "—"}
+                  {[r.profile?.firstName, r.profile?.lastName].filter(Boolean).join(" ") || "N/A"}
                 </td>
                 <td className="px-5 py-3">
                   <Badge tone={r.user.role === "admin" ? "primary" : "neutral"}>{r.user.role}</Badge>

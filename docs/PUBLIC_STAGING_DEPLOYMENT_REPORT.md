@@ -12,8 +12,9 @@ The application is **technically ready** for public staging deployment on a
 single VPS (Docker + Caddy + persistent SQLite storage + HTTPS). The actual
 public deployment is **BLOCKED**: no VPS, SSH access, domain, DNS control,
 email webhook endpoint, or official contact email has been provided. PR #4
-carries all hardening and is green in CI but awaits an independent approving
-review — the repository owner authored the PR and cannot approve it.
+carries all hardening and is merged into main (`46c5745`) with green CI —
+the owner authorized an admin bypass merge since no external reviewer was
+available and GitHub forbids self-approval.
 
 ## Scope inputs
 
@@ -22,7 +23,7 @@ review — the repository owner authored the PR and cannot approve it.
 | Repository | `YR2607/autoauction` |
 | PR | [#4](https://github.com/YR2607/autoauction/pull/4) — `hardening/milestone-5-public-staging-readiness` |
 | Branch head | `510e9cd` at report time |
-| Main HEAD | `e644bd8` (PR #4 not yet merged) |
+| Main HEAD | `46c5745` (PR #4 merged 2026-11-15, squash) |
 | VPS / SSH / domain / DNS | **not provided** |
 | Email webhook endpoint | **not provided** |
 | Official contact email | **not provided** |
@@ -32,12 +33,12 @@ review — the repository owner authored the PR and cannot approve it.
 | Check | Result |
 |---|---|
 | Branch contains latest main (`e644bd8`) | PASS — verified via merge-base |
-| No conflicts with main | PASS — `mergeable_state: blocked` (review gate only) |
+| No conflicts with main | PASS — merged cleanly |
 | M2.3.1 reservation guards in main | PASS — commits `001136f`, `320ad58` are ancestors; `RESERVED` transitions present in `src/features/auctions/engine.ts` |
 | M5 changes isolated on the branch | PASS — diff vs main limited to env validation, health endpoint, Docker/Compose/Caddy, CI, tests, docs |
 | Review comments | PASS — none present on the PR |
-| Independent review | **BLOCKED** — PR author is the repo owner; GitHub forbids self-approval; needs a second reviewer or explicit owner action |
-| Merge | **BLOCKED** — branch protection requires 1 approving review; not bypassed |
+| Independent review | RESOLVED — no external reviewer was available; the repository owner explicitly authorized an admin bypass merge. Branch protection was not weakened |
+| Merge | PASS — PR #4 merged into main as `46c5745`; post-merge main CI green (run 43710760015) |
 
 ### Docker build-time public config (corrected this milestone)
 
@@ -153,7 +154,7 @@ marked as drafts pending client answers.
 | Item | Result |
 |---|---|
 | Actual deployment URL | **BLOCKED** — pending domain |
-| Main commit SHA | `e644bd8` (PR #4 pending merge) |
+| Main commit SHA | `46c5745` (PR #4 merged) |
 | CI status | PASS — `verify` + `docker` jobs green on `510e9cd` |
 | VPS topology | **BLOCKED** — documented spec only (single instance, loopback app, Caddy edge) |
 | Docker build | PASS — CI built the image with synthetic public config |
@@ -168,22 +169,20 @@ marked as drafts pending client answers.
 | Tests | PASS — 140/140 (13 files), typecheck clean |
 | Known limitations | Single-instance architecture; no payments/KYC/dealer/proxy bidding by design |
 | Unresolved client decisions | `docs/CLIENT_OPEN_DECISIONS.md` — all open |
-| Production launch blockers | VPS/domain/secrets provisioning + PR #4 approval + client decisions |
+| Production launch blockers | VPS/domain/secrets provisioning + client decisions |
 
 ## Actions required from the owner
 
-1. **PR #4** — obtain one independent approving review (or explicitly
-   authorize an alternative merge path), then merge; verify main CI after.
-2. **Provision a VPS** — Ubuntu 22.04+/Debian 12+, ≥2 GB RAM, ≥10 GB disk;
+1. **Provision a VPS** — Ubuntu 22.04+/Debian 12+, ≥2 GB RAM, ≥10 GB disk;
    install Docker + Compose; provide SSH/deploy key access (not via chat).
-3. **DNS** — point the staging domain's A-record at the VPS; put the domain
+2. **DNS** — point the staging domain's A-record at the VPS; put the domain
    in `deploy/Caddyfile`.
-4. **Email webhook** — provide `EMAIL_WEBHOOK_URL` + `EMAIL_FROM`, or
+3. **Email webhook** — provide `EMAIL_WEBHOOK_URL` + `EMAIL_FROM`, or
    confirm staging should keep outbox transport (`EMAIL_ALLOW_OUTBOX=1`).
-5. **Contact email** — provide the official `NEXT_PUBLIC_CONTACT_EMAIL`
+4. **Contact email** — provide the official `NEXT_PUBLIC_CONTACT_EMAIL`
    (image rebuild required after changing).
-6. **Secrets** — fill `.env` on the VPS; never commit it.
-7. **Deploy** — follow `docs/PUBLIC_STAGING_DEPLOYMENT.md` §5–§9; set
+5. **Secrets** — fill `.env` on the VPS; never commit it.
+6. **Deploy** — follow `docs/PUBLIC_STAGING_DEPLOYMENT.md` §5–§9; set
    `DEMO_MODE=1` for the demo environment.
-8. **Re-run Phase 6 acceptance** on the real HTTPS URL and record results.
-9. **Answer `docs/CLIENT_OPEN_DECISIONS.md`** before inviting real users.
+7. **Re-run Phase 6 acceptance** on the real HTTPS URL and record results.
+8. **Answer `docs/CLIENT_OPEN_DECISIONS.md`** before inviting real users.

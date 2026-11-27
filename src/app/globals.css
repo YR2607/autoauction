@@ -1,91 +1,108 @@
 @import "tailwindcss";
 
 @theme {
-  /* palette */
-  --color-graphite: #111827;
-  --color-ink: #0b1220;
+  --color-graphite: #1e293b;
+  --color-ink: #07223d;
   --color-surface: #ffffff;
-  --color-bg: #f3f5f8;
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-soft: #eff4ff;
-  --color-muted: #6b7280;
-  --color-line: #e5e8ef;
-  --color-success: #16a34a;
+  --color-bg: #eaedf1;
+  --color-primary: #0b3b60;
+  --color-primary-dark: #072a47;
+  --color-primary-soft: #e2eaf2;
+  --color-muted: #64748b;
+  --color-line: #cbd5e1;
+  --color-success: #15803d;
   --color-warning: #f59e0b;
   --color-error: #dc2626;
-  --color-gold: #b78a2e;
+  --color-gold: #ffb81c;
 
-  /* typography */
-  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-copart-blue: #0b3b60;
+  --color-copart-dark: #072a47;
+  --color-copart-navy: #051a2e;
+  --color-copart-amber: #ffb81c;
+  --color-copart-amber-dark: #e5a519;
+  --color-copart-border: #cbd5e1;
+  --color-copart-gray: #eaedf1;
 
-  /* radii */
-  --radius-card: 14px;
+  --font-display: var(--font-roboto), Arial, Helvetica, sans-serif;
+  --font-sans: var(--font-roboto), Arial, Helvetica, sans-serif;
 
-  /* elevation */
-  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.06);
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-lift: 0 12px 32px -12px rgba(16, 24, 40, 0.18);
-  --shadow-pop: 0 16px 48px -12px rgba(11, 18, 32, 0.28);
+  --radius-card: 3px;
 
-  /* motion */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.12);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  --ease-out: ease-out;
 }
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-graphite);
+  background: #eaedf1;
+  color: #1e293b;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* sticky footer: page fills the viewport, footer sits at the bottom */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  background: #ffb81c;
+  color: #051a2e;
 }
 
-/* universal visible focus (WCAG 2.2) */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 2px solid #0b3b60;
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 
-/* thin scrollbars for horizontal strips */
-.scroll-thin::-webkit-scrollbar { height: 6px; width: 6px; }
-.scroll-thin::-webkit-scrollbar-thumb { background: #d3d9e3; border-radius: 3px; }
+.scroll-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
 
-/* drawer + modal motion */
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
 @keyframes slide-in-right {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes pop-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.anim-drawer { animation: slide-in-right 0.22s var(--ease-out); }
-.anim-fade { animation: fade-in 0.18s ease-out; }
-.anim-pop { animation: pop-in 0.2s var(--ease-out); }
+
+.anim-drawer { animation: slide-in-right 0.2s ease-out; }
+.anim-fade { animation: fade-in 0.15s ease-out; }
+.anim-pop { animation: fade-in 0.15s ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .anim-drawer, .anim-fade, .anim-pop { animation: none; }
   html { scroll-behavior: auto; }
 }
 
-/* tabular figures for prices / countdowns */
-.tnum { font-variant-numeric: tabular-nums; }
+.tnum {
+  font-variant-numeric: tabular-nums;
+}

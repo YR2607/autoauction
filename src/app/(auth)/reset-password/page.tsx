@@ -18,7 +18,7 @@ export default async function ResetPasswordPage({
         {token ? (
           <ResetPasswordForm token={token} />
         ) : (
-          <p className="mt-4 rounded-xl border border-line bg-surface p-5 text-sm text-muted">
+          <p className="mt-4 rounded-none border border-[#cbd5e1] bg-white p-5 text-xs text-[#64748b]">
             This page needs a valid reset link. Request one on the{" "}
             <a href="/forgot-password" className="font-semibold text-primary hover:underline">
               forgot password

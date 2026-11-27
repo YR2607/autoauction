@@ -26,18 +26,24 @@ export function Pagination({
   };
 
   return (
-    <nav className="mt-10 flex items-center justify-center gap-2">
+    <nav className="mt-8 flex items-center justify-center gap-2">
       {page > 1 && (
-        <Link href={href(page - 1)} className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold hover:bg-bg">
-          ← Prev
+        <Link
+          href={href(page - 1)}
+          className="rounded-none border border-[#cbd5e1] bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#0b3b60] hover:bg-[#f1f5f9]"
+        >
+          Previous
         </Link>
       )}
-      <span className="px-3 text-sm font-semibold text-muted">
+      <span className="px-3 text-xs font-bold text-[#64748b]">
         Page {page} of {pages}
       </span>
       {page < pages && (
-        <Link href={href(page + 1)} className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold hover:bg-bg">
-          Next →
+        <Link
+          href={href(page + 1)}
+          className="rounded-none border border-[#cbd5e1] bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#0b3b60] hover:bg-[#f1f5f9]"
+        >
+          Next
         </Link>
       )}
     </nav>

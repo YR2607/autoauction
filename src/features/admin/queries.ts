@@ -61,10 +61,15 @@ export function pendingOrderRows() {
     .leftJoin(schema.auctions, eq(schema.auctions.id, schema.orders.auctionId))
     .where(eq(schema.orders.status, "PENDING_APPROVAL"))
     .orderBy(desc(schema.orders.createdAt))
+    .limit(300)
     .all();
 }
 
-export function allOrders() {
+export function ordersCount() {
+  return db.select({ c: sql<number>`count(*)` }).from(schema.orders).get()?.c ?? 0;
+}
+
+export function allOrders(limit = 300, offset = 0) {
   return db
     .select({
       order: schema.orders,
@@ -77,11 +82,16 @@ export function allOrders() {
     .innerJoin(schema.users, eq(schema.users.id, schema.orders.buyerId))
     .leftJoin(schema.auctions, eq(schema.auctions.id, schema.orders.auctionId))
     .orderBy(desc(schema.orders.createdAt))
-    .limit(300)
+    .limit(limit)
+    .offset(offset)
     .all();
 }
 
-export function allBids(limit = 300) {
+export function bidsCount() {
+  return db.select({ c: sql<number>`count(*)` }).from(schema.bids).get()?.c ?? 0;
+}
+
+export function allBids(limit = 300, offset = 0) {
   return db
     .select({ bid: schema.bids, vehicle: schema.vehicles, user: schema.users, auction: schema.auctions })
     .from(schema.bids)
@@ -90,14 +100,21 @@ export function allBids(limit = 300) {
     .innerJoin(schema.auctions, eq(schema.auctions.id, schema.bids.auctionId))
     .orderBy(desc(schema.bids.createdAt))
     .limit(limit)
+    .offset(offset)
     .all();
 }
 
-export function allUsers() {
+export function usersCount() {
+  return db.select({ c: sql<number>`count(*)` }).from(schema.users).get()?.c ?? 0;
+}
+
+export function allUsers(limit = 500, offset = 0) {
   return db
     .select({ user: schema.users, profile: schema.userProfiles, bidCount: sql<number>`(SELECT count(*) FROM bids b WHERE b.user_id = ${schema.users.id} AND b.status = 'ACCEPTED')` })
     .from(schema.users)
     .leftJoin(schema.userProfiles, eq(schema.userProfiles.userId, schema.users.id))
     .orderBy(desc(schema.users.createdAt))
+    .limit(limit)
+    .offset(offset)
     .all();
 }

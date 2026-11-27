@@ -1,79 +1,108 @@
 import Link from "next/link";
-import { Mail, Globe } from "lucide-react";
+import { Logo } from "./logo";
 import { siteConfig } from "@/lib/site";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-20 border-t border-white/10 bg-ink text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-sm font-black text-ink">
-              A
-            </span>
-            <span className="font-display text-lg font-extrabold">AutoAuction</span>
+    <footer className="mt-14 border-t-2 border-[#ffb81c] bg-[#051a2e] text-[#cbd5e1] text-xs">
+      <div className="border-b border-white/10 bg-[#072a47]/60 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 sm:px-6">
+          <span className="font-bold uppercase tracking-wider text-white">
+            Online Vehicle Auction Platform
+          </span>
+          <div className="flex flex-wrap items-center gap-4 text-[#94a3b8]">
+            <span>24/7 Online Bidding</span>
+            <span className="text-white/20">|</span>
+            <span>Verified Condition Reports and Titles</span>
           </div>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/60">
-            Premium vehicles. Transparent auctions. Every sale reviewed by our team.
-          </p>
-          <p className="mt-5 flex items-center gap-2 text-sm text-white/60">
-            <Globe className="h-4 w-4" /> {siteConfig.currencies.join(" · ")}
-          </p>
-          {siteConfig.contactEmail && (
-            <p className="mt-1.5 flex items-center gap-2 text-sm text-white/60">
-              <Mail className="h-4 w-4" />{" "}
-              <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-white">
-                {siteConfig.contactEmail}
-              </a>
-            </p>
-          )}
         </div>
+      </div>
+
+      <div className="mx-auto grid max-w-7xl gap-8 px-3 py-8 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div>
+          <Logo inverted className="h-9 w-auto" />
+          <p className="mt-3 max-w-xs text-xs leading-relaxed text-[#94a3b8]">
+            Online vehicle auction marketplace. Live bidding on repairable, salvage, and clean title vehicles with documented inspection details.
+          </p>
+          <div className="mt-4 space-y-1 text-[#cbd5e1]">
+            <p>
+              Accepted Currencies: {siteConfig.currencies.join(" / ")}
+            </p>
+            {siteConfig.contactEmail && (
+              <p>
+                Email:{" "}
+                <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-white underline">
+                  {siteConfig.contactEmail}
+                </a>
+              </p>
+            )}
+          </div>
+        </div>
+
         <FooterCol
-          title="Marketplace"
+          title="Search and Bid"
           items={[
-            ["All cars", "/vehicles"],
-            ["Live auctions", "/auctions"],
-            ["Buy Now", "/buy-now"],
-            ["How it works", "/#how-it-works"],
+            ["Vehicle Inventory", "/vehicles"],
+            ["Live Online Auctions", "/auctions"],
+            ["Buy It Now", "/buy-now"],
+            ["Auction Calendar", "/auctions"],
+            ["Popular Makes", "/vehicles"],
           ]}
         />
+
         <FooterCol
-          title="Account"
+          title="Member Portal"
           items={[
-            ["Dashboard", "/account"],
-            ["My bids", "/account/bids"],
-            ["Purchases", "/account/purchases"],
-            ["Favorites", "/account/favorites"],
+            ["Member Dashboard", "/account"],
+            ["My Bids and Offers", "/account/bids"],
+            ["Won Vehicles", "/account/purchases"],
+            ["Watchlist", "/account/favorites"],
             ["Notifications", "/account/notifications"],
           ]}
         />
+
         <FooterCol
-          title="Company"
+          title="Support and Rules"
           items={[
-            ["Sign in", "/login"],
-            ["Create account", "/register"],
-            ["Terms of use", "/legal/terms"],
-            ["Privacy policy", "/legal/privacy"],
+            ["How to Buy at Auction", "/#how-it-works"],
+            ["Member Sign In", "/login"],
+            ["Register Account", "/register"],
+            ["Terms of Service", "/legal/terms"],
+            ["Privacy Policy", "/legal/privacy"],
           ]}
         />
       </div>
-      <div className="border-t border-white/10 py-5 text-center text-xs text-white/40">
-        © {new Date().getFullYear()} AutoAuction. All rights reserved.
+
+      <div className="border-t border-white/10 bg-[#031120] py-3 text-[#64748b]">
+        <div className="mx-auto flex max-w-7xl flex-col sm:flex-row items-center justify-between gap-2 px-3 sm:px-6 text-[11px]">
+          <p>
+            © {new Date().getFullYear()} AutoAuction Inc. All rights reserved. Bidding conducted under official auction rules.
+          </p>
+          <p className="text-[10px] text-[#475569]">
+            All vehicles sold &ldquo;As-Is, Where-Is&rdquo; without warranty.
+          </p>
+        </div>
       </div>
     </footer>
   );
 }
 
-function FooterCol({ title, items }: { title: string; items: [string, string][] }) {
+function FooterCol({
+  title,
+  items,
+}: {
+  title: string;
+  items: [label: string, href: string][];
+}) {
   return (
     <div>
-      <h4 className="text-[13px] font-bold uppercase tracking-wider text-white/80">
+      <h3 className="font-bold uppercase tracking-wider text-white text-xs border-b border-white/10 pb-1.5 mb-2.5">
         {title}
-      </h4>
-      <ul className="mt-4 space-y-2.5">
+      </h3>
+      <ul className="space-y-1.5 text-xs text-[#94a3b8]">
         {items.map(([label, href]) => (
-          <li key={href}>
-            <Link href={href} className="text-sm text-white/55 transition-colors hover:text-white">
+          <li key={label}>
+            <Link href={href} className="hover:text-white hover:underline transition-colors">
               {label}
             </Link>
           </li>

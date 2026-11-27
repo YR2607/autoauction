@@ -17,7 +17,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
     const password = String(fd.get("password") ?? "");
     const confirm = String(fd.get("confirm") ?? "");
     if (password !== confirm) {
-      setErr("Passwords don't match.");
+      setErr("Passwords do not match.");
       setBusy(false);
       return;
     }
@@ -37,23 +37,23 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 space-y-4">
+    <form onSubmit={submit} className="mt-4 space-y-3 rounded-none border border-[#cbd5e1] bg-white p-5 text-xs">
       <div>
-        <Label htmlFor="password">New password</Label>
+        <Label htmlFor="password">New Password</Label>
         <Input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" />
-        <p className="mt-1 text-xs text-muted">At least 8 characters. All your sessions will be signed out.</p>
+        <p className="mt-1 text-[11px] text-[#64748b]">At least 8 characters. All active sessions will be signed out.</p>
       </div>
       <div>
-        <Label htmlFor="confirm">Repeat password</Label>
+        <Label htmlFor="confirm">Repeat Password</Label>
         <Input id="confirm" name="confirm" type="password" required minLength={8} autoComplete="new-password" />
       </div>
       {err && (
-        <p className="rounded-lg bg-error/10 px-3 py-2 text-sm font-semibold text-error" role="alert">
+        <p className="rounded-none border border-[#fca5a5] bg-[#fef2f2] px-3 py-2 text-xs font-bold text-[#b91c1c]" role="alert">
           {err}
         </p>
       )}
-      <Button type="submit" className="w-full" size="lg" loading={busy}>
-        {busy ? "Saving…" : "Set new password"}
+      <Button type="submit" variant="primary" className="w-full" size="md" loading={busy}>
+        Set New Password
       </Button>
     </form>
   );

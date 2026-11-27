@@ -118,15 +118,15 @@ export function VehicleForm({
       ["Mileage", b.mileage ? `${Number(b.mileage).toLocaleString("en-GB")} km` : "—"],
       ["Body / fuel", `${pick("bodyType")} · ${pick("fuelType")}`],
       ["Condition", pick("conditionOverall")],
-      ["Sale type", String(b.saleType ?? "—").replace(/_/g, " + ")],
-      ["Buy Now", b.buyNowPrice ? `${b.buyNowPrice} ${b.buyNowCurrency}` : "—"],
+      ["Sale type", String(b.saleType ?? "N/A").replace(/_/g, " + ")],
+      ["Buy Now", b.buyNowPrice ? `${b.buyNowPrice} ${b.buyNowCurrency}` : "N/A"],
     ];
   }
 
   return (
     <div>
       {/* stepper */}
-      <ol className="scroll-thin mb-6 flex gap-1 overflow-x-auto rounded-[14px] border border-line bg-white p-1.5">
+      <ol className="scroll-thin mb-4 flex gap-1 overflow-x-auto rounded-none border border-[#cbd5e1] bg-white p-1.5 text-xs">
         {STEPS.map((label, i) => (
           <li key={label} className="shrink-0">
             <button
@@ -134,18 +134,18 @@ export function VehicleForm({
               onClick={() => setStep(i)}
               aria-current={i === step ? "step" : undefined}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors",
+                "flex items-center gap-1.5 rounded-none px-3 py-1.5 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors",
                 i === step
-                  ? "bg-graphite text-white"
+                  ? "bg-[#0b3b60] text-white"
                   : i < step
-                    ? "text-success hover:bg-graphite/5"
-                    : "text-muted hover:bg-graphite/5",
+                    ? "text-[#15803d] hover:bg-[#f1f5f9]"
+                    : "text-[#64748b] hover:bg-[#f1f5f9]",
               )}
             >
               <span
                 className={cn(
-                  "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
-                  i === step ? "bg-white/20" : i < step ? "bg-success/10" : "bg-graphite/5",
+                  "flex h-4 w-4 items-center justify-center rounded-none text-[9px] font-bold",
+                  i === step ? "bg-white/20 text-white" : i < step ? "bg-[#15803d]/15 text-[#15803d]" : "bg-[#f1f5f9] text-[#64748b]",
                 )}
               >
                 {i < step ? <Check className="h-3 w-3" /> : i + 1}
@@ -230,15 +230,15 @@ export function VehicleForm({
                 </div>
               ))}
             </dl>
-            <p className="mt-4 rounded-lg bg-graphite/5 px-3.5 py-2.5 text-xs font-semibold text-muted">
-              The vehicle is {vehicleId ? "updated in place" : "created as DRAFT"} — photos, documents
+            <p className="mt-3 rounded-none border border-[#cbd5e1] bg-[#f8fafc] p-3 text-xs text-[#64748b]">
+              The vehicle is {vehicleId ? "updated in place" : "created as DRAFT"}. Photos, documents
               and auction scheduling are managed on the vehicle page.
             </p>
           </Section>
         )}
 
         {err && (
-          <p role="alert" className="rounded-lg bg-error/10 px-3 py-2 text-sm font-semibold text-error">
+          <p role="alert" className="rounded-none border border-[#fca5a5] bg-[#fef2f2] px-3 py-2 text-xs font-bold text-[#b91c1c]">
             {err}
           </p>
         )}
@@ -274,15 +274,15 @@ export function VehicleForm({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[14px] border border-line bg-white p-6">
-      <h2 className="mb-4 font-display text-base font-bold">{title}</h2>
+    <section className="rounded-none border border-[#cbd5e1] bg-white p-5">
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-[#0b3b60] border-b border-[#cbd5e1] pb-2">{title}</h2>
       {children}
     </section>
   );
 }
 
 function Grid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
+  return <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
 }
 
 function Field({
@@ -296,8 +296,8 @@ function Field({
 }) {
   if (f.type === "checkbox") {
     return (
-      <label className="flex h-11 items-center gap-2.5 rounded-xl border border-line bg-white px-4 text-sm font-semibold transition-colors hover:border-graphite/30">
-        <input type="checkbox" name={f.name} defaultChecked={defaultChecked} className="h-4 w-4 accent-[#2563eb]" />
+      <label className="flex h-10 items-center gap-2 rounded-none border border-[#cbd5e1] bg-white px-3 text-xs font-semibold text-[#1e293b] transition-colors hover:border-[#0b3b60]">
+        <input type="checkbox" name={f.name} defaultChecked={defaultChecked} className="h-3.5 w-3.5 accent-[#0b3b60]" />
         {f.label}
       </label>
     );

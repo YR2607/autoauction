@@ -7,7 +7,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-[14px] border border-line bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]",
+        "rounded-none border border-[#cbd5e1] bg-white shadow-none",
         className,
       )}
       {...props}
@@ -18,7 +18,7 @@ export function Card({
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn("animate-pulse rounded-lg bg-graphite/[0.07]", className)}
+      className={cn("animate-pulse rounded-none bg-[#e2e8f0]", className)}
     />
   );
 }

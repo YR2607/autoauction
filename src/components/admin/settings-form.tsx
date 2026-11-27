@@ -33,16 +33,16 @@ export function SettingsForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-[14px] border border-line bg-white p-6">
+    <form onSubmit={submit} className="space-y-4 rounded-none border border-[#cbd5e1] bg-white p-5 text-xs">
       {fields.map((f) => (
         <div key={f.key}>
           <Label>{f.label}</Label>
           <Input name={f.key} type={f.type} defaultValue={String(values[f.key] ?? "")} />
-          <p className="mt-0.5 text-[11px] text-muted/70">{f.key}</p>
+          <p className="mt-0.5 text-[10px] text-[#64748b]">{f.key}</p>
         </div>
       ))}
-      {msg && <p className="rounded-lg bg-success/10 px-3 py-2 text-sm font-semibold text-success">{msg}</p>}
-      <Button type="submit" loading={busy}>Save settings</Button>
+      {msg && <p className="rounded-none border border-[#86efac] bg-[#f0fdf4] text-[#15803d] px-3 py-2 text-xs font-bold">{msg}</p>}
+      <Button type="submit" loading={busy} size="md">Save Settings</Button>
     </form>
   );
 }
